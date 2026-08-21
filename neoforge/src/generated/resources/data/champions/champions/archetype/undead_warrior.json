@@ -1,0 +1,69 @@
+{
+  "affix_pools": [
+    {
+      "candidates": [
+        {
+          "affix": "champions:wounding",
+          "max_strength": 2,
+          "weight": 15
+        },
+        {
+          "affix": "champions:knocking",
+          "max_strength": 2,
+          "weight": 12
+        },
+        {
+          "affix": "champions:dampening",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:plagued",
+          "max_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:desecrating",
+          "max_strength": 2,
+          "weight": 8
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {}
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:wounding",
+          "max_strength": 4,
+          "min_strength": 2,
+          "weight": 15
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 3,
+          "weight": 8
+        },
+        {
+          "affix": "champions:paralyzing",
+          "max_strength": 3,
+          "weight": 8
+        },
+        {
+          "affix": "champions:desecrating",
+          "max_strength": 3,
+          "min_strength": 2
+        }
+      ],
+      "tier_range": {
+        "min": 3
+      }
+    }
+  ],
+  "entity_filter": {
+    "type": "entity_tag",
+    "tag": "minecraft:undead"
+  },
+  "id": "champions:undead_warrior",
+  "tier_range": {},
+  "weight": 8
+}

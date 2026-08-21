@@ -1,0 +1,8 @@
+{
+  "attributeType": "minecraft:player.block_interaction_range",
+  "enable": false,
+  "modifier": {
+    "operation": "add_value",
+    "value": 0.0
+  }
+}

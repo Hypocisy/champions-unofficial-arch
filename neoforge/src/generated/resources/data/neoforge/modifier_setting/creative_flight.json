@@ -1,0 +1,8 @@
+{
+  "attributeType": "neoforge:creative_flight",
+  "enable": false,
+  "modifier": {
+    "operation": "add_value",
+    "value": 0.0
+  }
+}

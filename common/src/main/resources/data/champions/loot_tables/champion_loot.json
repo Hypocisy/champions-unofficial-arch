@@ -1,0 +1,215 @@
+{
+  "type": "minecraft:entity",
+  "random_sequence": "champions:champion_loot",
+  "pools": [
+    {
+      "name": "tier#1",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 10,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 1, "max": 1 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:enchant_randomly" } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 40,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 1, "max": 1 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1.0, "max": 2.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 50,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 1, "max": 1 } },
+            { "condition": "minecraft:killed_by_player" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tier#2",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 15,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 2, "max": 2 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:enchant_randomly" } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 50,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 2, "max": 2 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 3.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 35,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 2, "max": 2 } },
+            { "condition": "minecraft:killed_by_player" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tier#3",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 15,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 3, "max": 3 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:enchant_randomly" } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 35,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 3, "max": 3 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 3.0, "max": 4.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_ingot",
+          "weight": 35,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 3, "max": 3 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 3.0, "max": 4.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 15,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 3, "max": 3 } },
+            { "condition": "minecraft:killed_by_player" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tier#4",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 25,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 4, "max": 4 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:enchant_randomly" } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 25,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 4, "max": 4 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 3.0, "max": 4.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_ingot",
+          "weight": 25,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 4, "max": 4 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 4.0, "max": 6.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond",
+          "weight": 25,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 4, "max": 4 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1.0, "max": 3.0 }, "add": false } ]
+        }
+      ]
+    },
+    {
+      "name": "tier#5",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 30,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 5, "max": 5 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:enchant_randomly" } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond",
+          "weight": 30,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 5, "max": 5 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 4.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:netherite_scrap",
+          "weight": 15,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 5, "max": 5 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1.0, "max": 2.0 }, "add": false } ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 25,
+          "conditions": [
+            { "condition": "champions:champion_properties", "entity": "this", "tier": { "min": 5, "max": 5 } },
+            { "condition": "minecraft:killed_by_player" }
+          ],
+          "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 5.0 }, "add": false } ]
+        }
+      ]
+    }
+  ]
+}

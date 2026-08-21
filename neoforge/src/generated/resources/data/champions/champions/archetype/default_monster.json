@@ -1,0 +1,173 @@
+{
+  "affix_pools": [
+    {
+      "candidates": [
+        {
+          "affix": "champions:knocking",
+          "weight": 12
+        },
+        {
+          "affix": "champions:dampening"
+        },
+        {
+          "affix": "champions:shielding",
+          "weight": 8
+        },
+        {
+          "affix": "champions:lively"
+        },
+        {
+          "affix": "champions:hasty"
+        },
+        {
+          "affix": "champions:wounding",
+          "weight": 8
+        },
+        {
+          "affix": "champions:paralyzing",
+          "weight": 6
+        }
+      ],
+      "tier_range": {
+        "max": 2
+      }
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:knocking",
+          "max_strength": 2,
+          "weight": 12
+        },
+        {
+          "affix": "champions:dampening",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:shielding",
+          "max_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:lively",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:hasty",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:wounding",
+          "max_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:adaptable",
+          "max_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 2,
+          "weight": 6
+        },
+        {
+          "affix": "champions:plagued",
+          "max_strength": 2,
+          "weight": 6
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "max": 4,
+        "min": 3
+      }
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:knocking",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:dampening",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:shielding",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:lively",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:adaptable",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 6
+        },
+        {
+          "affix": "champions:molten",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 6
+        },
+        {
+          "affix": "champions:arctic",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 6
+        },
+        {
+          "affix": "champions:enkindling",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 6
+        },
+        {
+          "affix": "champions:plagued",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 6
+        },
+        {
+          "affix": "champions:infested",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 4
+        },
+        {
+          "affix": "champions:desecrating",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 4
+        }
+      ],
+      "max_count": 3,
+      "min_count": 2,
+      "tier_range": {
+        "min": 5
+      }
+    }
+  ],
+  "entity_filter": {
+    "type": "mob_category",
+    "categories": [
+      "monster"
+    ]
+  },
+  "id": "champions:default_monster",
+  "tier_range": {}
+}

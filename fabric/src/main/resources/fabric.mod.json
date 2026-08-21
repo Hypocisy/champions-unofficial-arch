@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "icon": "champions_icon_square.png",
+  "license": "${mod_license}",
+  "depends": {
+    "fabricloader": "${fabric_loader_version_range}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "architectury": "*"
+  },
+  "suggests": {
+    "kubejs": "*",
+    "jade": "*"
+  },
+  "entrypoints": {
+    "main": [
+      "top.theillusivec4.champions.fabric.ChampionsFabric"
+    ],
+    "cardinal-components": [
+      "top.theillusivec4.champions.fabric.platform.FabricChampionComponent"
+    ],
+    "client": [
+      "top.theillusivec4.champions.fabric.ChampionsFabricClient"
+    ],
+    "fabric-datagen": [
+      "top.theillusivec4.champions.fabric.datagen.ChampionsFabricDatagen"
+    ],
+    "jade": [
+      "top.theillusivec4.champions.common.integration.jade.JadePlugin"
+    ]
+  },
+  "mixins": [
+    "${mod_id}-fabric.mixins.json"
+  ],
+  "custom": {
+    "cardinal-components": [
+      "${mod_id}:champion_data",
+      "${mod_id}:champion_data_client"
+    ]
+  }
+}

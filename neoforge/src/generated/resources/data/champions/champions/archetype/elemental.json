@@ -1,0 +1,56 @@
+{
+  "affix_pools": [
+    {
+      "candidates": [
+        {
+          "affix": "champions:molten",
+          "max_strength": 3
+        },
+        {
+          "affix": "champions:enkindling",
+          "max_strength": 3
+        },
+        {
+          "affix": "champions:arctic",
+          "max_strength": 3
+        },
+        {
+          "affix": "champions:magnetic",
+          "max_strength": 2,
+          "weight": 6
+        }
+      ],
+      "tier_range": {
+        "min": 2
+      }
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:molten",
+          "max_strength": 4,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:arctic",
+          "max_strength": 4,
+          "min_strength": 2
+        }
+      ],
+      "tier_range": {
+        "min": 4
+      }
+    }
+  ],
+  "entity_filter": {
+    "type": "mob_category",
+    "categories": [
+      "monster"
+    ]
+  },
+  "id": "champions:elemental",
+  "tier_range": {
+    "min": 2
+  },
+  "weight": 5
+}

@@ -1,0 +1,4 @@
+// 1.21.1	2026-07-28T00:02:17.5330685	Champions Archetypes
+3e0cbc2f3b074c7f869264d1805c0cd3e48297a4 data/champions/champions/archetype/default_monster.json
+b2b1348a22baf1327859317673e40eb44e5c59b9 data/champions/champions/archetype/elemental.json
+e07a8f537513070821b580c29c3b35a41943fa14 data/champions/champions/archetype/undead_warrior.json

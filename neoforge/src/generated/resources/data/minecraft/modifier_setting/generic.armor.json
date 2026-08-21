@@ -1,0 +1,17 @@
+{
+  "attributeType": "minecraft:generic.armor",
+  "conditions": {
+    "entity_filter": {
+      "type": "entity_type",
+      "types": [
+        "minecraft:creeper"
+      ],
+      "whitelist": false
+    }
+  },
+  "enable": true,
+  "modifier": {
+    "operation": "add_value",
+    "value": 2.0
+  }
+}

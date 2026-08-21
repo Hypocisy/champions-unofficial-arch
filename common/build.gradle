@@ -1,0 +1,17 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+
+    // Forge Config API Port — provides ModConfigSpec on both platforms
+    modCompileOnly "curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}"
+
+    // Jade (optional) — compile-only so common code can reference the API
+    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+}
+loom {
+    accessWidenerPath = file("src/main/resources/champions.accesswidener")
+}

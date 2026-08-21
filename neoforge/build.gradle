@@ -1,0 +1,125 @@
+plugins {
+    id 'com.gradleup.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+
+base {
+    archivesName = "${mod_id}-neoforge"
+}
+
+// Pull in the common module's compiled classes before remapping.
+// Architectury Loom merges common + neoforge into a single jar at remapJar time.
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    // NeoForge itself
+    neoForge "net.neoforged:neoforge:${neoforge_version}"
+
+    // Architectury API NeoForge module
+    modApi "dev.architectury:architectury-neoforge:${architectury_api_version}"
+
+    // Common module (merged at remapJar time, not a runtime dep)
+    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
+    shadowBundle(project(path: ":common", configuration: "transformProductionNeoForge")) {
+        transitive = false
+    }
+
+    // KubeJS NeoForge (optional)
+    modCompileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+
+    // The One Probe (optional)
+    modCompileOnly "curse.maven:the-one-probe-245211:7292875"
+
+    // Jade (optional)
+    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    modImplementation "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+}
+
+// ── Jar assembly ─────────────────────────────────────────────────────────────
+
+processResources {
+    // Inject version and dependency ranges into neoforge.mods.toml
+    def props = [
+            mod_id                       : mod_id,
+            mod_name                     : mod_name,
+            mod_version                  : mod_version,
+            mod_license                  : mod_license,
+            mod_authors                  : mod_authors,
+            mod_description              : mod_description,
+            minecraft_version_range      : minecraft_version_range,
+            neoforge_version_range       : neoforge_version_range,
+            neoforge_loader_version_range: neoforge_loader_version_range,
+            kubejs_version_range         : kubejs_version_range
+    ]
+    inputs.properties(props)
+    filesMatching("META-INF/neoforge.mods.toml") { expand(props) }
+}
+
+shadowJar {
+    // Merge common classes into this jar
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+}
+
+jar {
+    archiveClassifier = "dev"
+}
+
+// ── Data generation ───────────────────────────────────────────────────────────
+
+loom {
+    neoForge {
+        accessTransformers.from(file("src/main/resources/META-INF/accesstransformer.cfg"))
+    }
+
+    runs {
+        data {
+            data()
+
+            programArgs.addAll '--mod', project.mod_id, '--all',
+                '--output', file('src/generated/resources/').getAbsolutePath(),
+                '--existing', file('src/main/resources/').getAbsolutePath(),
+                '--existing', project(':common').file('src/main/resources/').getAbsolutePath()
+        }
+    }
+
+}
+
+// Make the main source set pick up generated resources at runtime
+sourceSets.main.resources.srcDirs += ["src/generated/resources"]
+
+// ── Publishing ────────────────────────────────────────────────────────────────
+
+publishing {
+    publications {
+        mavenNeoForge(MavenPublication) {
+            artifactId = "${mod_id}-neoforge"
+            artifact(remapJar) { builtBy remapJar }
+            artifact(sourcesJar) { builtBy remapSourcesJar }
+        }
+    }
+}
