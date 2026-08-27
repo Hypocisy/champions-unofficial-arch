@@ -19,7 +19,9 @@ import top.theillusivec4.champions.common.phase.PhaseProcessor;
 import top.theillusivec4.champions.platform.ChampionAttachmentProvider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -29,13 +31,24 @@ import java.util.Optional;
  * directly to {@link LivingEntity} instances. The attachment is codec-serialized,
  * so it survives chunk unload and server restart automatically.</p>
  *
- * <p>Server and client views ({@link ChampionView.Server}, {@link ChampionView.Client})
- * are constructed lazily on each {@link #get(LivingEntity)} call. They are lightweight
- * wrappers — no caching needed since attachment reads are O(1) map lookups.</p>
+ * <p>Server views are cached per entity in a plain {@link HashMap} with explicit
+ * invalidation. Rebuilding them on every {@link #getServer} call used to re-resolve
+ * affixes and re-apply triggered phase effects on every tick — O(affixes + phases) per
+ * champion per tick. The cache is invalidated on {@link #setServer} (a real re-roll /
+ * initial write), on {@link #remove}, and when the entity leaves the level
+ * ({@link #onEntityLeaveLevel}) so entries never outlive their entity.</p>
+ *
+ * <p>A {@code WeakHashMap} is deliberately <em>not</em> used: the cached value
+ * ({@link ChampionView.Server}) holds a strong reference back to the key entity, so
+ * weak-key clearing would never fire — a textbook WeakHashMap leak.</p>
  */
 public final class NeoForgeAttachmentProvider implements ChampionAttachmentProvider {
 
     private static final String MOD_ID = "champions";
+
+    /** Live server views, keyed by entity identity. Server-thread only. */
+    private final Map<LivingEntity, ChampionView.Server> serverViewCache =
+            new HashMap<>();
 
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
@@ -72,7 +85,22 @@ public final class NeoForgeAttachmentProvider implements ChampionAttachmentProvi
         if (!entity.hasData(CHAMPION_DATA.get())) return Optional.empty();
         ChampionData data = entity.getExistingDataOrNull(CHAMPION_DATA.get());
         if (data == null || data.tierId() == null) return Optional.empty();
-        return buildServerView(entity, data).map(v -> v);
+
+        ChampionView.Server cached = serverViewCache.get(entity);
+        if (cached == null && entity.isRemoved()) {
+            // Defensive: an entity that has already left the world may still be queried
+            // during teardown (e.g. death loot). Never cache a view for it.
+            return Optional.empty();
+        }
+        if (cached != null && entity.isRemoved()) {
+            serverViewCache.remove(entity);
+            cached = null;
+        }
+        if (cached != null) return Optional.of(cached);
+
+        Optional<ChampionView.Server> built = buildServerView(entity, data);
+        built.ifPresent(view -> serverViewCache.put(entity, view));
+        return built.map(v -> v);
     }
 
     @Override
@@ -106,6 +134,16 @@ public final class NeoForgeAttachmentProvider implements ChampionAttachmentProvi
      * Called from {@link ChampionView.Server}'s save callback.
      */
     public void setServer(LivingEntity entity, ChampionData data) {
+        // A real (re)write — the old in-memory view is stale.
+        serverViewCache.remove(entity);
+        entity.setData(CHAMPION_DATA.get(), data);
+    }
+
+    @Override
+    public void persistServer(LivingEntity entity, ChampionData data) {
+        // Write-through without invalidating the cached view. Called from the
+        // view's save callback after every mutation (affix add/remove, phase
+        // trigger, runtime-state persist).
         entity.setData(CHAMPION_DATA.get(), data);
     }
 
@@ -119,8 +157,19 @@ public final class NeoForgeAttachmentProvider implements ChampionAttachmentProvi
 
     @Override
     public void remove(LivingEntity entity) {
+        serverViewCache.remove(entity);
         entity.setData(CHAMPION_DATA.get(), ChampionData.EMPTY);
         entity.setData(CHAMPION_DATA_CLIENT.get(), ChampionData.EMPTY);
+    }
+
+    /**
+     * Invalidate the cached view when an entity leaves the level (death, chunk
+     * unload, dimension change). Keeps the cache size proportional to the number
+     * of live champions instead of every champion that ever existed.
+     * Registered from the mod constructor.
+     */
+    public void onEntityLeaveLevel(LivingEntity entity) {
+        serverViewCache.remove(entity);
     }
 
     // ── View construction ─────────────────────────────────────────────────────
@@ -138,17 +187,23 @@ public final class NeoForgeAttachmentProvider implements ChampionAttachmentProvi
                     tier,
                     baseAffixes,
                     liveAffixes,
-                    updated -> setServer(entity, updated),
+                    updated -> persistServer(entity, updated),
                     () -> {
                         PacketHandler.Holder.get()
                                 .syncChampionToTrackers(entity,
                                         ChampionSyncData.from(ref[0]));
-                        PhaseProcessor.restoreTriggeredPhases(ref[0]);
+                        // Intentionally does NOT call restoreTriggeredPhases here:
+                        // the sync callback runs on every persist (affix add/remove, phase
+                        // trigger), and re-applying already-fired phase effects each time would
+                        // stack attribute modifiers and refresh effects. Silent restore happens
+                        // exactly once, on view construction, in buildServerView.
                     },
-
                     data.triggeredPhases(),
                     data.archetypeId());
 
+            // Restore effects of phases triggered in a previous session exactly once, before
+            // the entity joins the world. Deliberately kept out of the sync callback above.
+            PhaseProcessor.restoreTriggeredPhases(server);
 
             ref[0] = server;
             return server;

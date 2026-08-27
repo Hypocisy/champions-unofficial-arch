@@ -112,6 +112,15 @@ public final class HandlerRegistry<D extends IAffixData> {
         return !handlers.isEmpty();
     }
 
+    /**
+     * Returns true if at least one handler is registered for {@code eventType}.
+     * O(1) map lookup — used by {@code GlobalDispatcher} to skip serializing
+     * affixes that cannot be affected by the event being dispatched.
+     */
+    public boolean hasHandler(Class<?> eventType) {
+        return handlers.containsKey(eventType);
+    }
+
     @SuppressWarnings("unused")
     public boolean hasGoalHandlers() {
         return !goalHandlers.isEmpty();

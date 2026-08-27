@@ -15,3 +15,43 @@ dependencies {
 loom {
     accessWidenerPath = file("src/main/resources/champions.accesswidener")
 }
+
+// ── Tests ────────────────────────────────────────────────────────────────────
+// Unit tests validate the generated datapack data (archetypes/tiers) and the
+// codec dispatch for filters/phases/effects. They run against the mapped
+// Minecraft classpath via the `test` source set, so they execute inside a real
+// (dev) Minecraft environment without needing a bootstrapped server.
+//
+// Loom creates a `namedElements` overlay of the main source set but marks it
+// non-resolvable. We add our own resolvable copy of it (namedElementsTest)
+// and extend the test classpaths from that, so the test code can see both the
+// common main output and the mapped Minecraft classes.
+
+configurations {
+    namedElementsTest {
+        canBeResolved = true
+        canBeConsumed = false
+        extendsFrom namedElements
+    }
+    testCompileClasspath.extendsFrom namedElementsTest
+    testRuntimeClasspath.extendsFrom namedElementsTest
+}
+
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+        compileClasspath += configurations.namedElementsTest
+        runtimeClasspath += configurations.namedElementsTest
+    }
+}
+
+dependencies {
+    testImplementation platform("org.junit:junit-bom:5.10.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+    useJUnitPlatform()
+}

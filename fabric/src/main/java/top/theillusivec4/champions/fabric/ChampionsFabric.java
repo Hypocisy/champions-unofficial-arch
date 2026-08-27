@@ -19,6 +19,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.ChampionsApi;
@@ -35,6 +36,7 @@ import top.theillusivec4.champions.common.loot.ChampionLootConditions;
 import top.theillusivec4.champions.common.data.TierDataLoader;
 import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.fabric.event.FabricChampionEventsHandler;
+import top.theillusivec4.champions.fabric.integration.dispenser.ChampionEggDispenseBehavior;
 import top.theillusivec4.champions.fabric.network.FabricPacketHandler;
 import top.theillusivec4.champions.fabric.platform.FabricAttachmentProvider;
 import top.theillusivec4.champions.fabric.registry.*;
@@ -81,6 +83,9 @@ public final class ChampionsFabric implements ModInitializer {
         // 1e. Register champion egg item and data components
         ModItems.register();
 
+        // 1f. Register dispenser behavior for champion egg
+        DispenserBlock.registerBehavior(ModItems.CHAMPION_EGG, ChampionEggDispenseBehavior.INSTANCE);
+
         // 1d. Register loot condition types
         ChampionLootConditions.registerFabric();
 
@@ -88,6 +93,15 @@ public final class ChampionsFabric implements ModInitializer {
         //    via its own entrypoint — we just hold a reference here)
         FabricAttachmentProvider attachmentProvider = new FabricAttachmentProvider();
         ChampionAttachmentProvider.Holder.register(attachmentProvider);
+
+        // 2a. Drop cached server views when entities are unloaded (death, chunk
+        //     unload, dimension change) — otherwise the cache holds every champion
+        //     entity that ever existed alive and grows without bound.
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
+            if (entity instanceof LivingEntity living) {
+                attachmentProvider.onEntityUnload(living);
+            }
+        });
 
         FabricPacketHandler packetHandler = new FabricPacketHandler(attachmentProvider);
         PacketHandler.Holder.register(packetHandler);

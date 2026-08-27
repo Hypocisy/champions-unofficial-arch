@@ -29,3 +29,5 @@ crash-reports/
 
 # Local settings
 local.properties
+fabric/src/generated/
+neoforge/src/generated/

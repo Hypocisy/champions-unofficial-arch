@@ -6,11 +6,11 @@ import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.api.event.ChampionEvents;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.archetype.ChampionArchetype;
-import top.theillusivec4.champions.common.champion.ChampionData;
 import top.theillusivec4.champions.common.champion.ChampionView;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -39,14 +39,14 @@ public final class PhaseProcessor {
 
         ResourceLocationSet triggered = new ResourceLocationSet(triggeredPhases);
 
-        // Look up archetype for this champion
-        var data = getChampionData(champion);
-        if (data == null || data.archetypeId().isEmpty()) return;
+        // O(1) archetype lookup straight from the view — no serialization needed.
+        // (The old path called champion.toData() here, which serialised every base
+        // affix's NBT just to read back the archetype id.)
+        Optional<ResourceLocation> archetypeId = champion.archetypeId();
+        if (archetypeId.isEmpty()) return;
 
         ChampionArchetype archetype = ChampionsRegistries.archetypes()
-                .getAll().stream()
-                .filter(a -> a.id().equals(data.archetypeId().get()))
-                .findFirst()
+                .get(archetypeId.get())
                 .orElse(null);
 
         if (archetype == null || archetype.phases().isEmpty()) return;
@@ -83,19 +83,17 @@ public final class PhaseProcessor {
      * reconstruction, before the entity joins the world.
      */
     public static void restoreTriggeredPhases(Champion.Server champion) {
-        var data = getChampionData(champion);
-        if (data == null || data.archetypeId().isEmpty() || data.triggeredPhases().isEmpty()) return;
+        if (!(champion instanceof ChampionView.Server s)) return;
+        Optional<ResourceLocation> archetypeId = s.archetypeId();
+        if (archetypeId.isEmpty()) return;
 
         ChampionArchetype archetype = ChampionsRegistries.archetypes()
-                .getAll().stream()
-                .filter(a -> a.id().equals(data.archetypeId().get()))
-                .findFirst()
+                .get(archetypeId.get())
                 .orElse(null);
 
         if (archetype == null) return;
 
-        Set<String> triggeredIds = new HashSet<>();
-        data.triggeredPhases().forEach(id -> triggeredIds.add(id.toString()));
+        Set<String> triggeredIds = s.getTriggeredPhaseIds();
 
         archetype.phases().stream()
                 .filter(phase -> triggeredIds.contains(phase.id().toString()))
@@ -105,16 +103,6 @@ public final class PhaseProcessor {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private static ChampionData getChampionData(
-            Champion.Server champion
-    ) {
-        if (champion instanceof ChampionView.Server s) {
-
-            return s.toData();
-        }
-        return null;
-    }
 
     private static void persistTriggeredPhases(
             Champion.Server champion,

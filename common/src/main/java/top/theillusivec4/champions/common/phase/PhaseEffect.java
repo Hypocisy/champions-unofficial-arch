@@ -72,6 +72,10 @@ public interface PhaseEffect {
         @Override
         public void apply(Champion.Server champion) {
             ChampionsApi.get().getAffixType(affixId).ifPresent(type -> {
+                // Idempotent guard: repeatable phases re-evaluate every 10 ticks while
+                // their condition holds. Without this the affix would stack unboundedly
+                // (growing the live list, goal list and sync cost each cycle).
+                if (champion.hasAffix(type)) return;
                 // addAffix triggers goal setup + sync automatically
                 champion.addAffix(new AffixInstance(type, strength));
             });
@@ -83,6 +87,9 @@ public interface PhaseEffect {
             // entity hasn't joined the world yet at this point
             ChampionsApi.get().getAffixType(affixId).ifPresent(type -> {
                 if (champion instanceof ChampionView.Server server) {
+                    // Idempotent guard so repeated view reconstruction never stacks
+                    // the same phase affix onto the live list.
+                    if (champion.hasAffix(type)) return;
                     server.addAffixSilently(new AffixInstance(type, strength));
                 }
             });
@@ -150,7 +157,10 @@ public interface PhaseEffect {
                 case "add_multiplied_total" -> AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
                 default -> AttributeModifier.Operation.ADD_VALUE;
             };
-            instance.addPermanentModifier(new AttributeModifier(MODIFIER_ID, amount, op));
+            // addOrReplace: phase restore can run on every server-view reconstruction,
+            // so a plain addPermanentModifier would throw on the second call for the
+            // same (attribute, modifier id) pair.
+            instance.addOrReplacePermanentModifier(new AttributeModifier(MODIFIER_ID, amount, op));
         }
     }
 

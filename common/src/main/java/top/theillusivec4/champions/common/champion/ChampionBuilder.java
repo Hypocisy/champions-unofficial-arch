@@ -2,7 +2,6 @@ package top.theillusivec4.champions.common.champion;
 
 import dev.architectury.event.EventResult;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -22,7 +21,6 @@ import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.data.ArchetypeDataLoader;
 import top.theillusivec4.champions.common.network.ChampionSyncData;
 import top.theillusivec4.champions.common.network.PacketHandler;
-import top.theillusivec4.champions.common.phase.PhaseProcessor;
 import top.theillusivec4.champions.common.strategy.ArchetypeStrategy;
 import top.theillusivec4.champions.common.strategy.ChampionBuildStrategy;
 import top.theillusivec4.champions.platform.ChampionAttachmentProvider;
@@ -69,12 +67,16 @@ public final class ChampionBuilder {
      * listeners can intercept or cancel as normal.</p>
      *
      * <p>If {@code explicitAffixes} is empty the champion is created with no affixes (bare tier).</p>
+     *
+     * <p>Phase-driven spawns pass the source archetype id through so the new champion can still
+     * trigger archetype phases (e.g. egg respawns, mob-split children).{@code null} disables phases.</p>
      */
     public Optional<Champion.Server> trySpawnWithAffixes(
             LivingEntity entity,
             ChampionTier tier,
             List<AffixInstance> explicitAffixes,
-            RandomSource random
+            RandomSource random,
+            ResourceLocation archetypeId
     ) {
         if (entity.level().isClientSide()) {
             throw new IllegalStateException("ChampionBuilder must only be called server-side.");
@@ -95,7 +97,7 @@ public final class ChampionBuilder {
         List<AffixInstance> finalAffixes = ctx.affixes();
 
         // Tear down existing champion state if entity is being re-rolled
-        ChampionData data = toChampionData(tier, finalAffixes, null);
+        ChampionData data = toChampionData(tier, finalAffixes, archetypeId);
         attachmentProvider.getServer(entity).ifPresent(existing -> {
             resetModifiers(existing);
             existing.baseAffixes().forEach(inst -> teardown(entity, existing, inst));
@@ -112,7 +114,9 @@ public final class ChampionBuilder {
                             reg.setupGoals(c, inst, _data, mob.goalSelector));
                 }
             });
-            PhaseProcessor.restoreTriggeredPhases(c);
+            // Note: triggered phase effects are already restored by the attachment
+            // provider when the server view is built (getServer) — restoring again here
+            // would stack the same phase affixes/effects onto the live list.
             applyModifiers(c, tier);
         });
 
@@ -188,7 +192,8 @@ public final class ChampionBuilder {
                             });
                         }
                     });
-                    PhaseProcessor.restoreTriggeredPhases(c);
+                    // Triggered phase effects are already restored by the attachment
+                    // provider when the server view is built (getServer).
                     applyModifiers(c, tier);
                 }
         );
@@ -217,18 +222,30 @@ public final class ChampionBuilder {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private ChampionData toChampionData(ChampionTier tier, List<AffixInstance> affixes, ResourceLocation archetypeId) {
+    public static ChampionData toChampionData(ChampionTier tier, List<AffixInstance> affixes, ResourceLocation archetypeId) {
+        return toChampionData(tier, affixes, archetypeId, List.of());
+    }
+
+    /**
+     * Build a {@link ChampionData} snapshot from a live affix list.
+     *
+     * <p>Used when reconstructing a {@code ChampionData} from an existing champion
+     * (e.g. the client pick-block egg) — preserves the archetype id and already-triggered
+     * phase ids so the rebuilt champion keeps its phase state.</p>
+     */
+    public static ChampionData toChampionData(
+            ChampionTier tier,
+            List<AffixInstance> affixes,
+            ResourceLocation archetypeId,
+            List<ResourceLocation> triggeredPhases
+    ) {
         List<ChampionData.AffixEntry> entries = affixes.stream()
                 .flatMap(inst -> ChampionsApi.get().getAffixTypeId(inst.type())
-                        .map(id -> {
-                            var tag = new CompoundTag();
-                            inst.data().write(tag);
-                            CompoundTag savedTag = inst.save();
-                            return new ChampionData.AffixEntry(id, inst.strength(), savedTag);
-                        })
+                        .map(id -> new ChampionData.AffixEntry(
+                                id, inst.strength(), inst.save()))
                         .stream())
                 .toList();
-        return new ChampionData(tier.id(), entries, List.of(), Optional.ofNullable(archetypeId));
+        return new ChampionData(tier.id(), entries, triggeredPhases, Optional.ofNullable(archetypeId));
     }
 
     private void writeData(LivingEntity entity, ChampionData data) {

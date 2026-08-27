@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.champion.ChampionTier;
@@ -33,6 +34,8 @@ import top.theillusivec4.champions.common.champion.ChampionSpawnHandler;
 
 import java.util.List;
 import java.util.Optional;
+
+import static net.minecraft.core.registries.BuiltInRegistries.*;
 
 /**
  * Champion Egg item — spawns a champion with a preset or random build.
@@ -56,6 +59,7 @@ public final class ChampionEggItem extends Item {
     // ── Display ───────────────────────────────────────────────────────────────
 
     @Override
+    @NotNull
     public Component getName(ItemStack stack) {
         Optional<EntityType<?>> type = getEntityType(stack);
         Optional<ChampionTier> tier = getPresetTier(stack);
@@ -171,7 +175,7 @@ public final class ChampionEggItem extends Item {
     public static Optional<EntityType<?>> getEntityType(ItemStack stack) {
         ResourceLocation id = stack.get(ChampionItems.entityTypeComponent());
         if (id == null) return Optional.empty();
-        return net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getOptional(id);
+        return ENTITY_TYPE.getOptional(id);
     }
 
     public static Optional<ChampionData> getPreset(ItemStack stack) {
@@ -184,7 +188,7 @@ public final class ChampionEggItem extends Item {
 
     public static ItemStack createPreset(EntityType<?> entityType, ChampionData preset) {
         ItemStack stack = new ItemStack(ChampionItems.egg());
-        ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+        ResourceLocation id = ENTITY_TYPE.getKey(entityType);
         stack.set(ChampionItems.entityTypeComponent(), id);
         stack.set(ChampionItems.presetComponent(), preset);
         return stack;
@@ -192,7 +196,7 @@ public final class ChampionEggItem extends Item {
 
     public static ItemStack createRandom(EntityType<?> entityType) {
         ItemStack stack = new ItemStack(ChampionItems.egg());
-        ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+        ResourceLocation id = ENTITY_TYPE.getKey(entityType);
         stack.set(ChampionItems.entityTypeComponent(), id);
         return stack;
     }
@@ -208,7 +212,9 @@ public final class ChampionEggItem extends Item {
         Optional<ChampionData> preset = getPreset(stack);
 
         if (preset.isPresent()) {
-            // Preset mode: reconstruct AffixInstance list and call trySpawnWithAffixes
+            // Preset mode: reconstruct AffixInstance list and call trySpawnWithAffixes.
+            // The preset was built from a live champion (pick-block / /champions egg) so it
+            // carries its archetype id — pass it through so phase processing stays intact.
             ChampionData data = preset.get();
             ChampionsApi.get().getTier(data.tierId()).ifPresent(tier -> {
                 List<AffixInstance> affixes = data.baseAffixes().stream()
@@ -216,7 +222,8 @@ public final class ChampionEggItem extends Item {
                                 .map(t -> new AffixInstance(t, entry.strength()))
                                 .stream())
                         .toList();
-                ChampionsRegistries.builder().trySpawnWithAffixes(living, tier, affixes, random);
+                ChampionsRegistries.builder().trySpawnWithAffixes(
+                        living, tier, affixes, random, data.archetypeId().orElse(null));
             });
         } else {
             // Random mode: weighted tier selection + normal archetype-driven build

@@ -9,6 +9,10 @@ displayName = "${mod_name}"
 description = "${mod_description}"
 authors = "${mod_authors}"
 
+
+[[mixins]]
+config = "champions-common.mixins.json"
+
 [[mods.dependencies.${ mod_id }]]
 modId = "neoforge"
 type = "required"

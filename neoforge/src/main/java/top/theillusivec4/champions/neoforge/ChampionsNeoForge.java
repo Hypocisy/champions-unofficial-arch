@@ -1,5 +1,7 @@
 package top.theillusivec4.champions.neoforge;
 
+import dev.latvian.mods.kubejs.KubeJS;
+import mcjty.theoneprobe.TheOneProbe;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -7,16 +9,19 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.champion.ChampionSpawnHandler;
@@ -26,6 +31,7 @@ import top.theillusivec4.champions.common.item.ChampionItems;
 import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.neoforge.integration.dispenser.ChampionEggDispenseBehavior;
 import top.theillusivec4.champions.neoforge.integration.theoneprobe.TheOneProbePlugin.RegisterFunction;
+import top.theillusivec4.champions.neoforge.kubejs.ChampionsJsEvents;
 import top.theillusivec4.champions.neoforge.network.NeoForgePacketHandler;
 import top.theillusivec4.champions.neoforge.platform.NeoForgeAttachmentProvider;
 import top.theillusivec4.champions.neoforge.registry.*;
@@ -73,6 +79,7 @@ public final class ChampionsNeoForge {
         NeoForge.EVENT_BUS.addListener(this::onAddReloadListeners);
         NeoForge.EVENT_BUS.addListener(this::onDatapackSync);
         NeoForge.EVENT_BUS.addListener(this::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         ModParticleTypes.register(modBus);
         ModMobEffects.register(modBus);
@@ -80,6 +87,14 @@ public final class ChampionsNeoForge {
         ModItems.register(modBus);
         ModLootConditions.register(modBus);
         ModArgumentTypes.register(modBus);
+        // 5. Wire the internal event bus → KubeJS JS events (ChampionsEvents.spawn / .phase)
+	    if (ModList.get().isLoaded(KubeJS.MOD_ID))
+	        ChampionsJsEvents.register();
+
+		if (ModList.get().isLoaded(TheOneProbe.MODID)){
+			InterModComms.sendTo(TheOneProbe.MODID, "getTheOneProbe",
+					RegisterFunction::new);
+		}
         // 6. Wire the common API — must be last so all dependencies are ready
         ChampionsRegistries.bootstrapCommon(affixTypeRegistry, attachmentProvider);
         // 7. Wire ChampionEffects, ChampionEntityTypes and loot conditions after registry freeze
@@ -92,15 +107,6 @@ public final class ChampionsNeoForge {
             e.enqueueWork(() -> DispenserBlock.registerBehavior(
                     ChampionItems.egg(),
                     ChampionEggDispenseBehavior.INSTANCE));
-            // The One Probe — guard against missing dep at runtime
-            e.enqueueWork(() -> {
-                try {
-                    Class.forName("mcjty.theoneprobe.api.ITheOneProbe");
-                    InterModComms.sendTo("theoneprobe", "getTheOneProbe",
-                            RegisterFunction::new);
-                } catch (ClassNotFoundException ignored) {
-                }
-            });
         });
     }
 
@@ -159,6 +165,17 @@ public final class ChampionsNeoForge {
         // with increasing probability as their chunk is reloaded.
         if (event.loadedFromDisk()) return;
         ChampionSpawnHandler.trySpawn(living, level);
+    }
+
+    /**
+     * Drop the cached server view when an entity leaves the level (death, chunk
+     * unload, dimension change). Without this the provider's view cache would
+     * hold every champion entity that ever existed alive — an unbounded leak that
+     * eventually exhausts the heap and freezes the whole system.
+     */
+    private void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity living)) return;
+        attachmentProvider.onEntityLeaveLevel(living);
     }
 
     private void onConfigLoad(ModConfigEvent.Loading event) {

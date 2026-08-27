@@ -1,15 +1,13 @@
 {
   "required": true,
-  "package": "top.theillusivec4.champions.fabric.mixin",
+  "package": "top.theillusivec4.champions.common.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "mixins": [
-    "MixinLivingEntityAttack",
-    "MixinLivingEntityHeal",
-    "MixinLivingEntityWound"
+
   ],
   "client": [
-
+    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

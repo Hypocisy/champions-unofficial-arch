@@ -56,20 +56,31 @@ public final class GlobalDispatcher {
         ChampionView.Server serverView = champion instanceof ChampionView.Server server
                 ? server
                 : null;
+
+        // Only affixes that register a handler for this event type can be mutated by
+        // the dispatch below. Filtering here keeps the before/after snapshots (and the
+        // NBT serialization they require) proportional to the affixes actually involved,
+        // instead of serializing every affix on every tick/combat event.
+        List<AffixInstance> relevant = champion.affixes().stream()
+                .filter(i -> i.type().getRegistry().hasHandler(eventType))
+                .toList();
+
+        if (relevant.isEmpty()) return;
+
         List<CompoundTag> runtimeBefore = serverView == null
                 ? List.of()
-                : snapshotRuntimeData(serverView);
+                : snapshotRuntimeData(relevant);
         List<CompoundTag> clientBefore = serverView == null
                 ? List.of()
-                : snapshotClientData(champion);
+                : snapshotClientData(relevant);
 
-        for (AffixInstance instance : champion.affixes()) {
+        for (AffixInstance instance : relevant) {
             dispatchToInstance(eventType, champion, instance, event);
         }
 
         if (serverView != null) {
-            boolean runtimeChanged = !runtimeBefore.equals(snapshotRuntimeData(serverView));
-            boolean clientChanged = !clientBefore.equals(snapshotClientData(champion));
+            boolean runtimeChanged = !runtimeBefore.equals(snapshotRuntimeData(relevant));
+            boolean clientChanged = !clientBefore.equals(snapshotClientData(relevant));
             if (runtimeChanged || clientChanged) {
                 serverView.persistRuntimeState(clientChanged);
             }
@@ -112,21 +123,23 @@ public final class GlobalDispatcher {
         reg.dispatch(eventType, champion, instance, data, event);
     }
 
-    private static List<CompoundTag> snapshotRuntimeData(Champion.Server champion) {
-        return champion.baseAffixes().stream()
+    private static List<CompoundTag> snapshotRuntimeData(List<AffixInstance> affixes) {
+        return affixes.stream()
                 .map(AffixInstance::save)
                 .toList();
     }
 
-    private static List<CompoundTag> snapshotClientData(Champion champion) {
-        return champion.affixes().stream()
+    private static List<CompoundTag> snapshotClientData(List<AffixInstance> affixes) {
+        return affixes.stream()
                 .map(instance -> {
-                    CompoundTag tag = new CompoundTag();
                     if (instance.type() instanceof IAffixClientSync sync) {
-                        tag = sync.writeClientData(instance);
+                        return sync.writeClientData(instance);
                     }
-                    return tag;
+                    return EMPTY_CLIENT_TAG;
                 })
                 .toList();
     }
+
+    /** Shared empty tag for affixes without client-sync data. */
+    private static final CompoundTag EMPTY_CLIENT_TAG = new CompoundTag();
 }

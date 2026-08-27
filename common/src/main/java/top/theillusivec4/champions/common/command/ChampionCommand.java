@@ -35,6 +35,7 @@ import top.theillusivec4.champions.api.champion.ChampionTier;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.champion.ChampionData;
 import top.theillusivec4.champions.common.item.ChampionEggItem;
+import top.theillusivec4.champions.common.item.ChampionItems;
 import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.platform.ChampionAttachmentProvider;
 
@@ -311,7 +312,8 @@ public final class ChampionCommand {
         List<AffixInstance> affixes = buildAffixInstances(affixTypes, tier);
         var result = affixes.isEmpty()
                 ? ChampionsRegistries.builder().trySpawn(living, tier, living.getRandom())
-                : ChampionsRegistries.builder().trySpawnWithAffixes(living, tier, affixes, living.getRandom());
+                : ChampionsRegistries.builder().trySpawnWithAffixes(
+                        living, tier, affixes, living.getRandom(), null);
 
         level.addFreshEntity(living);
 
@@ -348,7 +350,8 @@ public final class ChampionCommand {
 
         var result = affixes.isEmpty()
                 ? ChampionsRegistries.builder().trySpawn(living, tier, living.getRandom())
-                : ChampionsRegistries.builder().trySpawnWithAffixes(living, tier, affixes, living.getRandom());
+                : ChampionsRegistries.builder().trySpawnWithAffixes(
+                        living, tier, affixes, living.getRandom(), null);
 
         if (result.isPresent()) {
             Component label = buildLabel(tier, living, result.get().affixes());
@@ -380,7 +383,6 @@ public final class ChampionCommand {
                 .toList();
         ChampionData preset = new ChampionData(tier.id(), entries,
                 List.of(), java.util.Optional.empty());
-
         ItemStack egg = ChampionEggItem.createPreset(entityType, preset);
         giveItem(player, egg);
 
@@ -414,15 +416,12 @@ public final class ChampionCommand {
     private static EntityType<?> resolveEntity(CommandContext<CommandSourceStack> ctx)
             throws CommandSyntaxException {
         ResourceLocation id = ResourceLocationArgument.getId(ctx, "entity");
-        String path = id.getPath();
+//        String path = id.getPath();
 
-        // @category:monster → pick random entity from that category
+        /*// @category:monster → pick random entity from that category
         if ("category".equals(id.getNamespace())) {
             MobCategory category = MobCategory.valueOf(path);
-            if (category == null) {
-                throw UNKNOWN_ENTITY.create(id);
-            }
-            List<EntityType<?>> candidates = BuiltInRegistries.ENTITY_TYPE.stream()
+	        List<EntityType<?>> candidates = BuiltInRegistries.ENTITY_TYPE.stream()
                     .filter(t -> t.getCategory() == category)
                     .toList();
             if (candidates.isEmpty()) {
@@ -456,7 +455,7 @@ public final class ChampionCommand {
                 throw UNKNOWN_ENTITY.create(id);
             }
             return candidates.get(level.getRandom().nextInt(candidates.size()));
-        }
+        }*/
 
         // Direct entity ID lookup
         return BuiltInRegistries.ENTITY_TYPE.getOptional(id)

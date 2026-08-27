@@ -14,7 +14,9 @@ import top.theillusivec4.champions.common.phase.PhaseProcessor;
 import top.theillusivec4.champions.platform.ChampionAttachmentProvider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -24,16 +26,40 @@ import java.util.Optional;
  * {@link ChampionData} on {@link LivingEntity} instances.
  * The API surface is identical to the NeoForge provider — all champion logic
  * lives in {@link ChampionView} and is shared.</p>
+ *
+ * <p>Server views are cached per entity in a plain {@link HashMap} with explicit
+ * invalidation (see the NeoForge provider for the rationale — rebuilding on every
+ * tick re-resolves affixes and re-applies phase effects; a {@code WeakHashMap} would
+ * leak because the value holds a strong reference back to the key entity). The cache
+ * is invalidated on {@link #setServer}, {@link #remove}, and when the entity is
+ * unloaded from its chunk.</p>
  */
 public final class FabricAttachmentProvider implements ChampionAttachmentProvider {
+
+    /** Live server views, keyed by entity identity. Server-thread only. */
+    private final Map<LivingEntity, ChampionView.Server> serverViewCache =
+            new HashMap<>();
 
     // ── ChampionAttachmentProvider ────────────────────────────────────────────
 
     @Override
     public Optional<Champion.Server> getServer(LivingEntity entity) {
-        return FabricChampionComponent.SERVER.maybeGet(entity)
-                .filter(FabricChampionComponent::isPresent)
-                .flatMap(component -> buildServerView(entity, component));
+        Optional<FabricChampionComponent> component = FabricChampionComponent.SERVER.maybeGet(entity)
+                .filter(FabricChampionComponent::isPresent);
+        if (component.isEmpty()) return Optional.empty();
+
+        ChampionView.Server cached = serverViewCache.get(entity);
+        if (cached != null && entity.isRemoved()) {
+            // Defensive: an entity that has already left the world may still be queried
+            // during teardown. Never keep caching a view for it.
+            serverViewCache.remove(entity);
+            cached = null;
+        }
+        if (cached != null) return Optional.of(cached);
+
+        Optional<ChampionView.Server> built = buildServerView(entity, component.get());
+        built.ifPresent(view -> serverViewCache.put(entity, view));
+        return built.map(v -> v);
     }
 
     @Override
@@ -66,6 +92,14 @@ public final class FabricAttachmentProvider implements ChampionAttachmentProvide
     // ── Write ─────────────────────────────────────────────────────────────────
 
     public void setServer(LivingEntity entity, ChampionData data) {
+        serverViewCache.remove(entity);
+        FabricChampionComponent.SERVER.maybeGet(entity)
+                .ifPresent(c -> c.setData(data));
+    }
+
+    @Override
+    public void persistServer(LivingEntity entity, ChampionData data) {
+        // Write-through without invalidating the cached view.
         FabricChampionComponent.SERVER.maybeGet(entity)
                 .ifPresent(c -> c.setData(data));
     }
@@ -77,10 +111,21 @@ public final class FabricAttachmentProvider implements ChampionAttachmentProvide
 
     @Override
     public void remove(LivingEntity entity) {
+        serverViewCache.remove(entity);
         FabricChampionComponent.SERVER.maybeGet(entity)
                 .ifPresent(c -> c.setData(ChampionData.EMPTY));
         FabricChampionComponent.CLIENT.maybeGet(entity)
                 .ifPresent(c -> c.setData(ChampionData.EMPTY));
+    }
+
+    /**
+     * Invalidate the cached view when an entity is unloaded from its chunk (death,
+     * chunk unload, dimension change). Registered from the Fabric entrypoint via
+     * {@code ServerEntityEvents.ENTITY_UNLOAD}. Keeps the cache size proportional
+     * to the number of live champions.
+     */
+    public void onEntityUnload(LivingEntity entity) {
+        serverViewCache.remove(entity);
     }
 
     // ── View construction ─────────────────────────────────────────────────────
@@ -99,16 +144,23 @@ public final class FabricAttachmentProvider implements ChampionAttachmentProvide
 
             ChampionView.Server server = new ChampionView.Server(
                     entity, tier, baseAffixes, liveAffixes,
-                    updated -> setServer(entity, updated),
+                    updated -> persistServer(entity, updated),
                     () -> {
                         PacketHandler.Holder.get()
                                 .syncChampionToTrackers(entity,
                                         ChampionSyncData.from(ref[0]));
-                        PhaseProcessor.restoreTriggeredPhases(ref[0]);
+                        // Intentionally does NOT call restoreTriggeredPhases here:
+                        // the sync callback runs on every persist (affix add/remove, phase
+                        // trigger), and re-applying already-fired phase effects each time would
+                        // stack attribute modifiers and refresh effects. Silent restore happens
+                        // exactly once, on view construction, in buildServerView.
                     },
                     data.triggeredPhases(),
                     data.archetypeId());
 
+            // Restore effects of phases triggered in a previous session exactly once, before
+            // the entity joins the world. Deliberately kept out of the sync callback above.
+            PhaseProcessor.restoreTriggeredPhases(server);
 
             ref[0] = server;
             return server;

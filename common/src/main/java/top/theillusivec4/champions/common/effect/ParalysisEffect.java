@@ -29,7 +29,7 @@ public final class ParalysisEffect extends MobEffect {
         // Force velocity to 0 so the entity cannot move while paralysed.
         // Slowness level 6 (255) effectively locks movement.
         entity.setDeltaMovement(
-                entity.getDeltaMovement().multiply(0.0, 1.0, 0.0)
+                entity.getDeltaMovement().multiply(0.0, 0.0, 0.0)
         );
         return true;
     }

@@ -50,7 +50,7 @@ public final class ArchetypeStrategy implements ChampionBuildStrategy {
                 .toList();
 
         if (candidates.isEmpty()) {
-            LOGGER.debug("[Champions] No matching archetype for {} at tier {}",
+            LOGGER.warn("[Champions] No matching archetype for {} at tier {}; champion will spawn with no affixes",
                     entity.getType(), level);
             return BuildResult.of(new ArrayList<>());
         }
@@ -59,9 +59,17 @@ public final class ArchetypeStrategy implements ChampionBuildStrategy {
         ChampionArchetype archetype = weightedPick(candidates, random);
 
         // 3. Draw from active pools
+        List<AffixPool> activePools = archetype.getActivePools(level);
+        if (activePools.isEmpty()) {
+            LOGGER.warn(
+                    "[Champions] Archetype '{}' matched {} at tier {} but has no affix pool active " +
+                            "for that tier; champion will spawn with no affixes from this archetype",
+                    archetype.id(), entity.getType(), level);
+        }
+
         List<AffixInstance> affixes = new ArrayList<>();
-        for (AffixPool pool : archetype.getActivePools(level)) {
-            affixes.addAll(drawFromPool(pool, random));
+        for (AffixPool pool : activePools) {
+            affixes.addAll(drawFromPool(archetype, pool, random));
         }
 
         return new BuildResult(affixes, archetype.id());
@@ -95,7 +103,9 @@ public final class ArchetypeStrategy implements ChampionBuildStrategy {
      * The pool's candidate list is shuffled by weight, then the first {@code count}
      * entries that resolve successfully are taken.
      */
-    private List<AffixInstance> drawFromPool(AffixPool pool, RandomSource random) {
+    private List<AffixInstance> drawFromPool(
+            ChampionArchetype archetype, AffixPool pool, RandomSource random
+    ) {
         if (pool.candidates().isEmpty()) return List.of();
 
         int count = pool.minCount() == pool.maxCount()
@@ -110,13 +120,26 @@ public final class ArchetypeStrategy implements ChampionBuildStrategy {
             WeightedAffix picked = weightedPickAffix(remaining, random);
             remaining.remove(picked);
 
-            ChampionsApi.get().getAffixType(picked.affixId()).ifPresent(type -> {
-                int strength = picked.minStrength() == picked.maxStrength()
-                        ? picked.minStrength()
-                        : picked.minStrength() + random.nextInt(
-                        picked.maxStrength() - picked.minStrength() + 1);
-                drawn.add(new AffixInstance(type, strength));
-            });
+            var type = ChampionsApi.get().getAffixType(picked.affixId());
+            if (type.isEmpty()) {
+                LOGGER.warn(
+                        "[Champions] Archetype '{}' references unknown affix '{}'; skipping draw",
+                        archetype.id(), picked.affixId());
+                continue;
+            }
+
+            int strength = picked.minStrength() == picked.maxStrength()
+                    ? picked.minStrength()
+                    : picked.minStrength() + random.nextInt(
+                    picked.maxStrength() - picked.minStrength() + 1);
+            drawn.add(new AffixInstance(type.get(), strength));
+        }
+
+        if (drawn.size() < count) {
+            LOGGER.warn(
+                    "[Champions] Archetype '{}' pool wanted {} affix(es) but only drew {} " +
+                            "(not enough valid candidates in the pool)",
+                    archetype.id(), count, drawn.size());
         }
 
         return drawn;

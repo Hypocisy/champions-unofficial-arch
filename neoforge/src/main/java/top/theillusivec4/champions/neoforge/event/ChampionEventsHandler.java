@@ -199,9 +199,11 @@ public final class ChampionEventsHandler {
                         .filter(inst -> ChampionsConfig.canHaveInfestedAffix
                                 || !isInfestedAffix(inst))
                         .toList();
+				ChampionView.Server serverView = (ChampionView.Server) parentChampion;
                 event.getChildren().forEach(child ->
                         ChampionsRegistries.builder().trySpawnWithAffixes(
-                                child, childTier, childAffixes, child.getRandom()));
+                                child, childTier, childAffixes, child.getRandom(),
+                                serverView.archetypeId().orElse(null)).orElse(null));
             });
         });
     }

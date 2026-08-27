@@ -1,6 +1,5 @@
 package top.theillusivec4.champions.common.champion;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -195,10 +194,8 @@ public final class ChampionView {
                     .map(instance -> {
                         var idOpt = ChampionsApi.get()
                                 .getAffixTypeId(instance.type());
-                        if (idOpt.isEmpty()) return null;
-                        var dataTag = new CompoundTag();
-                        instance.data().write(dataTag);
-                        return new ChampionData.AffixEntry(idOpt.get(), instance.strength(), instance.save());
+	                    return idOpt.map(resourceLocation -> new ChampionData.AffixEntry(
+			                    resourceLocation, instance.strength(), instance.save())).orElse(null);
                     })
                     .filter(Objects::nonNull)
                     .toList();

@@ -44,6 +44,16 @@ public interface ChampionAttachmentProvider {
 
     void setServer(LivingEntity entity, ChampionData data);
 
+    /**
+     * Persist the current live view back to storage <em>without</em> invalidating any
+     * cached server view. Used by {@code ChampionView.Server}'s save callback, which
+     * fires on every mutation — invalidating there would defeat view caching and force
+     * a full re-resolution (affix de/serialization + phase restoration) every tick.
+     */
+    default void persistServer(LivingEntity entity, ChampionData data) {
+        setServer(entity, data);
+    }
+
     void setClient(LivingEntity entity, ChampionData data);
 
     /**
