@@ -47,9 +47,11 @@ public final class FabricPacketHandler implements PacketHandler {
         ChampionClearPacket.TYPE, ChampionClearPacket.STREAM_CODEC);
     PayloadTypeRegistry.playS2C().register(
         OpenEditorPacket.TYPE, OpenEditorPacket.STREAM_CODEC);
-    // C2S editor save packet
+    // C2S editor packets
     PayloadTypeRegistry.playC2S().register(
         SaveEditorPacket.TYPE, SaveEditorPacket.STREAM_CODEC);
+    PayloadTypeRegistry.playC2S().register(
+        EditorPackActionPacket.TYPE, EditorPackActionPacket.STREAM_CODEC);
   }
 
   /** Call client-side only. */
@@ -79,11 +81,13 @@ public final class FabricPacketHandler implements PacketHandler {
           // Wire save callback: send SaveEditorPacket to server
           ChampionEditorScreen.setSaveCallback(editorPayload ->
               ClientPlayNetworking.send(new SaveEditorPacket(editorPayload)));
-          ChampionEditorScreen.open(payload.payload());
+          ChampionEditorScreen.setPackActionCallback(packet ->
+              ClientPlayNetworking.send(packet));
+          ChampionEditorScreen.receivePayload(payload.payload());
         }));
   }
 
-  /** Register server-side C2S handler for save packets. Call from server init. */
+  /** Register server-side C2S handler for editor packets. Call from server init. */
   public static void registerServerEditorHandler() {
     ServerPlayNetworking.registerGlobalReceiver(
         SaveEditorPacket.TYPE,
@@ -91,6 +95,11 @@ public final class FabricPacketHandler implements PacketHandler {
             DatapackEditorHandler.handleSave(
                 new DatapackEditorHandler.SaveEditorRequest(payload.payload()),
                 context.player())));
+
+    ServerPlayNetworking.registerGlobalReceiver(
+        EditorPackActionPacket.TYPE,
+        (payload, context) -> context.server().execute(() ->
+            DatapackEditorHandler.handlePackAction(payload, context.player())));
   }
 
   // ── PacketHandler impl ────────────────────────────────────────────────────
@@ -133,7 +142,7 @@ public final class FabricPacketHandler implements PacketHandler {
   @Override
   public void sendEditorToPlayer(ServerPlayer player) {
     ServerPlayNetworking.send(player,
-        new OpenEditorPacket(EditorPayload.fromServerState()));
+        new OpenEditorPacket(EditorPayload.fromServerState(player.getServer())));
   }
 
   // ── Client handlers ───────────────────────────────────────────────────────

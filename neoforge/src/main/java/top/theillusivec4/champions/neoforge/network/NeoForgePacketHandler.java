@@ -71,6 +71,11 @@ public final class NeoForgePacketHandler implements PacketHandler {
                 SaveEditorPacket.STREAM_CODEC,
                 this::handleSaveEditor
         );
+        reg.playToServer(
+                EditorPackActionPacket.TYPE,
+                EditorPackActionPacket.STREAM_CODEC,
+                this::handlePackAction
+        );
     }
 
     // ── Editor handlers ───────────────────────────────────────────────────────
@@ -84,7 +89,8 @@ public final class NeoForgePacketHandler implements PacketHandler {
                             PacketDistributor
                                     .sendToServer(new SaveEditorPacket(payload)));
             ChampionEditorScreen
-                    .open(packet.payload());
+                    .setPackActionCallback(PacketDistributor::sendToServer);
+            ChampionEditorScreen.receivePayload(packet.payload());
         });
     }
 
@@ -98,12 +104,21 @@ public final class NeoForgePacketHandler implements PacketHandler {
         });
     }
 
+    /** C2S: pack management action (toggle / export / import). */
+    private void handlePackAction(EditorPackActionPacket packet, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) {
+                DatapackEditorHandler.handlePackAction(packet, sp);
+            }
+        });
+    }
+
     // ── Open editor (server-side send) ────────────────────────────────────────
 
     /** Called from the /champions editor command to push data to the requesting player. */
     public void sendEditorToPlayer(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player,
-                new OpenEditorPacket(EditorPayload.fromServerState()));
+                new OpenEditorPacket(EditorPayload.fromServerState(player.getServer())));
     }
 
     // ── Client handlers ───────────────────────────────────────────────────────

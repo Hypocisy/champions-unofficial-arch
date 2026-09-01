@@ -1,135 +1,133 @@
 package top.theillusivec4.champions.common.client.screen;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import top.theillusivec4.champions.common.client.screen.editor.EditorSession;
+import top.theillusivec4.champions.common.client.screen.editor.json.JsonPathOps;
+import top.theillusivec4.champions.common.client.screen.editor.pane.ArchetypePane;
+import top.theillusivec4.champions.common.client.screen.editor.pane.ConfigPane;
+import top.theillusivec4.champions.common.client.screen.editor.pane.EditorPane;
+import top.theillusivec4.champions.common.client.screen.editor.pane.ModifierPane;
+import top.theillusivec4.champions.common.client.screen.editor.pane.PacksPane;
+import top.theillusivec4.champions.common.client.screen.editor.pane.TierPane;
+import top.theillusivec4.champions.common.client.screen.editor.validate.JsonValidator;
+import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder;
+import top.theillusivec4.champions.common.client.screen.editor.widget.Row;
+import top.theillusivec4.champions.common.network.EditorPackActionPacket;
 import top.theillusivec4.champions.common.network.EditorPayload;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * In-game Champions editor shell: tab bar, entry list, raw-JSON view with live
+ * validation, and the form panel delegated to per-tab {@link EditorPane}s.
+ */
 public final class ChampionEditorScreen extends Screen {
 
-    // ── Save callback ─────────────────────────────────────────────────────────
+    // ── Platform wiring ────────────────────────────────────────────────────────
+
     private static Consumer<EditorPayload> saveCallback;
     public static void setSaveCallback(Consumer<EditorPayload> cb) { saveCallback = cb; }
 
-    // ── Tabs ──────────────────────────────────────────────────────────────────
-    private enum Tab { ARCHETYPES, TIERS, MODIFIERS, CONFIG }
-    private Tab activeTab = Tab.ARCHETYPES;
+    private static Consumer<EditorPackActionPacket> packActionCallback;
+    public static void setPackActionCallback(Consumer<EditorPackActionPacket> cb) {
+        packActionCallback = cb;
+    }
 
-    // ── Data (string maps, canonical source) ──────────────────────────────────
-    private final Map<String, String> archetypeJsons;
-    private final Map<String, String> tierJsons;
-    private final Map<String, String> configValues;
-    private final Map<String, String> modifierJsons;
+    public static void sendPackAction(EditorPackActionPacket packet) {
+        if (packActionCallback != null) packActionCallback.accept(packet);
+    }
 
-    // ── Built-in / dirty tracking ─────────────────────────────────────────────
-    /** ids that come from a jar pack (blue in list, delete = disabled-override). */
-    private final Set<String> builtinIds;
-    /** ids modified this session (shown with * prefix). */
-    private final Set<String> dirtyIds = new LinkedHashSet<>();
+    // ── Layout constants ───────────────────────────────────────────────────────
 
-    // ── Current selection ─────────────────────────────────────────────────────
-    private String selectedId   = null;
-    /** Live mutable JSON for the currently selected entry (form mode). */
-    private JsonObject liveJson = null;
-
-    // ── Raw JSON view ─────────────────────────────────────────────────────────
-    /** true = raw JSON editor visible, false = form view. */
-    private boolean rawMode = false;
-    /** Lazy-created multiline text editor for raw JSON view. */
-    private MultiLineEditBox rawEditor = null;
-
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int TAB_H   = 20;
-    private static final int LIST_W  = 140;
+    private static final int LIST_W  = 150;
     private static final int ENTRY_H = 14;
     private static final int PAD     = 4;
     private static final int BOT_H   = 28;
-    private static final int ROW_H   = 22;
-    private static final int FIELD_H = 18;
-    private static final int LABEL_W = 106;
-    private static final int SMBN_W  = 20;  // small ± button width
+    private static final int LABEL_W = 110;
+    private static final int INDENT_PX = 12;
+    private static final int VALIDATOR_H = 48;
 
-    // ── Scroll ────────────────────────────────────────────────────────────────
-    private int listScroll   = 0;
-    private int formScrollY  = 0;
-    private int formContentH = 0;
+    private static final Gson PRETTY = new GsonBuilder().setPrettyPrinting().create();
 
-    // ── Form rows ─────────────────────────────────────────────────────────────
-    /** Immutable descriptor for one visual row in the right panel. */
-    private static final class FormEntry {
-        final String  label;
-        final EditBox box;      // null → header row
-        final String  jsonPath; // dot/array path, null for headers and config
-        Button plusBtn;   // optional inline action buttons
-        Button minusBtn;
+    // ── State ──────────────────────────────────────────────────────────────────
 
-        FormEntry(String label, EditBox box, String jsonPath) {
-            this.label    = label;
-            this.box      = box;
-            this.jsonPath = jsonPath;
-        }
-    }
-    private final List<FormEntry> formEntries = new ArrayList<>();
-
-    // ── Top/bottom widgets ────────────────────────────────────────────────────
-    private Button tabArchetypes, tabTiers, tabModifiers, tabConfig;
-    private Button btnNew, btnDelete, btnSave, btnClose;
-    private Button btnForm, btnJson; // view toggle
+    private final EditorSession session;
+    private final List<Row> rows = new ArrayList<>();
+    private JsonObject liveJson = null;
+    private MultiLineEditBox rawEditor = null;
+    private List<String> validationLines = List.of();
     private String saveError = null;
 
-    // ── Constructor ───────────────────────────────────────────────────────────
-    private ChampionEditorScreen(EditorPayload payload) {
+    private Button tabArchetypes, tabTiers, tabModifiers, tabConfig, tabPacks;
+    private Button btnNew, btnDelete, btnSave, btnClose;
+    private Button btnForm, btnJson;
+
+    // ── Entry / platform API ───────────────────────────────────────────────────
+
+    public ChampionEditorScreen(EditorSession session) {
         super(Component.literal("Champions Editor"));
-        archetypeJsons = new LinkedHashMap<>(payload.archetypeJsons());
-        tierJsons      = new LinkedHashMap<>(payload.tierJsons());
-        configValues   = new LinkedHashMap<>(payload.configValues());
-        modifierJsons  = new LinkedHashMap<>(payload.modifierJsons());
-        builtinIds     = new LinkedHashSet<>(payload.builtinIds());
+        this.session = session;
     }
 
     public static void open(EditorPayload payload) {
-        Minecraft.getInstance().setScreen(new ChampionEditorScreen(payload));
+        EditorSession s = new EditorSession(payload, saveCallback);
+        Minecraft.getInstance().setScreen(new ChampionEditorScreen(s));
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
+    /**
+     * S2C entry: called when the server pushes a fresh editor payload. If the
+     * editor is already open (e.g. after a pack toggle/import), refresh the packs
+     * list in place instead of replacing the screen.
+     */
+    public static void receivePayload(EditorPayload payload) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen instanceof ChampionEditorScreen open
+                && open.session != null) {
+            open.session.packsSnapshot = payload.packs();
+            open.rebuildForm();
+        } else {
+            EditorSession s = new EditorSession(payload, saveCallback);
+            mc.setScreen(new ChampionEditorScreen(s));
+        }
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+
     @Override
     protected void init() {
-        int w = width, h = height;
-        int tw = 82;
-        tabArchetypes = addRenderableWidget(Button.builder(
-                Component.literal("Archetypes"), b -> switchTab(Tab.ARCHETYPES))
-                .bounds(PAD, PAD, tw, TAB_H).build());
-        tabTiers = addRenderableWidget(Button.builder(
-                Component.literal("Tiers"), b -> switchTab(Tab.TIERS))
-                .bounds(PAD + tw + 2, PAD, tw, TAB_H).build());
-        tabModifiers = addRenderableWidget(Button.builder(
-                Component.literal("Modifiers"), b -> switchTab(Tab.MODIFIERS))
-                .bounds(PAD + (tw + 2) * 2, PAD, tw, TAB_H).build());
-        tabConfig = addRenderableWidget(Button.builder(
-                Component.literal("Config"), b -> switchTab(Tab.CONFIG))
-                .bounds(PAD + (tw + 2) * 3, PAD, tw, TAB_H).build());
+        int w = width;
+        int tw = 78;
+        tabArchetypes = tab("Archetypes", EditorSession.Tab.ARCHETYPES, PAD, tw);
+        tabTiers       = tab("Tiers",      EditorSession.Tab.TIERS, PAD + (tw + 2), tw);
+        tabModifiers   = tab("Modifiers",  EditorSession.Tab.MODIFIERS, PAD + (tw + 2) * 2, tw);
+        tabConfig      = tab("Config",     EditorSession.Tab.CONFIG, PAD + (tw + 2) * 3, tw);
+        tabPacks       = tab("Packs",      EditorSession.Tab.PACKS, PAD + (tw + 2) * 4, tw);
 
-        // View-mode toggle (Form / JSON) — top-right of editor panel
         int toggleX = w - PAD - 90;
         btnForm = addRenderableWidget(Button.builder(
-                Component.literal("Form"), b -> setRawMode(false))
+                        Component.literal("Form"), b -> setRawMode(false))
                 .bounds(toggleX, PAD, 44, TAB_H).build());
         btnJson = addRenderableWidget(Button.builder(
-                Component.literal("JSON"), b -> setRawMode(true))
+                        Component.literal("JSON"), b -> setRawMode(true))
                 .bounds(toggleX + 46, PAD, 44, TAB_H).build());
 
-        int botY = h - BOT_H + 4;
+        int botY = height - BOT_H + 4;
         btnNew = addRenderableWidget(Button.builder(
-                Component.literal("New"), b -> onNew())
-                .bounds(PAD, botY, 50, 20).build());
+                Component.literal("New"), b -> onNew()).bounds(PAD, botY, 50, 20).build());
         btnDelete = addRenderableWidget(Button.builder(
                 Component.literal("Delete"), b -> onDelete())
                 .bounds(PAD + 54, botY, 60, 20).build());
@@ -141,60 +139,72 @@ public final class ChampionEditorScreen extends Screen {
                 .bounds(w - 104, botY, 100, 20).build());
 
         refreshTabLabels();
-        listScroll = 0;
-        selectFirst();
+        if (session.selectedId == null) selectFirst();
+        else applySelection(session.selectedId);
     }
 
-    // ── Tab switching ─────────────────────────────────────────────────────────
-    private void switchTab(Tab tab) {
-        if (!commitRawIfNeeded()) return; // block switch if JSON is invalid
-        activeTab = tab;
-        refreshTabLabels();
-        listScroll = 0;
-        formScrollY = 0;
-        selectedId = null;
-        liveJson   = null;
-        clearFormWidgets();
-        formEntries.clear();
-        removeRawEditor();
+    private Button tab(String label, EditorSession.Tab tab, int x, int w) {
+        return addRenderableWidget(Button.builder(
+                Component.literal(label), b -> switchTab(tab)).bounds(x, PAD, w, TAB_H).build());
+    }
+
+    // ── Tabs / view mode ───────────────────────────────────────────────────────
+
+    private void switchTab(EditorSession.Tab tab) {
+        if (!commitRawIfNeeded()) return;
+        session.activeTab = tab;
+        session.selectedId = null;
+        session.listScroll = 0;
+        session.formScrollY = 0;
         saveError = null;
+        clearForm();
+        // CONFIG / PACKS have no JSON view — leave raw mode before switching
+        if (session.rawMode && (tab == EditorSession.Tab.CONFIG
+                || tab == EditorSession.Tab.PACKS)) {
+            session.rawMode = false;
+            if (rawEditor != null) rawEditor.visible = false;
+        }
+        refreshTabLabels();
         selectFirst();
     }
 
     private void refreshTabLabels() {
-        tabArchetypes.active = activeTab != Tab.ARCHETYPES;
-        tabTiers     .active = activeTab != Tab.TIERS;
-        tabModifiers .active = activeTab != Tab.MODIFIERS;
-        tabConfig    .active = activeTab != Tab.CONFIG;
-        boolean hasToggle = activeTab != Tab.CONFIG;
+        var t = session.activeTab;
+        tabArchetypes.active = t != EditorSession.Tab.ARCHETYPES;
+        tabTiers      .active = t != EditorSession.Tab.TIERS;
+        tabModifiers  .active = t != EditorSession.Tab.MODIFIERS;
+        tabConfig     .active = t != EditorSession.Tab.CONFIG;
+        tabPacks      .active = t != EditorSession.Tab.PACKS;
+        boolean hasToggle = t != EditorSession.Tab.CONFIG && t != EditorSession.Tab.PACKS;
         btnForm.visible = hasToggle;
         btnJson.visible = hasToggle;
-        if (btnForm != null) {
-            btnForm.active = rawMode;   // Form active when not in rawMode
-            btnJson.active = !rawMode;  // JSON active when not already rawMode
-        }
+        btnForm.active = !session.rawMode;
+        btnJson.active = session.rawMode;
+        btnNew.visible = pane().newEntryPrefix() != null;
     }
 
-    // ── Raw mode toggle ───────────────────────────────────────────────────────
+    private EditorPane pane() {
+        return switch (session.activeTab) {
+            case ARCHETYPES -> new ArchetypePane();
+            case TIERS      -> new TierPane();
+            case MODIFIERS  -> new ModifierPane();
+            case CONFIG     -> new ConfigPane();
+            case PACKS      -> new PacksPane();
+        };
+    }
+
     private void setRawMode(boolean raw) {
-        if (rawMode == raw) return;
+        if (session.rawMode == raw) return;
         if (raw) {
-            // FORM → JSON: flush form fields → liveJson → pretty text
-            if (selectedId != null) commitFormToLiveJson();
-            rawMode = true;
+            session.rawMode = true;
             ensureRawEditor();
-            if (liveJson != null) {
-                rawEditor.setValue(prettyJson(liveJson));
-            } else {
-                rawEditor.setValue("");
-            }
-            // hide form widgets, show raw editor
+            rawEditor.setValue(liveJson != null ? PRETTY.toJson(liveJson) : "");
             setFormWidgetsVisible(false);
             rawEditor.visible = true;
+            updateValidation(rawEditor.getValue());
         } else {
-            // JSON → FORM: parse raw text → liveJson → rebuild form
-            if (!commitRawIfNeeded()) return; // stay in JSON mode on parse error
-            rawMode = false;
+            if (!commitRawIfNeeded()) return;
+            session.rawMode = false;
             if (rawEditor != null) rawEditor.visible = false;
             rebuildForm();
             setFormWidgetsVisible(true);
@@ -203,18 +213,17 @@ public final class ChampionEditorScreen extends Screen {
     }
 
     private boolean commitRawIfNeeded() {
-        if (!rawMode || rawEditor == null || selectedId == null) return true;
+        if (!session.rawMode || rawEditor == null || session.selectedId == null) return true;
         String text = rawEditor.getValue().trim();
         if (text.isEmpty()) return true;
         try {
-            JsonElement parsed = JsonParser.parseString(text);
+            var parsed = JsonParser.parseString(text);
             if (!parsed.isJsonObject()) {
                 saveError = "JSON must be an object";
                 return false;
             }
             liveJson = parsed.getAsJsonObject();
-            currentMap().put(selectedId, prettyJson(liveJson));
-            dirtyIds.add(selectedId);
+            session.commit(session.selectedId, PRETTY.toJson(liveJson));
             saveError = null;
             return true;
         } catch (JsonSyntaxException e) {
@@ -225,362 +234,231 @@ public final class ChampionEditorScreen extends Screen {
 
     private void ensureRawEditor() {
         if (rawEditor != null) return;
-        int ex = LIST_W + PAD * 2;
-        int ey = TAB_H + PAD * 2;
-        int ew = width  - ex - PAD;
-        int eh = height - ey - BOT_H - PAD;
+        int ex = panelX(), ey = panelY();
+        int ew = width - ex - PAD;
+        int eh = panelH() - VALIDATOR_H;
         rawEditor = new MultiLineEditBox(font, ex, ey, ew, eh,
                 Component.empty(), Component.literal("{}"));
         addRenderableWidget(rawEditor);
+        rawEditor.setValueListener(this::updateValidation);
     }
 
-    private void removeRawEditor() {
-        if (rawEditor != null) {
-            removeWidget(rawEditor);
-            rawEditor = null;
-        }
-        rawMode = false;
+    private void updateValidation(String text) {
+        validationLines = JsonValidator.validate(text,
+                session.activeTab == EditorSession.Tab.ARCHETYPES,
+                session.activeTab == EditorSession.Tab.MODIFIERS);
     }
 
-    // ── Selection ─────────────────────────────────────────────────────────────
+    // ── Selection ──────────────────────────────────────────────────────────────
+
     private void selectFirst() {
-        Map<String, String> map = currentMap();
-        if (map.isEmpty()) { select(null); return; }
-        select(map.keySet().iterator().next());
+        var map = session.currentMap();
+        if (map.isEmpty()) { applySelection(null); return; }
+        applySelection(map.keySet().iterator().next());
     }
 
     private void select(String id) {
-        selectedId = id;
-        liveJson   = null;
-        formScrollY = 0;
-        clearFormWidgets();
-        formEntries.clear();
-        saveError = null;
+        if (!commitRawIfNeeded()) return;
+        applySelection(id);
+    }
 
-        if (id != null) {
-            String json = currentMap().getOrDefault(id, "{}");
+    private void applySelection(String id) {
+        session.selectedId = id;
+        session.formScrollY = 0;
+        saveError = null;
+        clearForm();
+
+        liveJson = null;
+        if (id != null && session.activeTab != EditorSession.Tab.PACKS) {
+            String json = session.currentMap().getOrDefault(id, "{}");
             if (!isEntryDisabled(json)) {
                 try { liveJson = JsonParser.parseString(json).getAsJsonObject(); }
                 catch (Exception e) { liveJson = new JsonObject(); }
             }
         }
 
-        if (rawMode) {
+        if (session.rawMode) {
             ensureRawEditor();
-            rawEditor.setValue(liveJson != null ? prettyJson(liveJson) : "");
+            rawEditor.setValue(liveJson != null ? PRETTY.toJson(liveJson) : "");
             rawEditor.visible = true;
+            updateValidation(rawEditor.getValue());
         } else {
             if (rawEditor != null) rawEditor.visible = false;
             rebuildForm();
         }
     }
 
-    private Map<String, String> currentMap() {
-        return switch (activeTab) {
-            case ARCHETYPES -> archetypeJsons;
-            case TIERS      -> tierJsons;
-            case MODIFIERS  -> modifierJsons;
-            case CONFIG     -> configValues;
-        };
-    }
+    // ── Form lifecycle ─────────────────────────────────────────────────────────
 
-    // ── Form widget lifecycle ─────────────────────────────────────────────────
-    private void clearFormWidgets() {
-        for (FormEntry fe : formEntries) {
-            if (fe.box     != null) removeWidget(fe.box);
-            if (fe.plusBtn != null) removeWidget(fe.plusBtn);
-            if (fe.minusBtn!= null) removeWidget(fe.minusBtn);
+    private void clearForm() {
+        for (Row r : rows) {
+            for (AbstractWidget w : r.widgets) removeWidget(w);
+            if (r.trailingButton != null) removeWidget(r.trailingButton);
         }
+        rows.clear();
     }
 
     private void setFormWidgetsVisible(boolean visible) {
-        for (FormEntry fe : formEntries) {
-            if (fe.box     != null) fe.box.visible     = visible;
-            if (fe.plusBtn != null) fe.plusBtn.visible = visible;
-            if (fe.minusBtn!= null) fe.minusBtn.visible= visible;
+        for (Row r : rows) {
+            for (AbstractWidget w : r.widgets) w.visible = visible;
+            if (r.trailingButton != null) r.trailingButton.visible = visible;
         }
     }
 
     private void rebuildForm() {
-        clearFormWidgets();
-        formEntries.clear();
-        if (selectedId == null) { formContentH = 0; return; }
-        switch (activeTab) {
-            case ARCHETYPES -> buildArchetypeForm();
-            case TIERS      -> buildTierForm();
-            case MODIFIERS  -> buildModifierForm();
-            case CONFIG     -> buildConfigForm();
+        clearForm();
+        if (session.selectedId == null || session.rawMode) return;
+
+        String id = session.selectedId;
+        boolean editableJson = session.activeTab != EditorSession.Tab.PACKS
+                && session.activeTab != EditorSession.Tab.CONFIG;
+        JsonObject target = liveJson;
+        if (!editableJson) target = new JsonObject(); // config/packs use direct writes
+
+        FormBuilder fb = new FormBuilder(font, target, session, id, this::rebuildForm);
+        pane().buildForm(fb, id);
+        rows.addAll(fb.rows());
+        for (Row r : rows) {
+            for (AbstractWidget w : r.widgets) addRenderableWidget(w);
+            if (r.trailingButton != null) addRenderableWidget(r.trailingButton);
         }
-        layoutFormEntries();
+        layoutForm();
     }
 
-    // ── New / Delete / Save / Close ───────────────────────────────────────────
+    private void layoutForm() {
+        int ex = panelX(), ey = panelY();
+        int rightEdge = width - PAD;
+        int y = ey - session.formScrollY;
+        for (Row r : rows) {
+            r.y = y;
+            if (r.header) {
+                if (r.trailingButton != null) {
+                    r.trailingButton.setX(rightEdge - r.trailingButton.getWidth());
+                    r.trailingButton.setY(y - 1);
+                }
+                y += Row.HEADER_H;
+            } else {
+                int labelX = ex + PAD + r.indent * INDENT_PX;
+                int fieldX = labelX + LABEL_W + PAD;
+                // trailing (fixed-width) widgets first, from the right
+                int right = rightEdge - PAD;
+                for (int i = r.widgets.size() - 1; i >= 1; i--) {
+                    AbstractWidget wgt = r.widgets.get(i);
+                    wgt.setX(right - wgt.getWidth());
+                    right -= wgt.getWidth() + 2;
+                }
+                if (!r.widgets.isEmpty()) {
+                    AbstractWidget primary = r.widgets.get(0);
+                    primary.setX(fieldX);
+                    primary.setY(y);
+                    primary.setWidth(Math.max(20, right - fieldX));
+                }
+                y += Row.FIELD_H;
+            }
+        }
+        formContentH = y - (ey - session.formScrollY);
+    }
+
+    private int formContentH = 0;
+
+    // ── New / Delete / Save / Close ────────────────────────────────────────────
+
     private void onNew() {
         if (!commitRawIfNeeded()) return;
-        String prefix = switch (activeTab) {
-            case ARCHETYPES -> "champions:new_archetype";
-            case TIERS      -> "champions:new_tier";
-            case MODIFIERS  -> "champions:new_modifier";
-            case CONFIG     -> null;
-        };
+        String prefix = pane().newEntryPrefix();
         if (prefix == null) return;
-        // Find a unique id
         String base = prefix;
         int n = 1;
-        while (currentMap().containsKey(base)) base = prefix + "_" + (n++);
-        currentMap().put(base, "{}");
-        dirtyIds.add(base);
-        select(base);
+        while (session.currentMap().containsKey(base)) base = prefix + "_" + (n++);
+        session.currentMap().put(base, "{}");
+        session.markDirty(base);
+        applySelection(base);
     }
 
     private void onDelete() {
-        if (selectedId == null) return;
+        if (session.selectedId == null) return;
+        if (session.activeTab == EditorSession.Tab.PACKS) return; // packs: use toggle
         if (!commitRawIfNeeded()) return;
-        if (builtinIds.contains(selectedId)) {
-            // Write a disabled override instead of removing
-            currentMap().put(selectedId, "{\"disabled\":true}");
-            dirtyIds.add(selectedId);
-            select(selectedId);
+        String id = session.selectedId;
+        if (session.builtinIds.contains(id)) {
+            session.currentMap().put(id, "{\"disabled\":true}");
+            session.markDirty(id);
+            applySelection(id);
         } else {
-            currentMap().remove(selectedId);
-            dirtyIds.remove(selectedId);
-            selectedId = null;
-            liveJson   = null;
-            clearFormWidgets();
-            formEntries.clear();
-            if (rawEditor != null) { rawEditor.setValue(""); rawEditor.visible = false; }
+            session.currentMap().remove(id);
+            session.dirtyIds.remove(id);
+            clearForm();
             selectFirst();
         }
     }
 
     private void onSave() {
         if (!commitRawIfNeeded()) return;
-        if (saveCallback != null) {
-            saveCallback.accept(new EditorPayload(
-                    Map.copyOf(tierJsons),
-                    Map.copyOf(archetypeJsons),
-                    Map.copyOf(configValues),
-                    Map.copyOf(modifierJsons),
-                    Set.of())); // builtinIds S2C only, not sent back
-        }
-        dirtyIds.clear();
+        if (saveCallback != null) saveCallback.accept(session.toPayload());
+        session.dirtyIds.clear();
     }
 
+    @Override
     public void onClose() {
-        if (commitRawIfNeeded()) onPress(); // commit then close
-        else onPress(); // close anyway even if JSON invalid
-    }
-
-    private void onPress() {
+        commitRawIfNeeded();
         if (minecraft != null) minecraft.setScreen(null);
     }
 
-    // ── Form builders ─────────────────────────────────────────────────────────
+    // ── Geometry helpers ───────────────────────────────────────────────────────
 
-    private void buildTierForm() {
-        if (liveJson == null) return;
-        addHeader("Tier");
-        addField("level", "level", liveJson.has("level") ? liveJson.get("level").getAsString() : "1");
-        addHeader("Display");
-        JsonObject display = liveJson.has("display") ? liveJson.getAsJsonObject("display") : new JsonObject();
-        addField("color", "display.color", display.has("color") ? display.get("color").getAsString() : "#FFFFFF");
-        addField("icon",  "display.icon",  display.has("icon")  ? display.get("icon").getAsString()  : "champions:textures/gui/tier1.png");
-    }
+    private int panelX() { return LIST_W + PAD * 2; }
+    private int panelY() { return TAB_H + PAD * 2; }
+    private int panelH() { return height - panelY() - BOT_H; }
 
-    private void buildArchetypeForm() {
-        if (liveJson == null) return;
-        addHeader("Archetype");
-        addField("id",     "id",     liveJson.has("id")     ? liveJson.get("id").getAsString()     : selectedId);
-        addField("weight", "weight", liveJson.has("weight") ? liveJson.get("weight").getAsString() : "10");
-        // tier_range
-        addHeader("Tier Range");
-        JsonObject tierRange = liveJson.has("tier_range") ? liveJson.getAsJsonObject("tier_range") : new JsonObject();
-        addField("min", "tier_range.min", tierRange.has("min") ? tierRange.get("min").getAsString() : "1");
-        addField("max", "tier_range.max", tierRange.has("max") ? tierRange.get("max").getAsString() : "5");
-        // entity_filter label
-        addHeader("(use JSON view for entity_filter, affix_pools, phases)");
-    }
-
-    private void buildModifierForm() {
-        if (liveJson == null) return;
-        addHeader("Modifier Setting");
-        addField("attribute",  "attributeType", liveJson.has("attributeType") ? liveJson.get("attributeType").getAsString() : "minecraft:generic.max_health");
-        addField("enable",     "enable",         liveJson.has("enable")        ? liveJson.get("enable").getAsString()        : "true");
-        // setting array [value, operation]
-        String value = "0.0", operation = "ADD_VALUE";
-        if (liveJson.has("setting") && liveJson.get("setting").isJsonArray()) {
-            var arr = liveJson.getAsJsonArray("setting");
-            if (arr.size() > 0) value     = arr.get(0).getAsString();
-            if (arr.size() > 1) operation = arr.get(1).getAsString();
-        }
-        addHeader("Modifier");
-        addField("value",     "setting.0", value);
-        addField("operation", "setting.1", operation);
-        addHeader("(use JSON view for modifierCondition)");
-    }
-
-    private void buildConfigForm() {
-        for (Map.Entry<String, String> e : configValues.entrySet()) {
-            addConfigField(e.getKey(), e.getValue());
-        }
-    }
-
-    // ── Form entry helpers ────────────────────────────────────────────────────
-
-    private void addHeader(String label) {
-        formEntries.add(new FormEntry(label, null, null));
-    }
-
-    private void addField(String label, String jsonPath, String value) {
-        EditBox box = new EditBox(font, 0, 0, 120, FIELD_H, Component.literal(label));
-        box.setMaxLength(512);
-        box.setValue(value);
-        box.setResponder(v -> onFieldChanged(jsonPath, v));
-        addRenderableWidget(box);
-        formEntries.add(new FormEntry(label, box, jsonPath));
-    }
-
-    private void addConfigField(String key, String value) {
-        EditBox box = new EditBox(font, 0, 0, 120, FIELD_H, Component.literal(key));
-        box.setMaxLength(512);
-        box.setValue(value);
-        box.setResponder(v -> { configValues.put(key, v); dirtyIds.add(key); });
-        addRenderableWidget(box);
-        formEntries.add(new FormEntry(key, box, null));
-    }
-
-    private void onFieldChanged(String jsonPath, String value) {
-        if (selectedId == null || liveJson == null || jsonPath == null) return;
-        setJsonPath(liveJson, jsonPath, value);
-        currentMap().put(selectedId, prettyJson(liveJson));
-        dirtyIds.add(selectedId);
-    }
-
-    /** Write a dot-path like "display.color" or "setting.0" into a JsonObject. */
-    private static void setJsonPath(JsonObject root, String path, String value) {
-        String[] parts = path.split("\\.");
-        JsonObject obj = root;
-        for (int i = 0; i < parts.length - 1; i++) {
-            String part = parts[i];
-            // Handle array index
-            try {
-                int idx = Integer.parseInt(parts[i + 1]);
-                if (!obj.has(part) || !obj.get(part).isJsonArray()) {
-                    obj.add(part, new JsonArray());
-                }
-                JsonArray arr = obj.getAsJsonArray(part);
-                while (arr.size() <= idx) arr.add(JsonNull.INSTANCE);
-                arr.set(idx, new JsonPrimitive(value));
-                return;
-            } catch (NumberFormatException ignored) {}
-
-            if (!obj.has(part) || !obj.get(part).isJsonObject()) {
-                obj.add(part, new JsonObject());
-            }
-            obj = obj.getAsJsonObject(part);
-        }
-        String last = parts[parts.length - 1];
-        try {
-            // Try number first
-            obj.addProperty(last, Double.parseDouble(value));
-        } catch (NumberFormatException e) {
-            if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-                obj.addProperty(last, Boolean.parseBoolean(value));
-            } else {
-                obj.addProperty(last, value);
-            }
-        }
-    }
-
-    /** Layout form entries into the right panel starting at formScrollY offset. */
-    private void layoutFormEntries() {
-        int ex = LIST_W + PAD * 2;
-        int ey = TAB_H + PAD * 2;
-        int ew = width - ex - PAD;
-        int y  = ey - formScrollY;
-        for (FormEntry fe : formEntries) {
-            if (fe.box == null) {
-                // header row — no widget, just text
-                y += ROW_H - 4;
-            } else {
-                int bx = ex + LABEL_W + PAD;
-                int bw = ew - LABEL_W - PAD;
-                fe.box.setX(bx);
-                fe.box.setY(y);
-                fe.box.setWidth(bw);
-                fe.box.visible = true;
-                y += ROW_H;
-            }
-        }
-        formContentH = y - (ey - formScrollY);
-    }
-
-    /** Commit form EditBox values back into liveJson. */
-    private void commitFormToLiveJson() {
-        if (liveJson == null) return;
-        for (FormEntry fe : formEntries) {
-            if (fe.box != null && fe.jsonPath != null) {
-                setJsonPath(liveJson, fe.jsonPath, fe.box.getValue());
-            }
-        }
-        if (selectedId != null) {
-            currentMap().put(selectedId, prettyJson(liveJson));
-            dirtyIds.add(selectedId);
-        }
-    }
-
-    // ── Rendering ─────────────────────────────────────────────────────────────
+    // ── Rendering ──────────────────────────────────────────────────────────────
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         super.render(g, mx, my, pt);
 
-        int w = width, h = height;
-        // Panel backgrounds
-        // Left list panel
-        g.fill(PAD - 1, TAB_H + PAD - 1, PAD + LIST_W + 1, h - BOT_H + 1, 0xFF333333);
-        // Right editor panel
-        int ex = LIST_W + PAD * 2;
-        int ey = TAB_H + PAD * 2;
-        g.fill(ex - 1, ey - 1, w - PAD + 1, h - BOT_H + 1, 0xFF222222);
+        // Panels
+        g.fill(PAD - 1, TAB_H + PAD - 1, PAD + LIST_W + 1, height - BOT_H + 1, 0xFF333333);
+        int ex = panelX(), ey = panelY();
+        g.fill(ex - 1, ey - 1, width - PAD + 1, height - BOT_H + 1, 0xFF222222);
 
-        // List entries
         renderEntryList(g, mx, my);
+        if (!session.rawMode) renderForm(g);
 
-        // Form (rendered by widget system) — render headers manually
-        if (!rawMode) {
-            renderFormHeaders(g);
+        // Validation (JSON mode) — bottom strip of the editor panel
+        if (session.rawMode && rawEditor != null) {
+            int vy = ey + panelH() - VALIDATOR_H + 4;
+            for (int i = 0; i < Math.min(3, validationLines.size()); i++) {
+                g.drawString(font, validationLines.get(i), ex + 4, vy + i * 11,
+                        0xFFDDDDDD, false);
+            }
         }
 
-        // Save error message
         if (saveError != null) {
-            g.drawString(font, "§c" + saveError, ex + 2, h - BOT_H - 12, 0xFFFF5555, false);
+            g.drawString(font, "§c" + saveError, ex + 2, height - BOT_H - 12,
+                    0xFFFF5555, false);
         }
     }
 
     private void renderEntryList(GuiGraphics g, int mx, int my) {
-        int lx = PAD;
-        int ly = TAB_H + PAD;
+        int lx = PAD, ly = TAB_H + PAD;
         int lh = height - ly - BOT_H;
         int visCount = lh / ENTRY_H;
 
-        List<String> keys = new ArrayList<>(currentMap().keySet());
-        int startIdx = listScroll;
-        int endIdx   = Math.min(startIdx + visCount, keys.size());
+        List<String> keys = new ArrayList<>(session.currentMap().keySet());
+        int startIdx = session.listScroll;
+        int endIdx = Math.min(startIdx + visCount, keys.size());
 
         for (int i = startIdx; i < endIdx; i++) {
             String key = keys.get(i);
             int iy = ly + (i - startIdx) * ENTRY_H;
-            boolean sel = key.equals(selectedId);
-
-            // Background highlight for selected
+            boolean sel = key.equals(session.selectedId);
             if (sel) g.fill(lx, iy, lx + LIST_W, iy + ENTRY_H, 0xFF555577);
 
-            // Determine color
-            String json      = currentMap().getOrDefault(key, "{}");
-            boolean disabled = isEntryDisabled(json);
-            boolean builtin  = builtinIds.contains(key);
-            boolean dirty    = dirtyIds.contains(key);
+            String json = session.currentMap().getOrDefault(key, "{}");
+            boolean disabled = isEntryDisabled(json)
+                    || (session.activeTab == EditorSession.Tab.PACKS && "disabled".equals(json));
+            boolean builtin = session.builtinIds.contains(key);
+            boolean dirty = session.dirtyIds.contains(key);
             int color;
             if      (disabled) color = sel ? 0xFFFF8888 : 0xFF885555;
             else if (builtin)  color = sel ? 0xFFCCDDFF : 0xFF7799BB;
@@ -588,56 +466,42 @@ public final class ChampionEditorScreen extends Screen {
 
             String lbl = (dirty ? "* " : "") + shortId(key);
             if (disabled) lbl = "§m" + lbl;
-
             g.drawString(font, lbl, lx + 2, iy + (ENTRY_H - 8) / 2, color, false);
         }
 
-        // Scrollbar indicator
         if (keys.size() > visCount) {
             int barH = Math.max(10, lh * visCount / keys.size());
-            int barY = ly + (lh - barH) * listScroll / Math.max(1, keys.size() - visCount);
+            int maxScroll = Math.max(1, keys.size() - visCount);
+            int barY = ly + (lh - barH) * session.listScroll / maxScroll;
             g.fill(lx + LIST_W - 3, barY, lx + LIST_W, barY + barH, 0xFF888888);
         }
     }
 
-    private void renderFormHeaders(GuiGraphics g) {
-        int ex = LIST_W + PAD * 2;
-        int ey = TAB_H + PAD * 2;
-        int y  = ey - formScrollY;
-        for (FormEntry fe : formEntries) {
-            if (fe.box == null) {
-                // Header row
-                if (y >= ey - ROW_H && y < height - BOT_H) {
-                    g.drawString(font, "§e" + fe.label, ex + PAD, y + 2, 0xFFFFFF44, false);
-                }
-                y += ROW_H - 4;
-            } else {
-                // Field label
-                if (y >= ey - ROW_H && y < height - BOT_H) {
-                    g.drawString(font, fe.label, ex + PAD, y + (FIELD_H - 8) / 2 + 1, 0xFFDDDDDD, false);
-                }
-                y += ROW_H;
+    private void renderForm(GuiGraphics g) {
+        int ey = panelY();
+        for (Row r : rows) {
+            if (r.y < ey - Row.HEADER_H || r.y >= height - BOT_H) continue;
+            if (r.header) {
+                g.drawString(font, r.label, panelX() + PAD + r.indent * INDENT_PX,
+                        r.y + 3, 0xFFFFFF44, false);
+            } else if (r.label != null) {
+                g.drawString(font, r.label, panelX() + PAD + r.indent * INDENT_PX,
+                        r.y + 5, 0xFFDDDDDD, false);
             }
         }
     }
 
-    // ── Mouse ─────────────────────────────────────────────────────────────────
+    // ── Mouse ──────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        // List click
-        int lx = PAD;
-        int ly = TAB_H + PAD;
+        int lx = PAD, ly = TAB_H + PAD;
         int lh = height - ly - BOT_H;
         if (mx >= lx && mx < lx + LIST_W && my >= ly && my < ly + lh) {
-            int idx = ((int) my - ly) / ENTRY_H + listScroll;
-            List<String> keys = new ArrayList<>(currentMap().keySet());
+            int idx = ((int) my - ly) / ENTRY_H + session.listScroll;
+            List<String> keys = new ArrayList<>(session.currentMap().keySet());
             if (idx >= 0 && idx < keys.size()) {
-                String clicked = keys.get(idx);
-                if (!clicked.equals(selectedId)) {
-                    if (!commitRawIfNeeded()) return true; // block selection change on invalid JSON
-                    select(clicked);
-                }
+                if (!keys.get(idx).equals(session.selectedId)) select(keys.get(idx));
                 return true;
             }
         }
@@ -646,38 +510,33 @@ public final class ChampionEditorScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double scrollX, double scrollY) {
-        int lx = PAD;
-        int ly = TAB_H + PAD;
+        int lx = PAD, ly = TAB_H + PAD;
         int lh = height - ly - BOT_H;
-
         if (mx >= lx && mx < lx + LIST_W && my >= ly && my < ly + lh) {
-            // Scroll the list
             int visCount = lh / ENTRY_H;
-            int maxScroll = Math.max(0, currentMap().size() - visCount);
-            listScroll = (int) Math.max(0, Math.min(maxScroll, listScroll - scrollY));
+            int maxScroll = Math.max(0, session.currentMap().size() - visCount);
+            session.listScroll = (int) Math.max(0,
+                    Math.min(maxScroll, session.listScroll - scrollY));
             return true;
         }
-
-        int ex = LIST_W + PAD * 2;
-        int ey = TAB_H + PAD;
-        if (!rawMode && mx >= ex && my >= ey && my < height - BOT_H) {
-            // Scroll the form
-            int panelH = height - ey - BOT_H;
+        int ex = panelX(), ey = TAB_H + PAD;
+        if (!session.rawMode && mx >= ex && my >= ey && my < height - BOT_H) {
+            int panelH = panelH();
             int maxScroll = Math.max(0, formContentH - panelH);
-            formScrollY = (int) Math.max(0, Math.min(maxScroll, formScrollY - scrollY * ENTRY_H));
-            layoutFormEntries();
+            session.formScrollY = (int) Math.max(0,
+                    Math.min(maxScroll, session.formScrollY - scrollY * ENTRY_H));
+            layoutForm();
             return true;
         }
-
         return super.mouseScrolled(mx, my, scrollX, scrollY);
     }
 
-    // ── Utility ───────────────────────────────────────────────────────────────
+    // ── Utility ────────────────────────────────────────────────────────────────
 
     private static boolean isEntryDisabled(String json) {
         if (json == null || json.isBlank()) return false;
         try {
-            JsonElement el = JsonParser.parseString(json);
+            var el = JsonParser.parseString(json);
             return el.isJsonObject()
                     && el.getAsJsonObject().has("disabled")
                     && el.getAsJsonObject().get("disabled").getAsBoolean();
@@ -689,12 +548,6 @@ public final class ChampionEditorScreen extends Screen {
     private static String shortId(String fullId) {
         int colon = fullId.lastIndexOf(':');
         return colon >= 0 ? fullId.substring(colon + 1) : fullId;
-    }
-
-    private static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
-
-    private static String prettyJson(JsonObject obj) {
-        return PRETTY_GSON.toJson(obj);
     }
 
     @Override

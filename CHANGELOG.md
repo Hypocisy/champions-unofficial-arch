@@ -1,6 +1,17 @@
 # Changelog
 
-## [Unreleased] — 2025-xx-xx
+## [Unreleased] — 编辑器重构 — 2025
+
+### 新增 (Added)
+
+- **游戏内编辑器全面重构**（详见 `EDITOR_REFACTOR_PLAN.md`）：
+  - **选择器可视化编辑**：`EntityFilter` 递归树编辑器，支持 `all_of`/`any_of` 嵌套、八种过滤器类型切换、子过滤器增删；`entity_type`（实体多选器）、`mod_id`（命名空间多选）、`mob_category`、`attribute`（属性选择器 + min/max）等均有专属配置行。同一编辑器复用于 archetype `entity_filter` 与 modifier `conditions.entity_filter`。
+  - **UI 模式细则全覆盖**：archetype 的 affix pools（嵌套 tier_range/min-max count/candidates：affix 选择器、weight、strength 范围）与 phases（id、repeatable、三类 condition 全参数、三类 effect 全参数）全部可视化增删改；modifier 的 `modifier.value/operation` 与 `conditions`（entity_filter、tier min/max、affixes.values 多选）。
+  - **JSON 模式内联提示**：实时语法校验（带行列号）、Codec 语义校验（缺字段/类型错）、必填/可选键速查面板。
+  - **数据包管理（Packs 页）**：列出全部数据包并一键启用/禁用（服务端重载）；**导出**当前编辑内容为规范数据包 zip 到 `<世界>/champions_exports/`；**导入** `<世界>/champions_imports/` 内的 zip 自动复制进 `datapacks/` 并启用。
+  - 通用可搜索注册表选择器（实体/属性/效果/类别/命名空间/affix，单选与多选）。
+  - 架构：`EditorSession`（弹窗往返不丢状态）、`FormBuilder` 行式表单 DSL、`JsonPathOps` 路径读写、五个 Tab 面板拆分，`ChampionEditorScreen` 瘦身为壳。
+- 新网络包 `EditorPackActionPacket`（toggle/export/import），`EditorPayload` 增加 packs 列表，双平台注册。
 
 ### 新增 (Added)
 
