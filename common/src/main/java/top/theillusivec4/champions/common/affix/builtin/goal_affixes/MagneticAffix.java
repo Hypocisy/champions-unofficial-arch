@@ -11,7 +11,7 @@ import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.GoalHandler;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.champion.Champion;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 /**
  * Periodically pulls the current target toward the champion.
@@ -83,9 +83,9 @@ public final class MagneticAffix extends AffixType<EmptyAffixData> {
         @Override
         public void tick() {
             if (target == null || !target.isAlive()) return;
-            if (mob.distanceTo(target) > AffixDefaults.MAGNETIC_PULL_RANGE()) return;
+            if (mob.distanceTo(target) > ChampionsConfig.magneticPullRange) return;
 
-            double pull = AffixDefaults.MAGNETIC_PULL_STRENGTH() * (0.5 + strength * 0.2);
+            double pull = ChampionsConfig.magneticStrength * (0.5 + strength * 0.2);
             Vec3 dir = mob.position().subtract(target.position()).normalize();
             // Full velocity override so the pull is decisive, not just a tiny nudge
             target.setDeltaMovement(dir.scale(pull));

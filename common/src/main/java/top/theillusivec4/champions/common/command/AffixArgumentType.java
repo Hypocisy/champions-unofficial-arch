@@ -15,11 +15,7 @@ import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.affix.AffixType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.OptionalInt;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**

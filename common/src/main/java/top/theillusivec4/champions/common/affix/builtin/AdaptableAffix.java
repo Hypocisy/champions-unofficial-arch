@@ -5,6 +5,7 @@ import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.affix.IAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.HurtEvent;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.phase.AffixTriggerTracker;
 
 /**
@@ -33,8 +34,8 @@ public final class AdaptableAffix extends AffixType<AdaptableAffix.Data> {
                 data.triggerCount++;
 
                 float original  = evt.originalDamage();
-                float increment = (float) (AffixDefaults.ADAPTABLE_REDUCTION_INCREMENT() * strength);
-                float maxReduction = (float) AffixDefaults.ADAPTABLE_MAX_REDUCTION();
+                float increment = (float) (ChampionsConfig.adaptableReductionIncrement * strength);
+                float maxReduction = (float) ChampionsConfig.adaptableMaxReduction;
 
                 float reduced = evt.currentDamage() - original * increment * data.count;
                 float floor   = original * (1f - maxReduction);

@@ -6,10 +6,9 @@ import net.minecraft.util.FastColor;
 import net.minecraft.world.phys.Vec2;
 import snownee.jade.api.ui.Element;
 import top.theillusivec4.champions.common.client.HUDHelper;
+import top.theillusivec4.champions.common.config.ChampionsClientConfig;
 
 public final class StarElement extends Element {
-
-    private static final int BOTTOM_PADDING = 2;
 
     private final int starCount;
     private final int spacing;
@@ -29,7 +28,7 @@ public final class StarElement extends Element {
 
     @Override
     public Vec2 getSize() {
-        return new Vec2(starCount * 9 + (starCount - 1) * spacing, 9 + BOTTOM_PADDING);
+        return new Vec2(starCount * 9 + (starCount - 1) * spacing, 9 + ChampionsClientConfig.jadeStarBottomPadding);
     }
 
     @Override

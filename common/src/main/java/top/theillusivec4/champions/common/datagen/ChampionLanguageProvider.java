@@ -1,17 +1,16 @@
 package top.theillusivec4.champions.common.datagen;
 
+import com.google.gson.JsonObject;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import com.google.gson.JsonObject;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataProvider;
-
-import java.nio.file.Path;
 
 /**
  * Platform-agnostic, multi-locale language provider for the Champions mod.

@@ -11,7 +11,7 @@ import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.GoalHandler;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.champion.Champion;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.entity.ArcticBulletEntity;
 
 import java.util.EnumSet;
@@ -33,7 +33,7 @@ public final class ArcticAffix extends AffixType<EmptyAffixData> {
             @Override
             public void setup(Champion champion, EmptyAffixData data, int strength, GoalSelector gs) {
                 if (champion.entity() instanceof Mob mob) {
-                    gs.addGoal(2, new ShootGoal(mob, AffixDefaults.ARCTIC_ATTACK_INTERVAL()));
+                    gs.addGoal(2, new ShootGoal(mob, ChampionsConfig.arcticAttackInterval));
                 }
             }
 

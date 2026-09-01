@@ -1,28 +1,18 @@
 package top.theillusivec4.champions.common.mixin;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import top.theillusivec4.champions.api.ChampionsApi;
-import top.theillusivec4.champions.api.affix.AffixInstance;
-import top.theillusivec4.champions.api.champion.ChampionTier;
-import top.theillusivec4.champions.common.api.ChampionsRegistries;
-import top.theillusivec4.champions.common.archetype.ChampionArchetype;
-import top.theillusivec4.champions.common.champion.ChampionBuilder;
 import top.theillusivec4.champions.common.champion.ChampionData;
 import top.theillusivec4.champions.common.champion.ChampionView;
-import top.theillusivec4.champions.common.data.ArchetypeDataLoader;
-import top.theillusivec4.champions.common.data.DataLoaders;
 import top.theillusivec4.champions.common.item.ChampionEggItem;
 
 import java.util.List;
-import java.util.Optional;
 
 import static top.theillusivec4.champions.common.champion.ChampionBuilder.toChampionData;
 

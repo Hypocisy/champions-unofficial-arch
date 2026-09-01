@@ -18,12 +18,7 @@ import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.champion.ChampionData;
 import top.theillusivec4.champions.common.client.screen.ChampionEditorScreen;
 import top.theillusivec4.champions.common.editor.DatapackEditorHandler;
-import top.theillusivec4.champions.common.network.ChampionClearPacket;
-import top.theillusivec4.champions.common.network.ChampionSyncData;
-import top.theillusivec4.champions.common.network.EditorPayload;
-import top.theillusivec4.champions.common.network.OpenEditorPacket;
-import top.theillusivec4.champions.common.network.PacketHandler;
-import top.theillusivec4.champions.common.network.SaveEditorPacket;
+import top.theillusivec4.champions.common.network.*;
 import top.theillusivec4.champions.neoforge.platform.NeoForgeAttachmentProvider;
 
 import java.util.List;

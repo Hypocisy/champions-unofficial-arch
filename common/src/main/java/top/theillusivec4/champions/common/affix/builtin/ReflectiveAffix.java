@@ -5,6 +5,7 @@ import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.DamageEvent;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.registry.ModDamageTypes;
 
 /**
@@ -24,13 +25,13 @@ public final class ReflectiveAffix extends AffixType<EmptyAffixData> {
 
             if (!(evt.source().getDirectEntity() instanceof LivingEntity attacker)) return;
 
-            float minPct = (float) AffixDefaults.REFLECTIVE_MIN_PERCENT();
-            float maxPct = (float) (AffixDefaults.REFLECTIVE_MAX_PERCENT() * (0.5 + strength * 0.1));
+            float minPct = (float) ChampionsConfig.reflectiveMinPercent;
+            float maxPct = (float) (ChampionsConfig.reflectiveMaxPercent * (0.5 + strength * 0.1));
             float range = maxPct - minPct;
             float pct = minPct + attacker.getRandom().nextFloat() * range;
-            float dmg = (float) Math.min(evt.originalDamage() * pct, AffixDefaults.REFLECTIVE_MAX());
+            float dmg = (float) Math.min(evt.originalDamage() * pct, ChampionsConfig.reflectiveMax);
 
-            if (!AffixDefaults.REFLECTIVE_LETHAL() && dmg >= attacker.getHealth()) {
+            if (!ChampionsConfig.reflectiveLethal && dmg >= attacker.getHealth()) {
                 dmg = attacker.getHealth() - 1f;
             }
             if (dmg > 0) {

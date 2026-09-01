@@ -15,7 +15,7 @@ import top.theillusivec4.champions.api.affix.handler.GoalHandler;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.HurtEvent;
 import top.theillusivec4.champions.api.champion.Champion;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 /**
  * Periodically drops lingering area-of-effect HARM clouds at the target's position.
@@ -77,7 +77,7 @@ public final class DesecratingAffix extends AffixType<EmptyAffixData> {
         DesecrateGoal(Mob mob, int strength) {
             this.mob = mob;
             this.strength = strength;
-            this.timer = AffixDefaults.DESECRATING_INTERVAL() * 20;
+            this.timer = ChampionsConfig.desecratingInterval * 20;
         }
 
         @Override
@@ -92,7 +92,7 @@ public final class DesecratingAffix extends AffixType<EmptyAffixData> {
         public void tick() {
             if (--timer > 0) return;
             // Add random jitter (0–4 extra ticks × 10) so drops feel less robotic
-            timer = AffixDefaults.DESECRATING_INTERVAL() * 20
+            timer = ChampionsConfig.desecratingInterval * 20
                     + mob.getRandom().nextInt(5) * 10;
 
             LivingEntity target = mob.getTarget();
@@ -107,7 +107,7 @@ public final class DesecratingAffix extends AffixType<EmptyAffixData> {
             // re-trigger reaction affixes in a loop.
             cloud.setOwner(mob);
 
-            float radius = (float) AffixDefaults.DESECRATING_RADIUS();
+            float radius = (float) ChampionsConfig.desecratingRadius;
             int duration = 200 + strength * 40;
 
             cloud.setRadius(radius);

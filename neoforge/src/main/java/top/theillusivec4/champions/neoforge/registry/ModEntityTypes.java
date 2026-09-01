@@ -1,10 +1,10 @@
 package top.theillusivec4.champions.neoforge.registry;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.core.registries.BuiltInRegistries;
 import top.theillusivec4.champions.common.entity.ArcticBulletEntity;
 import top.theillusivec4.champions.common.entity.ChampionEntityTypes;
 import top.theillusivec4.champions.common.entity.EnkindlingBulletEntity;

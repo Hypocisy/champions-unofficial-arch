@@ -6,8 +6,8 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import top.theillusivec4.champions.api.champion.ChampionTier;
-import top.theillusivec4.champions.common.archetype.ChampionArchetype;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
+import top.theillusivec4.champions.common.archetype.ChampionArchetype;
 import top.theillusivec4.champions.common.data.ModifierSetting;
 
 import java.util.LinkedHashMap;

@@ -10,8 +10,8 @@ import snownee.jade.api.JadeIds;
 import snownee.jade.api.config.IPluginConfig;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
-import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.api.champion.ChampionTier;
+import top.theillusivec4.champions.common.config.ChampionsClientConfig;
 
 public enum ChampionComponentProvider implements IEntityComponentProvider {
     INSTANCE;
@@ -36,7 +36,7 @@ public enum ChampionComponentProvider implements IEntityComponentProvider {
             tooltip.replace(JadeIds.CORE_OBJECT_NAME, name);
 
             // Star row below the name
-            tooltip.add(1, StarElement.of(tier.level(), color, STAR_SPACING));
+            tooltip.add(1, StarElement.of(tier.level(), color, ChampionsClientConfig.jadeStarSpacing));
 
             // One line per affix with strength
             for (AffixInstance instance : champion.affixes()) {

@@ -35,7 +35,7 @@ import top.theillusivec4.champions.common.champion.ChampionSpawnHandler;
 import java.util.List;
 import java.util.Optional;
 
-import static net.minecraft.core.registries.BuiltInRegistries.*;
+import static net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE;
 
 /**
  * Champion Egg item — spawns a champion with a preset or random build.

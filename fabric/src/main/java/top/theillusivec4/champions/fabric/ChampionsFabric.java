@@ -1,7 +1,9 @@
 package top.theillusivec4.champions.fabric;
 
 
+import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -20,6 +22,7 @@ import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraftforge.fml.config.IConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.ChampionsApi;
@@ -32,8 +35,9 @@ import top.theillusivec4.champions.common.champion.ChampionSpawnHandler;
 import top.theillusivec4.champions.common.command.AffixArgumentType;
 import top.theillusivec4.champions.common.command.ChampionCommand;
 import top.theillusivec4.champions.common.config.ChampionConfigSpec;
-import top.theillusivec4.champions.common.loot.ChampionLootConditions;
+import top.theillusivec4.champions.common.config.ChampionConfigSpecClient;
 import top.theillusivec4.champions.common.data.TierDataLoader;
+import top.theillusivec4.champions.common.loot.ChampionLootConditions;
 import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.fabric.event.FabricChampionEventsHandler;
 import top.theillusivec4.champions.fabric.integration.dispenser.ChampionEggDispenseBehavior;
@@ -59,12 +63,30 @@ public final class ChampionsFabric implements ModInitializer {
     public void onInitialize() {
         // 0. Register server config with Forge Config API Port and bake on server start/reload
         NeoForgeConfigRegistry.INSTANCE.register(MOD_ID, ModConfig.Type.SERVER, ChampionConfigSpec.SPEC);
+        NeoForgeConfigRegistry.INSTANCE.register(ChampionsFabric.MOD_ID,
+                ModConfig.Type.CLIENT,
+                ChampionConfigSpecClient.SPEC
+        );
         // SERVER_STARTING fires before the world loads — ensures config is baked
         // before the first entity-join hook triggers ChampionSpawnHandler.
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            ChampionConfigSpec.bakeAndApply();
-            currentServer = server;
+        NeoForgeModConfigEvents.loading("champions").register(event -> {
+            if (event.getType() == ModConfig.Type.SERVER) {
+                ChampionConfigSpec.bakeAndApply();
+            }
+            if (event.getType() == ModConfig.Type.CLIENT) {
+                ChampionConfigSpecClient.bakeAndApply();
+            }
         });
+        NeoForgeModConfigEvents.reloading("champions").register(event -> {
+            if (event.getType() == ModConfig.Type.SERVER) {
+                ChampionConfigSpec.bakeAndApply();
+            }
+            if (event.getType() == ModConfig.Type.CLIENT) {
+                ChampionConfigSpecClient.bakeAndApply();
+            }
+        });
+
+
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> currentServer = null);
 
         // 1. Boot the custom affix type registry

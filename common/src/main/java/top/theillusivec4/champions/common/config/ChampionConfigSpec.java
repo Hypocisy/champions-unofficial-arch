@@ -69,6 +69,7 @@ public final class ChampionConfigSpec {
         v.infestedAmount              = ENTRIES.infestedAmount.get();
         v.infestedInterval            = ENTRIES.infestedInterval.get();
         v.infestedParasite            = ENTRIES.infestedParasite.get();
+        v.infestedEnderParasite       = ENTRIES.infestedEnderParasite.get();
         v.knockingKnockback           = ENTRIES.knockingKnockback.get();
         v.livelyHealAmount            = ENTRIES.livelyHealAmount.get();
         v.livelyPassiveMultiplier     = ENTRIES.livelyPassiveMultiplier.get();
@@ -128,6 +129,7 @@ public final class ChampionConfigSpec {
         final ModConfigSpec.IntValue     infestedAmount;
         final ModConfigSpec.IntValue     infestedInterval;
         final ModConfigSpec.ConfigValue<String> infestedParasite;
+        final ModConfigSpec.ConfigValue<String> infestedEnderParasite;
         final ModConfigSpec.DoubleValue  knockingKnockback;
         final ModConfigSpec.DoubleValue  livelyHealAmount;
         final ModConfigSpec.DoubleValue  livelyPassiveMultiplier;
@@ -236,7 +238,10 @@ public final class ChampionConfigSpec {
             b.push("infested");
             infestedAmount   = b.defineInRange("amount", 2, 1, 100);
             infestedInterval = b.defineInRange("interval", 10, 1, 600);
-            infestedParasite = b.define("parasite", "minecraft:silverfish");
+            infestedParasite = b.comment("The mob to use as a parasite for infestation")
+                    .define("parasite", "minecraft:silverfish");
+            infestedEnderParasite = b.comment("The mob to use as a parasite for infestation of ender mob")
+                    .define("infestedEnderParasite", "minecraft:endermite");
             b.pop();
 
             b.push("knocking");

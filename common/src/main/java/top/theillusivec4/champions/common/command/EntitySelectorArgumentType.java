@@ -18,7 +18,6 @@ import top.theillusivec4.champions.common.api.ChampionsRegistries;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**

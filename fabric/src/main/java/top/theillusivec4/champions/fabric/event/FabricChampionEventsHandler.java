@@ -1,5 +1,6 @@
 package top.theillusivec4.champions.fabric.event;
 
+import dev.architectury.event.events.client.ClientTickEvent;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
@@ -40,7 +41,6 @@ public final class FabricChampionEventsHandler {
     public static void register() {
         registerHurt();
         registerDeath();
-        registerTick();
         registerTracking();
         // Wound heal-halving is in MixinLivingEntityHeal.
         // Wound damage-amplification is in MixinLivingEntityWound.
@@ -89,36 +89,6 @@ public final class FabricChampionEventsHandler {
 
             return !cancelled[0];
         });
-    }
-
-    // ── Tick (with PhaseProcessor) ────────────────────────────────────────────
-
-    /**
-     * Drives champion tick + phase evaluation from the server tick event.
-     * Fabric has no per-entity tick event; we iterate all loaded entities every server tick.
-     */
-    private static void registerTick() {
-        ServerTickEvents.END_SERVER_TICK.register(mcServer ->
-                mcServer.getAllLevels().forEach(level ->
-                        level.getAllEntities().forEach(entity -> {
-                            if (!(entity instanceof LivingEntity living)) return;
-                            ChampionsApi.get().getChampion(living).ifPresent(champion -> {
-                                // Dispatch tick to all affixes every tick
-                                GlobalDispatcher.dispatch(TickEvent.class, champion,
-                                        new TickEvent(living.tickCount));
-
-                                // Evaluate phases every 10 ticks
-                                if (living.tickCount % 10 == 0 && champion instanceof Champion.Server server) {
-                                    PhaseProcessor.process(
-                                            server,
-                                            server instanceof ChampionView.Server serverView
-                                                    ? serverView.getTriggeredPhaseIds() : new HashSet<>()
-                                    );
-                                }
-                            });
-                        })
-                )
-        );
     }
 
     // ── Attack ────────────────────────────────────────────────────────────────

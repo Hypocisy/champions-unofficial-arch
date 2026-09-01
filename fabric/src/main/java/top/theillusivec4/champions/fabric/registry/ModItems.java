@@ -5,7 +5,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import top.theillusivec4.champions.common.champion.ChampionData;
 import top.theillusivec4.champions.common.item.ChampionEggItem;
 import top.theillusivec4.champions.common.item.ChampionItems;

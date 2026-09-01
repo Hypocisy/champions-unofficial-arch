@@ -3,12 +3,7 @@ package top.theillusivec4.champions.fabric.network;
 import net.minecraft.resources.ResourceLocation;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Client-side tier cache rebuilt from {@link FabricTierSyncPacket} on login/reload.

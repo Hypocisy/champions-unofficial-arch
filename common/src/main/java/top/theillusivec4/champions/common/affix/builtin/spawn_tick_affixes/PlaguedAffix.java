@@ -2,6 +2,7 @@ package top.theillusivec4.champions.common.affix.builtin.spawn_tick_affixes;
 
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -11,7 +12,7 @@ import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public final class PlaguedAffix extends AffixType<EmptyAffixData> {
             if (champion.entity().level().isClientSide()) return;
 
             LivingEntity entity = champion.entity();
-            double range = AffixDefaults.PLAGUED_RANGE() * (0.5 + strength * 0.2);
+            double range = ChampionsConfig.plaguedRange * (0.5 + strength * 0.2);
 
             List<Entity> nearby = entity.level().getEntities(entity,
                     entity.getBoundingBox().inflate(range),
@@ -46,13 +47,13 @@ public final class PlaguedAffix extends AffixType<EmptyAffixData> {
         registry.on(TickEvent.class, (champion, data, strength, evt) -> {
             if (!champion.entity().level().isClientSide()) return;
             LivingEntity entity = champion.entity();
-            float radius = (float) (AffixDefaults.PLAGUED_RANGE() * 0.6);
+            float radius = (float) (ChampionsConfig.plaguedRange * 0.6);
             float circle = (float) Math.PI * radius * radius;
             for (int i = 0; i < (int) circle; i++) {
                 float angle = entity.getRandom().nextFloat() * 2f * (float) Math.PI;
                 float r = Mth.sqrt(entity.getRandom().nextFloat()) * radius;
                 entity.level().addParticle(
-                        ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0x55FF55),
+                        ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0x7D9F8F32),
                         entity.getX() + Mth.cos(angle) * r,
                         entity.getY(),
                         entity.getZ() + Mth.sin(angle) * r,

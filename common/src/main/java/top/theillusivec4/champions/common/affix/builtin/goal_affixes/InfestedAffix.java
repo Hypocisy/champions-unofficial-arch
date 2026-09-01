@@ -1,7 +1,5 @@
 package top.theillusivec4.champions.common.affix.builtin.goal_affixes;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,7 +12,10 @@ import top.theillusivec4.champions.api.affix.handler.GoalHandler;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.DeathEvent;
 import top.theillusivec4.champions.api.champion.Champion;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
+import top.theillusivec4.champions.common.entity.ChampionEntityTypes;
+
+import javax.annotation.Nullable;
 
 /**
  * Periodically spawns parasite entities while alive; bursts more on death.
@@ -22,7 +23,7 @@ import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
  * <p>Spawn count scales with strength. On death the burst size is
  * {@code INFESTED_SPAWN_COUNT * strength * 2} to reward killing the champion.</p>
  *
- * <p>The parasite entity type is read from {@link AffixDefaults#INFESTED_PARASITE()}
+ * <p>The parasite entity type is read from {@link ChampionsConfig#infestedParasite}
  * (config key {@code affixes.infested.parasite}, default {@code minecraft:silverfish}).</p>
  *
  * <p>Spawned parasites target the entity that last hurt the champion.</p>
@@ -54,19 +55,22 @@ public final class InfestedAffix extends AffixType<EmptyAffixData> {
         registry.on(DeathEvent.class, (champion, data, strength, evt) -> {
             LivingEntity entity = champion.entity();
             if (!(entity.level() instanceof ServerLevel level)) return;
-            int count = AffixDefaults.INFESTED_SPAWN_COUNT() * strength * 2;
-            spawnParasites(entity, count, entity.getLastHurtByMob(), level);
+            int count = ChampionsConfig.infestedAmount * strength * 2;
+	        LivingEntity target = entity.getLastHurtByMob();
+            spawnParasites(entity, count, target, level);
+
         });
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     static void spawnParasites(LivingEntity host, int count,
-                               LivingEntity target, ServerLevel level) {
+                               @Nullable LivingEntity target, ServerLevel level) {
+        if (target == null) return;
         // Resolve configurable parasite entity type; fall back to silverfish on bad id
-        EntityType<?> parasiteType = BuiltInRegistries.ENTITY_TYPE
-                .getOptional(ResourceLocation.parse(AffixDefaults.INFESTED_PARASITE()))
-                .orElse(EntityType.SILVERFISH);
+        boolean isEnder = target.getType().is(ChampionEntityTypes.Tags.IS_ENDER);
+        EntityType<?> parasiteType =
+                EntityType.byString(isEnder ? ChampionsConfig.infestedEnderParasite : ChampionsConfig.infestedParasite).orElse(EntityType.SILVERFISH);
 
         for (int i = 0; i < count; i++) {
             var entity = parasiteType.create(level);
@@ -76,7 +80,7 @@ public final class InfestedAffix extends AffixType<EmptyAffixData> {
             parasite.moveTo(host.getX() + dx, host.getY(), host.getZ() + dz,
                     host.getYRot(), 0);
             level.addFreshEntityWithPassengers(parasite);
-            if (target != null) parasite.setTarget(target);
+	        parasite.setTarget(target);
         }
     }
 
@@ -102,7 +106,7 @@ public final class InfestedAffix extends AffixType<EmptyAffixData> {
             if (--timer > 0) return;
             timer = SPAWN_INTERVAL;
             if (mob.level() instanceof ServerLevel level) {
-                int count = AffixDefaults.INFESTED_SPAWN_COUNT() + strength - 1;
+                int count = ChampionsConfig.infestedAmount + strength - 1;
                 spawnParasites(mob, count, mob.getTarget(), level);
             }
         }

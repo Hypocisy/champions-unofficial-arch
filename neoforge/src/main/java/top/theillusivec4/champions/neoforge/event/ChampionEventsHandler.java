@@ -9,22 +9,17 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
-import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.MobSplitEvent;
+import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.affix.handler.event.*;
 import top.theillusivec4.champions.api.champion.Champion;
+import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.champion.ChampionLootHandler;
 import top.theillusivec4.champions.common.champion.ChampionView;
 import top.theillusivec4.champions.common.champion.GlobalDispatcher;
-import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.client.ChampionsOverlay;
 import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.effect.ChampionEffects;
@@ -36,8 +31,8 @@ import top.theillusivec4.champions.neoforge.network.ChampionSyncPacket;
 import java.util.HashSet;
 import java.util.List;
 
-import static net.neoforged.neoforge.event.entity.player.PlayerEvent.*;
-import static net.neoforged.neoforge.network.PacketDistributor.*;
+import static net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking;
+import static net.neoforged.neoforge.network.PacketDistributor.sendToPlayer;
 
 /**
  * NeoForge event bridge.

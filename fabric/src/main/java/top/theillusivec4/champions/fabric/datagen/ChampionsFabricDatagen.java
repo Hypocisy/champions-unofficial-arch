@@ -2,15 +2,15 @@ package top.theillusivec4.champions.fabric.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import net.minecraft.core.RegistrySetBuilder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import top.theillusivec4.champions.common.datagen.ArchetypeProvider;
-import top.theillusivec4.champions.common.datagen.ChampionLanguageProvider;
-import top.theillusivec4.champions.common.datagen.DamageTypeProvider;
-import top.theillusivec4.champions.common.datagen.TierProvider;
+import top.theillusivec4.champions.common.datagen.*;
 import top.theillusivec4.champions.common.filter.EntityFilter;
 import top.theillusivec4.champions.common.phase.ChampionPhase;
 import top.theillusivec4.champions.common.phase.PhaseCondition;
 import top.theillusivec4.champions.common.phase.PhaseEffect;
+import top.theillusivec4.champions.common.registry.ModDamageTypes;
 
 import java.util.List;
 import java.util.Set;
@@ -42,14 +42,23 @@ public final class ChampionsFabricDatagen implements DataGeneratorEntrypoint {
         pack.addProvider((output, registries) ->
                 buildArchetypes(new ArchetypeProvider(output)));
 
-        pack.addProvider(DamageTypeProvider::new);
-
+        pack.addProvider(FabricDamageTypeProvider::new);
+        pack.addProvider(ModDamageTypeTagsProvider::new);
+        pack.addProvider(ModEntityTypeTagsProvider::new);
         // ── Client assets — all locales ───────────────────────────────────────
         for (String locale : LOCALES) {
             final String loc = locale;
             pack.addProvider((output, registries) ->
                     new ChampionLanguageProvider(output, loc));
         }
+    }
+
+    @Override
+    public void buildRegistry(RegistrySetBuilder registryBuilder) {
+        registryBuilder.add(
+                Registries.DAMAGE_TYPE,
+                ModDamageTypes::bootstrap
+        );
     }
 
     // ── Archetypes ────────────────────────────────────────────────────────────

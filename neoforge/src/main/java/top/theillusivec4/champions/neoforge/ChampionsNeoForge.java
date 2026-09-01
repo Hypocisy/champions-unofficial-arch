@@ -16,7 +16,6 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -27,6 +26,7 @@ import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.champion.ChampionSpawnHandler;
 import top.theillusivec4.champions.common.command.ChampionCommand;
 import top.theillusivec4.champions.common.config.ChampionConfigSpec;
+import top.theillusivec4.champions.common.config.ChampionConfigSpecClient;
 import top.theillusivec4.champions.common.item.ChampionItems;
 import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.neoforge.integration.dispenser.ChampionEggDispenseBehavior;
@@ -182,11 +182,17 @@ public final class ChampionsNeoForge {
         if (event.getConfig().getSpec() == ChampionConfigSpec.SPEC) {
             ChampionConfigSpec.bakeAndApply();
         }
+        if (event.getConfig().getSpec() == ChampionConfigSpecClient.SPEC) {
+            ChampionConfigSpecClient.bakeAndApply();
+        }
     }
 
     private void onConfigReload(ModConfigEvent.Reloading event) {
         if (event.getConfig().getSpec() == ChampionConfigSpec.SPEC) {
             ChampionConfigSpec.bakeAndApply();
+        }
+        if (event.getConfig().getSpec() == ChampionConfigSpecClient.SPEC) {
+            ChampionConfigSpecClient.bakeAndApply();
         }
     }
 

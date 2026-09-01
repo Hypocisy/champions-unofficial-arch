@@ -6,7 +6,10 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-import top.theillusivec4.champions.common.archetype.*;
+import top.theillusivec4.champions.common.archetype.AffixPool;
+import top.theillusivec4.champions.common.archetype.ChampionArchetype;
+import top.theillusivec4.champions.common.archetype.TierRange;
+import top.theillusivec4.champions.common.archetype.WeightedAffix;
 import top.theillusivec4.champions.common.filter.EntityFilter;
 import top.theillusivec4.champions.common.phase.ChampionPhase;
 

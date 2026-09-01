@@ -4,7 +4,7 @@ import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.AttackEvent;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.effect.ChampionEffects;
 
 /**
@@ -24,13 +24,13 @@ public final class ParalyzingAffix extends AffixType<EmptyAffixData> {
     public void registerHandlers(HandlerRegistry<EmptyAffixData> registry) {
         registry.on(AttackEvent.class, (champion, data, strength, evt) -> {
             // Cap at 0.95 so there's always a 5% escape chance
-            float chance = Math.min((float) AffixDefaults.PARALYZING_CHANCE() * strength, 0.95f);
+            float chance = Math.min((float) ChampionsConfig.paralyzingChance * strength, 0.95f);
             if (evt.target().getRandom().nextFloat() >= chance) return;
 
             // Don't reset the timer if already paralysed — let it expire naturally
             if (ChampionEffects.hasParalysis(evt.target())) return;
 
-            ChampionEffects.applyParalysis(evt.target(), AffixDefaults.PARALYZING_DURATION());
+            ChampionEffects.applyParalysis(evt.target(), ChampionsConfig.paralyzingDuration);
         });
     }
 }

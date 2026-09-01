@@ -9,7 +9,7 @@ import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.AttackEvent;
 import top.theillusivec4.champions.api.affix.handler.event.HurtEvent;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 /**
  * Applies knockback + slowness in two directions:
@@ -40,7 +40,7 @@ public final class KnockingAffix extends AffixType<EmptyAffixData> {
     }
 
     private static void applyKnockback(LivingEntity source, LivingEntity target, int strength) {
-        float force = (float) AffixDefaults.KNOCKING_KNOCKBACK() * strength;
+        float force = (float) ChampionsConfig.knockingKnockback * strength;
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
         target.knockback(
                 force,

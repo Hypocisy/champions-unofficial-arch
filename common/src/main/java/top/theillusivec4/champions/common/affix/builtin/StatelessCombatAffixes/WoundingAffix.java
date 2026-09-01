@@ -4,7 +4,7 @@ import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.AttackEvent;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.effect.ChampionEffects;
 
 /**
@@ -22,10 +22,10 @@ public final class WoundingAffix extends AffixType<EmptyAffixData> {
     @Override
     public void registerHandlers(HandlerRegistry<EmptyAffixData> registry) {
         registry.on(AttackEvent.class, (champion, data, strength, evt) -> {
-            float chance = (float) (AffixDefaults.WOUNDING_CHANCE() * Math.min(strength * 0.4f, 1f));
+            float chance = (float) (ChampionsConfig.woundingChance * Math.min(strength * 0.4f, 1f));
             if (evt.target().getRandom().nextFloat() >= chance) return;
 
-            int duration = (int) (AffixDefaults.WOUNDING_DURATION() * (1 + strength * 0.2));
+            int duration = (int) (ChampionsConfig.woundingDuration * (1 + strength * 0.2));
 
             ChampionEffects.wound().ifPresentOrElse(
                     effect -> {

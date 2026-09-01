@@ -69,6 +69,7 @@ public final class ChampionsConfig {
     public static int     infestedAmount              = 2;
     public static int     infestedInterval            = 10;
     public static String  infestedParasite            = "minecraft:silverfish";
+    public static String  infestedEnderParasite       = "minecraft:endermite";
     public static double  knockingKnockback           = 5.0;
     public static double  livelyHealAmount            = 1.0;
     public static double  livelyPassiveMultiplier     = 5.0;
@@ -195,6 +196,8 @@ public final class ChampionsConfig {
         public int     infestedAmount              = 2;
         public int     infestedInterval            = 10;
         public String  infestedParasite            = "minecraft:silverfish";
+        public String  infestedEnderParasite            = "minecraft:endermite";
+
         public double  knockingKnockback           = 5.0;
         public double  livelyHealAmount            = 1.0;
         public double  livelyPassiveMultiplier     = 5.0;

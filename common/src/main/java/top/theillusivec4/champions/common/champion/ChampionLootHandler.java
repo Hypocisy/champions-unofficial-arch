@@ -1,5 +1,6 @@
 package top.theillusivec4.champions.common.champion;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +17,6 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.core.registries.BuiltInRegistries;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.common.config.ChampionsConfig;
 

@@ -6,6 +6,7 @@ import top.theillusivec4.champions.api.affix.IAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.DamageEvent;
 import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 /**
  * Regenerates health when the champion has not taken damage recently.
@@ -33,17 +34,17 @@ public final class LivelyAffix extends AffixType<LivelyAffix.Data> {
         registry.on(TickEvent.class, (champion, data, strength, evt) -> {
             if (!evt.every(20)) return;
 
-            long cooldownTicks = AffixDefaults.LIVELY_COOLDOWN_SECONDS() * 20L
+            long cooldownTicks = ChampionsConfig.livelyCooldown * 20L
                     / Math.max(strength, 1);
             long timeSinceHit = champion.entity().level().getGameTime() - data.lastDamageTime;
 
             if (timeSinceHit < cooldownTicks) return;
 
-            double healAmount = AffixDefaults.LIVELY_HEAL_AMOUNT() * strength;
+            double healAmount = ChampionsConfig.livelyHealAmount * strength;
 
             // Passive multiplier when the mob hasn't been aggro'd for a while
             if (champion.entity().getNoActionTime() >= 100) {
-                healAmount *= AffixDefaults.LIVELY_PASSIVE_MULTIPLIER();
+                healAmount *= ChampionsConfig.livelyPassiveMultiplier;
             }
 
             champion.entity().heal((float) healAmount);

@@ -16,7 +16,7 @@ import top.theillusivec4.champions.api.affix.handler.event.AttackEvent;
 import top.theillusivec4.champions.api.affix.handler.event.HurtEvent;
 import top.theillusivec4.champions.api.affix.handler.event.SpawnEvent;
 import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 /**
  * Fire immunity, lava pathfinding, fire damage aura, and dual fire-on-contact.
@@ -54,9 +54,9 @@ public final class MoltenAffix extends AffixType<EmptyAffixData> {
 
         // ── Active: champion attacks → set target on fire ─────────────────────
         registry.on(AttackEvent.class, (champion, data, strength, evt) -> {
-            evt.target().setRemainingFireTicks(AffixDefaults.MOLTEN_FIRE_TICKS() * strength);
+            evt.target().setRemainingFireTicks(ChampionsConfig.moltenFireTicks * strength);
             // Immediate burst fire damage so hits feel impactful
-            float burst = (float) (AffixDefaults.MOLTEN_AURA_DAMAGE() * strength * 0.5);
+            float burst = (float) (ChampionsConfig.moltenAuraDamage * strength * 0.5);
             if (burst > 0) {
                 evt.target().hurt(champion.entity().damageSources().onFire(), burst);
             }
@@ -67,7 +67,7 @@ public final class MoltenAffix extends AffixType<EmptyAffixData> {
             // Don't apply fire from fire-type damage (already burning source)
             if (evt.source().is(DamageTypeTags.IS_FIRE) || evt.source().is(DamageTypes.LAVA)) return;
             if (evt.source().getEntity() instanceof LivingEntity attacker) {
-                attacker.setRemainingFireTicks(AffixDefaults.MOLTEN_FIRE_TICKS() * strength);
+                attacker.setRemainingFireTicks(ChampionsConfig.moltenFireTicks * strength);
             }
         });
 
@@ -76,8 +76,8 @@ public final class MoltenAffix extends AffixType<EmptyAffixData> {
             if (!evt.every(20)) return;
             LivingEntity entity = champion.entity();
             if (entity.level().isClientSide()) return;
-            double range = AffixDefaults.MOLTEN_AURA_RANGE() * (0.5 + strength * 0.2);
-            float damage = (float) (AffixDefaults.MOLTEN_AURA_DAMAGE() * strength);
+            double range = ChampionsConfig.moltenAuraRange * (0.5 + strength * 0.2);
+            float damage = (float) (ChampionsConfig.moltenAuraDamage * strength);
 
             entity.level().getEntitiesOfClass(LivingEntity.class,
                     entity.getBoundingBox().inflate(range),

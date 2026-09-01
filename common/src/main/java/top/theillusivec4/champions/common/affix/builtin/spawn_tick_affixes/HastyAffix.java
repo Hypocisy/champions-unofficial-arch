@@ -9,7 +9,7 @@ import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.SpawnEvent;
 import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
-import top.theillusivec4.champions.common.affix.builtin.AffixDefaults;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 // ── HastyAffix ────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ public final class HastyAffix extends AffixType<EmptyAffixData> {
         // consistent across all mob types regardless of their base speed value.
         attr.addTransientModifier(new AttributeModifier(
                 MODIFIER_ID,
-                AffixDefaults.HASTY_SPEED_BONUS() * strength,
+                ChampionsConfig.hastySpeedBonus * strength,
                 AttributeModifier.Operation.ADD_VALUE
         ));
     }

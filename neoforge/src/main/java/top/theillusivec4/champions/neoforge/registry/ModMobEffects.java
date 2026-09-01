@@ -1,10 +1,10 @@
 package top.theillusivec4.champions.neoforge.registry;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffect;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.core.registries.BuiltInRegistries;
 import top.theillusivec4.champions.common.effect.ChampionEffects;
 import top.theillusivec4.champions.common.effect.ParalysisEffect;
 import top.theillusivec4.champions.common.effect.WoundEffect;

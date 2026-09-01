@@ -9,6 +9,7 @@ import top.theillusivec4.champions.api.affix.IAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
 import top.theillusivec4.champions.api.affix.handler.event.HurtEvent;
 import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
+import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 /**
  * Randomly activates a magic shield that blocks ALL incoming damage.
@@ -34,7 +35,7 @@ public final class ShieldingAffix extends AffixType<ShieldingAffix.Data>
         // Tick: randomly toggle shield every 40 ticks
         registry.on(TickEvent.class, (champion, data, strength, evt) -> {
             if (!evt.every(40)) return;
-            double chance = AffixDefaults.SHIELDING_CHANCE() * (0.5 + strength * 0.1);
+            double chance = ChampionsConfig.shieldingChance * (0.5 + strength * 0.1);
             if (champion.entity().getRandom().nextDouble() >= chance) return;
             data.shielding = !data.shielding;
             // Sync is triggered by the next persist() call via the save-callback chain.

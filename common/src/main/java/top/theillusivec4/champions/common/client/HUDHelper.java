@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.champion.ChampionTier;
+import top.theillusivec4.champions.common.config.ChampionsClientConfig;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,8 +42,8 @@ public final class HUDHelper {
             int screenW = mc.getWindow().getGuiScaledWidth();
             int barX = screenW / 2 - 91;             // same anchor as vanilla XP bar
             int barY = 21;
-            int xOff = 0;
-            int yOff = 0;
+            int xOff = ChampionsClientConfig.hudXOffset;
+            int yOff = ChampionsClientConfig.hudYOffset;
 
             int color = tier.display().color();
             float r = FastColor.ARGB32.red(color) / 255.0F;

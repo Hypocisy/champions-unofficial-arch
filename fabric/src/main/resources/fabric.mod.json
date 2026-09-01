@@ -14,7 +14,7 @@
     "minecraft": "${minecraft_version}",
     "java": ">=21",
     "fabric-api": "*",
-    "architectury": "*"
+    "forgeconfigapiport": "*"
   },
   "suggests": {
     "kubejs": "*",

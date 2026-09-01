@@ -13,11 +13,7 @@ import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.common.phase.PhaseProcessor;
 import top.theillusivec4.champions.platform.ChampionAttachmentProvider;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Fabric implementation of {@link ChampionAttachmentProvider}.

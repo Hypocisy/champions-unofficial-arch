@@ -2,7 +2,10 @@ package top.theillusivec4.champions.neoforge.platform;
 
 import net.neoforged.neoforge.registries.DeferredHolder;
 import top.theillusivec4.champions.api.affix.AffixType;
-import top.theillusivec4.champions.common.affix.builtin.*;
+import top.theillusivec4.champions.common.affix.builtin.AdaptableAffix;
+import top.theillusivec4.champions.common.affix.builtin.LivelyAffix;
+import top.theillusivec4.champions.common.affix.builtin.ReflectiveAffix;
+import top.theillusivec4.champions.common.affix.builtin.ShieldingAffix;
 import top.theillusivec4.champions.common.affix.builtin.StatelessCombatAffixes.DampeningAffix;
 import top.theillusivec4.champions.common.affix.builtin.StatelessCombatAffixes.KnockingAffix;
 import top.theillusivec4.champions.common.affix.builtin.StatelessCombatAffixes.ParalyzingAffix;

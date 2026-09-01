@@ -1,6 +1,5 @@
 package top.theillusivec4.champions.neoforge.datagen;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -42,6 +41,9 @@ public final class ChampionsDatagen {
 		boolean includeServer = event.includeServer();
 		boolean includeClient = event.includeClient();
 		var provider = event.getLookupProvider();
+
+		// data
+		var datapackProvider = generator.addProvider(event.includeServer(), new ModDatapackProvider(packOutput, provider));
 		// ── Server data ───────────────────────────────────────────────────────
 
 		generator.addProvider(includeServer,
@@ -49,10 +51,11 @@ public final class ChampionsDatagen {
 		generator.addProvider(includeServer,
 				buildArchetypes(packOutput));
 		generator.addProvider(includeServer,
-				new DamageTypeProvider(packOutput, provider));
-		generator.addProvider(includeServer,
 				new AttributesModifierDataProvider(packOutput, provider));
+		generator.addProvider(includeServer,
+				new ModDamageTypeTagsProvider(packOutput, datapackProvider.getRegistryProvider()));
 
+		generator.addProvider(includeServer, new ModEntityTypeTagsProvider(packOutput, provider));
 		// ── Client assets ─────────────────────────────────────────────────────
 
 		generator.addProvider(includeClient, buildLanguage(packOutput, "en_us"));
