@@ -79,7 +79,7 @@ public final class FormBuilder {
 
     /** Header with a small trailing button (typically "✕" to remove the block). */
     public FormBuilder headerWithRemove(String label, int indent, Runnable onRemove) {
-        Button btn = Button.builder(Component.literal("✕"), b -> onRemove.run())
+        Button btn = Button.builder(Component.literal("§c✕"), b -> onRemove.run())
                 .bounds(0, 0, 20, Row.FIELD_H).build();
         rows.add(Row.header(label, indent, btn));
         return this;
@@ -226,7 +226,8 @@ public final class FormBuilder {
     }
 
     public FormBuilder action(String buttonText, int indent, Runnable onClick) {
-        Button btn = Button.builder(Component.literal(buttonText), b -> onClick.run())
+        String styled = buttonText.startsWith("+") ? "§a" + buttonText : buttonText;
+        Button btn = Button.builder(Component.literal(styled), b -> onClick.run())
                 .bounds(0, 0, 120, Row.FIELD_H).build();
         rows.add(Row.field(null, indent, List.of(btn)));
         return this;

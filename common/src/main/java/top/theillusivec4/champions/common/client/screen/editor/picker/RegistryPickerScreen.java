@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 public final class RegistryPickerScreen extends Screen {
 
     private static final int PAD = 6;
-    private static final int ENTRY_H = 14;
-    private static final int FOOT_H = 30;
+    private static final int ENTRY_H = 12;
+    private static final int FOOT_H = 26;
 
     private final List<PickerEntry> all;
     private final boolean multi;
@@ -36,6 +36,8 @@ public final class RegistryPickerScreen extends Screen {
     private List<PickerEntry> filtered = new ArrayList<>();
     private int scroll;
 
+    private int x0, y0, x1, y1;
+
     private RegistryPickerScreen(String title, List<PickerEntry> entries, boolean multi,
                                  Set<String> preselected, Consumer<Set<String>> onCommit,
                                  Runnable back) {
@@ -45,7 +47,6 @@ public final class RegistryPickerScreen extends Screen {
         this.selected = new LinkedHashSet<>(preselected);
         this.onCommit = onCommit;
         this.back = back;
-        recompute();
     }
 
     public static RegistryPickerScreen create(String title, List<PickerEntry> entries,
@@ -56,31 +57,29 @@ public final class RegistryPickerScreen extends Screen {
 
     @Override
     protected void init() {
-        int w = Math.min(320, width - 40);
-        int h = Math.min(340, height - 40);
-        // centered window
+        int w = Math.min(340, width - 30);
+        int h = Math.min(height - 30, 360);
         x0 = (width - w) / 2;
-        y0 = (height - h) / 2;
+        y0 = (height - h) / 2 + 8;
         x1 = x0 + w;
         y1 = y0 + h;
 
         search = new EditBox(Minecraft.getInstance().font,
                 x0 + PAD, y0 + PAD, w - PAD * 2, 16, Component.literal("search"));
         search.setMaxLength(256);
-        search.setHint(Component.literal("Search…"));
+        search.setHint(Component.literal("§7Search…"));
         search.setResponder(q -> { recompute(); scroll = 0; });
         addRenderableWidget(search);
 
-        int btnY = y1 - FOOT_H + 6;
+        int btnY = y1 - FOOT_H + 4;
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> finish(true))
-                .bounds(x1 - 150, btnY, 70, 18).build());
+                .bounds(x1 - 148, btnY, 70, 17).build());
         addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> finish(false))
-                .bounds(x1 - 74, btnY, 70, 18).build());
+                .bounds(x1 - 74, btnY, 70, 17).build());
 
+        recompute();
         this.setInitialFocus(search);
     }
-
-    private int x0, y0, x1, y1;
 
     private void finish(boolean apply) {
         if (apply) onCommit.accept(new LinkedHashSet<>(selected));
@@ -101,17 +100,20 @@ public final class RegistryPickerScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
-        super.render(g, mx, my, pt);
-        // window frame
-        g.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 0xFF000000);
-        g.fill(x0, y0, x1, y1, 0xFF2B2B2B);
-        g.drawString(font, getTitle(), x0 + PAD, y0 - 12, 0xFFFFFFCC, false);
+        // 1. Backdrop + window frame FIRST
+        g.fill(0, 0, width, height, 0xB40D1014);
+        g.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 0xFF2B3442);
+        g.fill(x0, y0, x1, y1, 0xF4121620);
+        // title strip
+        g.fill(x0, y0, x1, y0 + PAD + 22, 0xFF1A2029);
+        g.fill(x0, y0, x0 + 2, y0 + PAD + 22, 0xFFB98A38);
+        g.drawString(font, getTitle(), x0 + PAD + 2, y0 - 10, 0xFFE3B557, true);
 
-        int ly = y0 + PAD + 20;
-        int lh = (y1 - FOOT_H) - ly;
-        int vis = lh / ENTRY_H;
-        g.fill(x0 + 1, ly, x1 - 1, ly + lh, 0xFF1A1A1A);
-
+        // 2. List area (no widgets there)
+        int ly = listY();
+        int lh = listH();
+        int vis = Math.max(1, lh / ENTRY_H);
+        g.fill(x0 + 1, ly, x1 - 1, ly + lh, 0xFF0C0F14);
         int max = Math.max(0, filtered.size() - vis);
         scroll = Math.min(scroll, max);
 
@@ -121,37 +123,45 @@ public final class RegistryPickerScreen extends Screen {
             boolean sel = selected.contains(e.id());
             boolean hover = mx >= x0 && mx <= x1 && my >= iy && my < iy + ENTRY_H;
 
-            if (sel) g.fill(x0 + 1, iy, x1 - 1, iy + ENTRY_H, 0xFF3D4C5C);
-            else if (hover) g.fill(x0 + 1, iy, x1 - 1, iy + ENTRY_H, 0xFF333333);
+            if (sel) g.fill(x0 + 1, iy, x1 - 1, iy + ENTRY_H, 0xFF31445C);
+            else if (hover) g.fill(x0 + 1, iy, x1 - 1, iy + ENTRY_H, 0x22FFFFFF);
 
             String box = multi ? (sel ? "☑ " : "☐ ") : (sel ? "● " : "○ ");
-            String line = box + e.display().getString();
-            int boxColor = sel ? 0xFF9CDBFF : 0xFFAAAAAA;
-            g.drawString(font, line, x0 + PAD, iy + (ENTRY_H - 8) / 2, boxColor, false);
-            // id on the right, gray, clipped
-            String idTxt = "§8" + e.id();
-            int iw = font.width(idTxt);
-            if (iw < 130) {
-                g.drawString(font, idTxt, x1 - PAD - iw, iy + (ENTRY_H - 8) / 2,
-                        0xFF777777, false);
-            }
+            String name = e.display().getString();
+            int nameColor = sel ? 0xFFE3B557 : 0xFFDCDCDC;
+            // name left, id right — clip both so they never overlap
+            String idTxt = e.id();
+            int idW = Math.min(120, font.width(idTxt) + 4);
+            String clippedName = font.plainSubstrByWidth(
+                    box + name, (x1 - x0) - PAD * 2 - idW);
+            g.drawString(font, clippedName, x0 + PAD, iy + 2, nameColor, false);
+            g.drawString(font, "§8" + font.plainSubstrByWidth(idTxt, idW),
+                    x1 - PAD - idW, iy + 2, 0xFF777777, false);
         }
 
-        // footer info + scrollbar
+        // scrollbar
+        if (filtered.size() > vis && max > 0) {
+            int barH = Math.max(8, lh * vis / filtered.size());
+            int barY = ly + (lh - barH) * scroll / max;
+            g.fill(x1 - 2, barY, x1, barY + barH, 0xFF6E6E6E);
+        }
+
+        // 3. Widgets (search box, buttons) ON TOP of everything
+        super.render(g, mx, my, pt);
+
+        // 4. Footer info
         String info = (multi ? "Selected: " + selected.size() + "  ·  " : "")
                 + filtered.size() + " / " + all.size();
-        g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 8, 0xFF888888, false);
-        if (filtered.size() > vis && max > 0) {
-            int barH = Math.max(10, lh * vis / filtered.size());
-            int barY = ly + (lh - barH) * scroll / max;
-            g.fill(x1 - 3, barY, x1 - 1, barY + barH, 0xFF777777);
-        }
+        g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF888888, false);
     }
+
+    private int listY() { return y0 + PAD + 20; }
+    private int listH() { return (y1 - FOOT_H) - listY() - 4; }
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        int ly = y0 + PAD + 20;
-        int lh = (y1 - FOOT_H) - ly;
+        int ly = listY();
+        int lh = listH();
         if (mx >= x0 && mx <= x1 && my >= ly && my < ly + lh) {
             int idx = ((int) my - ly) / ENTRY_H + scroll;
             if (idx >= 0 && idx < filtered.size()) {
@@ -170,10 +180,10 @@ public final class RegistryPickerScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double scrollX, double scrollY) {
-        int ly = y0 + PAD + 20;
-        int lh = (y1 - FOOT_H) - ly;
+        int ly = listY();
+        int lh = listH();
         if (mx >= x0 && mx <= x1 && my >= ly && my < ly + lh) {
-            int vis = lh / ENTRY_H;
+            int vis = Math.max(1, lh / ENTRY_H);
             int max = Math.max(0, filtered.size() - vis);
             scroll = (int) Math.max(0, Math.min(max, scroll - scrollY));
             return true;

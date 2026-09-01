@@ -162,10 +162,13 @@ public record EditorPayload(
         Set<String> selected = Set.copyOf(repo.getSelectedIds());
         for (var pack : repo.getAvailablePacks()) {
             String id = pack.getId();
+            // only world-folder packs — built-in packs from vanilla/mods are not
+            // meaningfully toggleable from the editor and would flood the list
+            if (!id.startsWith("file/")) continue;
             out.add(new PackInfo(
                     id,
                     pack.getTitle().getString(),
-                    id.startsWith("file/") ? "world" : "built-in",
+                    "world",
                     selected.contains(id)));
         }
         out.sort(java.util.Comparator.comparing(PackInfo::id));
