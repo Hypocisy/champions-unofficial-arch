@@ -1,5 +1,7 @@
 plugins {
     id 'com.gradleup.shadow'
+    id "com.modrinth.minotaur"
+    id "net.darkhax.curseforgegradle"
 }
 
 architectury {
@@ -111,6 +113,53 @@ loom {
 
 // Make the main source set pick up generated resources at runtime
 sourceSets.main.resources.srcDirs += ["src/generated/resources"]
+
+// ── Mod publishing — run `./gradlew publishModPlatforms` from the root ───────
+
+def modrinthToken = System.getenv("MODRINTH_TOKEN") ?: (findProperty("modrinth_token") ?: "")
+def curseforgeToken = System.getenv("CURSEFORGE_TOKEN") ?: (findProperty("curseforge_token") ?: "")
+
+def hasModrinth = !modrinthToken.toString().blank && !("${findProperty("modrinth_project_id") ?: ""}").blank
+def hasCurseforge = !curseforgeToken.toString().blank && !("${findProperty("curseforge_id") ?: ""}").blank
+
+modrinth {
+    token = modrinthToken
+    projectId = "${findProperty("modrinth_project_id") ?: ""}"
+    versionNumber = "${project.version}-neoforge"
+    versionName = "${mod_name} ${project.version} (NeoForge)"
+    versionType = "release"
+    changelog = rootProject.ext.releaseChangelog()
+    uploadFile = remapJar
+    gameVersions = ["${minecraft_version}"]
+    loaders = ["neoforge"]
+    dependencies {
+        required.project "architectury-api"
+        optional.project "kubejs"
+        optional.project "jade"
+        optional.project "the-one-probe"
+    }
+}
+
+tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    group = "publishing"
+    onlyIf { hasCurseforge }
+    dependsOn remapJar
+    apiToken = curseforgeToken
+    debugMode = Boolean.parseBoolean(System.getenv("CF_DEBUG") ?: "false")
+    def cfProjectId = "${findProperty("curseforge_id") ?: ""}".trim()
+    if (cfProjectId) upload(cfProjectId, remapJar.archiveFile.get().asFile) {
+        displayName = "${mod_name} ${project.version} (NeoForge)"
+        releaseType = "release"
+        changelog = rootProject.ext.releaseChangelog()
+        changelogType = "markdown"
+        addGameVersion("${minecraft_version}")
+        addModLoader("NeoForge")
+        addRequirement("architectury-api")
+        addOptional("kubejs", "jade", "the-one-probe")
+    }
+}
+
+tasks.named("modrinth") { onlyIf { hasModrinth } }
 
 // ── Publishing ────────────────────────────────────────────────────────────────
 

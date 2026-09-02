@@ -1,6 +1,8 @@
 plugins {
     id "architectury-plugin"
     id "com.gradleup.shadow"
+    id "com.modrinth.minotaur"
+    id "net.darkhax.curseforgegradle"
 }
 
 architectury {
@@ -31,6 +33,53 @@ configurations {
 loom {
     accessWidenerPath = file("../common/src/main/resources/champions.accesswidener")
 }
+
+// ── Mod publishing — run `./gradlew publishModPlatforms` from the root ───────
+
+def modrinthToken = System.getenv("MODRINTH_TOKEN") ?: (findProperty("modrinth_token") ?: "")
+def curseforgeToken = System.getenv("CURSEFORGE_TOKEN") ?: (findProperty("curseforge_token") ?: "")
+
+def hasModrinth = !modrinthToken.toString().blank && !("${findProperty("modrinth_project_id") ?: ""}").blank
+def hasCurseforge = !curseforgeToken.toString().blank && !("${findProperty("curseforge_id") ?: ""}").blank
+
+modrinth {
+    token = modrinthToken
+    projectId = "${findProperty("modrinth_project_id") ?: ""}"
+    versionNumber = "${project.version}-fabric"
+    versionName = "${mod_name} ${project.version} (Fabric)"
+    versionType = "release"
+    changelog = rootProject.ext.releaseChangelog()
+    uploadFile = remapJar
+    gameVersions = ["${minecraft_version}"]
+    loaders = ["fabric"]
+    dependencies {
+        required.project "fabric-api"
+        required.project "forge-config-api-port"
+        optional.project "jade"
+        optional.project "modmenu"
+    }
+}
+
+tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    group = "publishing"
+    onlyIf { hasCurseforge }
+    dependsOn remapJar
+    apiToken = curseforgeToken
+    debugMode = Boolean.parseBoolean(System.getenv("CF_DEBUG") ?: "false")
+    def cfProjectId = "${findProperty("curseforge_id") ?: ""}".trim()
+    if (cfProjectId) upload(cfProjectId, remapJar.archiveFile.get().asFile) {
+        displayName = "${mod_name} ${project.version} (Fabric)"
+        releaseType = "release"
+        changelog = rootProject.ext.releaseChangelog()
+        changelogType = "markdown"
+        addGameVersion("${minecraft_version}")
+        addModLoader("Fabric")
+        addRequirement("fabric-api", "forge-config-api-port")
+        addOptional("jade", "modmenu")
+    }
+}
+
+tasks.named("modrinth") { onlyIf { hasModrinth } }
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
