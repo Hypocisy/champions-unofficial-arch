@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -57,8 +58,11 @@ public final class RegistryPickerScreen extends Screen {
 
     @Override
     protected void init() {
-        int w = Math.min(340, width - 30);
-        int h = Math.min(height - 20, 360);
+        // Full-screen-width modal: the old centered 340px-capped window read as
+        // "selection area truncated to half the screen". Span edge to edge with
+        // a small margin on both axes so rows and buttons are easy to hit.
+        int w = Math.max(200, width - 30);
+        int h = Math.max(120, height - 20);
         x0 = (width - w) / 2;
         y0 = (height - h) / 2;
         x1 = x0 + w;
@@ -67,15 +71,15 @@ public final class RegistryPickerScreen extends Screen {
         search = new EditBox(Minecraft.getInstance().font,
                 x0 + PAD, y0 + 26, w - PAD * 2, 18, Component.literal("search"));
         search.setMaxLength(256);
-        search.setHint(Component.literal("§7Search…"));
+        search.setHint(Component.translatable("gui.champions.picker.search_hint"));
         search.setResponder(q -> { recompute(); scroll = 0; });
         addRenderableWidget(search);
 
         int btnY = y1 - FOOT_H + 4;
-        addRenderableWidget(Button.builder(Component.literal("Done"), b -> finish(true))
-                .bounds(x1 - 148, btnY, 70, 17).build());
-        addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> finish(false))
-                .bounds(x1 - 74, btnY, 70, 17).build());
+        addRenderableWidget(Button.builder(Component.translatable("gui.champions.picker.done"), b -> finish(true))
+                .bounds(x1 - 160, btnY, 76, 18).build());
+        addRenderableWidget(Button.builder(Component.translatable("gui.champions.picker.cancel"), b -> finish(false))
+                .bounds(x1 - 80, btnY, 76, 18).build());
 
         recompute();
         this.setInitialFocus(search);
@@ -138,7 +142,7 @@ public final class RegistryPickerScreen extends Screen {
         int max = Math.max(0, filtered.size() - vis);
         scroll = Math.min(scroll, max);
 
-        g.enableScissor(x0 + 1, ly, x1 - x0 - 2, lh);
+        g.enableScissor(x0 + 1, ly, x1 - 1, ly + lh);
         for (int i = scroll; i < Math.min(filtered.size(), scroll + vis); i++) {
             PickerEntry e = filtered.get(i);
             int iy = ly + (i - scroll) * ENTRY_H;
@@ -167,13 +171,20 @@ public final class RegistryPickerScreen extends Screen {
             int barY = ly + (lh - barH) * scroll / max;
             g.fill(x1 - 2, barY, x1, barY + barH, 0xFF566070);
         }
-        String info = (multi ? "Selected: " + selected.size() + "  ·  " : "")
-                + filtered.size() + " / " + all.size();
+        Component info = Component.translatable("gui.champions.picker.count", filtered.size(), all.size());
+        if (multi) {
+            info = Component.translatable("gui.champions.picker.selected", selected.size())
+                    .append(" ").append(info);
+        }
         g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF79808B, false);
     }
 
     private int listY() { return y0 + 48; }
     private int listH() { return (y1 - FOOT_H) - listY() - 2; }
+
+    private static String tr(String key, Object... args) {
+        return EditorLang.tr(key, args);
+    }
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {

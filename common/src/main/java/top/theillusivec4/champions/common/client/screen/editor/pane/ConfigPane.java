@@ -1,5 +1,6 @@
 package top.theillusivec4.champions.common.client.screen.editor.pane;
 
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.EditorSession;
 import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder;
 
@@ -11,13 +12,17 @@ public final class ConfigPane implements EditorPane {
 
     @Override
     public void buildForm(FormBuilder fb, String selectedId) {
-        fb.header("Server Config");
+        fb.header(tr("header.server_config"));
         EditorSession session = fb.session();
         session.configValues.forEach((key, value) ->
                 fb.direct(key, value, v -> {
                     session.configValues.put(key, v);
                     session.markDirty(key);
                 }));
-        fb.hint("config values apply on Save & Reload", 1);
+        fb.hint(tr("hint.config_reload"), 1);
+    }
+
+    private static String tr(String key, Object... args) {
+        return EditorLang.tr(key, args);
     }
 }

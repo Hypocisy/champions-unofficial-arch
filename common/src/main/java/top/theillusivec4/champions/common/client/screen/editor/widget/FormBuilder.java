@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.EditorSession;
 import top.theillusivec4.champions.common.client.screen.editor.json.JsonPathOps;
 import top.theillusivec4.champions.common.client.screen.editor.picker.PickerEntry;
@@ -268,7 +269,8 @@ public final class FormBuilder {
     }
 
     private static String labelValue(boolean v) {
-        return v ? "§aTrue" : "§cFalse";
+        return v ? EditorLang.tr("gui.champions.editor.toggle.true")
+                 : EditorLang.tr("gui.champions.editor.toggle.false");
     }
 
     private static int indexOf(List<CycleOption> options, String value) {

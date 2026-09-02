@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.client.screen.editor.pane;
 
 import com.google.gson.JsonObject;
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.filter.FilterEditor;
 import top.theillusivec4.champions.common.client.screen.editor.json.JsonPathOps;
 import top.theillusivec4.champions.common.client.screen.editor.picker.PickerSources;
@@ -41,40 +42,40 @@ public final class ArchetypePane implements EditorPane {
         JsonObject root = fb.root();
 
         // ── Base ───────────────────────────────────────────────────────────────
-        fb.header("Archetype");
-        fb.textRaw("id", "id", selectedId);
-        fb.text("weight", "weight", "10");
-        fb.header("Tier Range");
-        fb.text("min", "tier_range.min", "1");
-        fb.text("max", "tier_range.max", "5");
+        fb.header(tr("header.archetype"));
+        fb.textRaw(tr("label.id"), "id", selectedId);
+        fb.text(tr("label.weight"), "weight", "10");
+        fb.header(tr("header.tier_range"));
+        fb.text(tr("label.min"), "tier_range.min", "1");
+        fb.text(tr("label.max"), "tier_range.max", "5");
 
         // ── Entity filter ──────────────────────────────────────────────────────
-        fb.header("Entity Filter");
+        fb.header(tr("header.entity_filter"));
         FilterEditor.build(fb, "entity_filter", 0);
 
         // ── Affix pools ────────────────────────────────────────────────────────
-        fb.header("Affix Pools");
+        fb.header(tr("header.affix_pools"));
         String poolsPath = "affix_pools";
         int poolCount = JsonPathOps.size(root, poolsPath);
         for (int i = 0; i < poolCount; i++) {
             String poolPath = JsonPathOps.index(poolsPath, i);
-            fb.headerWithRemove("Pool " + (i + 1), 1,
+            fb.headerWithRemove(tr("header.pool", i + 1), 1,
                     () -> { JsonPathOps.remove(root, poolPath); fb.rebuild(); });
-            fb.text("tier min", JsonPathOps.child(poolPath, "tier_range.min"), "1", 2);
-            fb.text("tier max", JsonPathOps.child(poolPath, "tier_range.max"), "5", 2);
-            fb.text("min count", JsonPathOps.child(poolPath, "min_count"), "1", 2);
-            fb.text("max count", JsonPathOps.child(poolPath, "max_count"), "1", 2);
+            fb.text(tr("label.tier_min"), JsonPathOps.child(poolPath, "tier_range.min"), "1", 2);
+            fb.text(tr("label.tier_max"), JsonPathOps.child(poolPath, "tier_range.max"), "5", 2);
+            fb.text(tr("label.min_count"), JsonPathOps.child(poolPath, "min_count"), "1", 2);
+            fb.text(tr("label.max_count"), JsonPathOps.child(poolPath, "max_count"), "1", 2);
 
-            fb.header("Candidates", 2);
+            fb.header(tr("header.candidates"), 2);
             String candsPath = JsonPathOps.child(poolPath, "candidates");
             int candCount = JsonPathOps.size(root, candsPath);
             for (int j = 0; j < candCount; j++) {
                 String candPath = JsonPathOps.index(candsPath, j);
-                fb.headerWithRemove("Candidate " + (j + 1), 2,
+                fb.headerWithRemove(tr("header.candidate", j + 1), 2,
                         () -> { JsonPathOps.remove(root, candPath); fb.rebuild(); });
                 buildCandidate(fb, candPath);
             }
-            fb.action("+ Add candidate", 2, () -> {
+            fb.action(tr("action.add_candidate"), 2, () -> {
                 JsonObject c = new JsonObject();
                 c.addProperty("affix", "champions:lively");
                 c.addProperty("weight", 10);
@@ -82,7 +83,7 @@ public final class ArchetypePane implements EditorPane {
                 fb.rebuild();
             });
         }
-        fb.action("+ Add pool", 1, () -> {
+        fb.action(tr("action.add_pool"), 1, () -> {
             JsonObject pool = new JsonObject();
             pool.add("tier_range", range(1, 5));
             pool.addProperty("min_count", 1);
@@ -93,37 +94,37 @@ public final class ArchetypePane implements EditorPane {
         });
 
         // ── Phases ─────────────────────────────────────────────────────────────
-        fb.header("Phases");
+        fb.header(tr("header.phases"));
         String phasesPath = "phases";
         int phaseCount = JsonPathOps.size(root, phasesPath);
         for (int i = 0; i < phaseCount; i++) {
             String phasePath = JsonPathOps.index(phasesPath, i);
             String phaseId = JsonPathOps.str(root, JsonPathOps.child(phasePath, "id"),
                     "phase_" + (i + 1));
-            fb.headerWithRemove("Phase: " + shortId(phaseId), 1,
+            fb.headerWithRemove(tr("header.phase", shortId(phaseId)), 1,
                     () -> { JsonPathOps.remove(root, phasePath); fb.rebuild(); });
-            fb.textRaw("id", JsonPathOps.child(phasePath, "id"),
+            fb.textRaw(tr("label.id"), JsonPathOps.child(phasePath, "id"),
                     "champions:phase_" + (i + 1), 2);
-            fb.toggle("repeatable", JsonPathOps.child(phasePath, "repeatable"), false, 2);
+            fb.toggle(tr("label.repeatable"), JsonPathOps.child(phasePath, "repeatable"), false, 2);
 
-            fb.header("Condition", 2);
+            fb.header(tr("header.condition"), 2);
             buildCondition(fb, JsonPathOps.child(phasePath, "condition"));
 
-            fb.header("Effects", 2);
+            fb.header(tr("header.effects"), 2);
             String effectsPath = JsonPathOps.child(phasePath, "effects");
             int fxCount = JsonPathOps.size(root, effectsPath);
             for (int j = 0; j < fxCount; j++) {
                 String fxPath = JsonPathOps.index(effectsPath, j);
-                fb.headerWithRemove("Effect " + (j + 1), 2,
+                fb.headerWithRemove(tr("header.effect", j + 1), 2,
                         () -> { JsonPathOps.remove(root, fxPath); fb.rebuild(); });
                 buildEffect(fb, fxPath);
             }
-            fb.action("+ Add effect", 2, () -> {
+            fb.action(tr("action.add_effect"), 2, () -> {
                 JsonPathOps.append(root, effectsPath, defaultEffect("add_affix"));
                 fb.rebuild();
             });
         }
-        fb.action("+ Add phase", 1, () -> {
+        fb.action(tr("action.add_phase"), 1, () -> {
             JsonObject phase = new JsonObject();
             phase.addProperty("id", "champions:new_phase");
             phase.add("condition", defaultCondition("health_percent"));
@@ -140,18 +141,18 @@ public final class ArchetypePane implements EditorPane {
         String affixPath = JsonPathOps.child(candPath, "affix");
         String current = JsonPathOps.str(root, affixPath, "champions:lively");
 
-        fb.textRaw("affix", affixPath, current, 3);
-        fb.action("Pick affix…  §8" + shortId(current), 3, () ->
-                fb.openPicker("Affixes", PickerSources.affixes(), false,
+        fb.textRaw(tr("label.affix"), affixPath, current, 3);
+        fb.action(EditorLang.tr("gui.champions.editor.pick_affix", shortId(current)), 3, () ->
+                fb.openPicker(EditorLang.tr("gui.champions.picker.title.affixes"), PickerSources.affixes(), false,
                         Set.of(current), ids -> {
                             if (!ids.isEmpty()) {
                                 JsonPathOps.setString(root, affixPath, ids.iterator().next());
                                 fb.rebuild();
                             }
                         }));
-        fb.text("weight", JsonPathOps.child(candPath, "weight"), "10", 3);
-        fb.text("min strength", JsonPathOps.child(candPath, "min_strength"), "1", 3);
-        fb.text("max strength", JsonPathOps.child(candPath, "max_strength"), "1", 3);
+        fb.text(tr("label.weight"), JsonPathOps.child(candPath, "weight"), "10", 3);
+        fb.text(tr("label.min_strength"), JsonPathOps.child(candPath, "min_strength"), "1", 3);
+        fb.text(tr("label.max_strength"), JsonPathOps.child(candPath, "max_strength"), "1", 3);
     }
 
     // ── Phase condition ────────────────────────────────────────────────────────
@@ -161,7 +162,7 @@ public final class ArchetypePane implements EditorPane {
         String type = JsonPathOps.str(root, JsonPathOps.child(condPath, "type"),
                 "health_percent");
 
-        fb.cycle("type", JsonPathOps.child(condPath, "type"), type, CONDITION_TYPES, 3,
+        fb.cycle(tr("label.type"), JsonPathOps.child(condPath, "type"), type, CONDITION_TYPES, 3,
                 newType -> {
                     JsonPathOps.set(root, condPath, defaultCondition(newType));
                     fb.rebuild();
@@ -169,15 +170,15 @@ public final class ArchetypePane implements EditorPane {
 
         switch (type) {
             case "health_percent" ->
-                    fb.text("below", JsonPathOps.child(condPath, "below"), "0.5", 3);
+                    fb.text(tr("label.below"), JsonPathOps.child(condPath, "below"), "0.5", 3);
             case "time_elapsed" ->
-                    fb.text("seconds", JsonPathOps.child(condPath, "seconds"), "30", 3);
+                    fb.text(tr("label.seconds"), JsonPathOps.child(condPath, "seconds"), "30", 3);
             case "affix_triggered" -> {
                 String affixPath = JsonPathOps.child(condPath, "affix");
                 String current = JsonPathOps.str(root, affixPath, "champions:adaptable");
-                fb.textRaw("affix", affixPath, current, 3);
-                fb.action("Pick affix…  §8" + shortId(current), 3, () ->
-                        fb.openPicker("Affixes", PickerSources.affixes(), false,
+                fb.textRaw(tr("label.affix"), affixPath, current, 3);
+                fb.action(EditorLang.tr("gui.champions.editor.pick_affix", shortId(current)), 3, () ->
+                        fb.openPicker(EditorLang.tr("gui.champions.picker.title.affixes"), PickerSources.affixes(), false,
                                 Set.of(current), ids -> {
                                     if (!ids.isEmpty()) {
                                         JsonPathOps.setString(root, affixPath,
@@ -185,9 +186,9 @@ public final class ArchetypePane implements EditorPane {
                                         fb.rebuild();
                                     }
                                 }));
-                fb.text("count", JsonPathOps.child(condPath, "count"), "3", 3);
+                fb.text(tr("label.count"), JsonPathOps.child(condPath, "count"), "3", 3);
             }
-            default -> fb.hint("§cunknown condition type", 3);
+            default -> fb.hint(tr("hint.unknown_condition"), 3);
         }
     }
 
@@ -197,7 +198,7 @@ public final class ArchetypePane implements EditorPane {
         JsonObject root = fb.root();
         String type = JsonPathOps.str(root, JsonPathOps.child(fxPath, "type"), "add_affix");
 
-        fb.cycle("type", JsonPathOps.child(fxPath, "type"), type, EFFECT_TYPES, 3,
+        fb.cycle(tr("label.type"), JsonPathOps.child(fxPath, "type"), type, EFFECT_TYPES, 3,
                 newType -> {
                     JsonPathOps.set(root, fxPath, defaultEffect(newType));
                     fb.rebuild();
@@ -207,9 +208,9 @@ public final class ArchetypePane implements EditorPane {
             case "add_affix" -> {
                 String affixPath = JsonPathOps.child(fxPath, "affix");
                 String current = JsonPathOps.str(root, affixPath, "champions:enkindling");
-                fb.textRaw("affix", affixPath, current, 3);
-                fb.action("Pick affix…  §8" + shortId(current), 3, () ->
-                        fb.openPicker("Affixes", PickerSources.affixes(), false,
+                fb.textRaw(tr("label.affix"), affixPath, current, 3);
+                fb.action(EditorLang.tr("gui.champions.editor.pick_affix", shortId(current)), 3, () ->
+                        fb.openPicker(EditorLang.tr("gui.champions.picker.title.affixes"), PickerSources.affixes(), false,
                                 Set.of(current), ids -> {
                                     if (!ids.isEmpty()) {
                                         JsonPathOps.setString(root, affixPath,
@@ -217,25 +218,29 @@ public final class ArchetypePane implements EditorPane {
                                         fb.rebuild();
                                     }
                                 }));
-                fb.text("strength", JsonPathOps.child(fxPath, "strength"), "1", 3);
+                fb.text(tr("label.strength"), JsonPathOps.child(fxPath, "strength"), "1", 3);
             }
             case "add_attribute" -> {
-                fb.textWithPick("attribute", JsonPathOps.child(fxPath, "attribute"),
+                fb.textWithPick(tr("label.attribute"), JsonPathOps.child(fxPath, "attribute"),
                         "minecraft:generic.movement_speed", PickerSources.attributes());
-                fb.text("amount", JsonPathOps.child(fxPath, "amount"), "0.3", 3);
-                fb.cycle("operation", JsonPathOps.child(fxPath, "operation"),
+                fb.text(tr("label.amount"), JsonPathOps.child(fxPath, "amount"), "0.3", 3);
+                fb.cycle(tr("label.operation"), JsonPathOps.child(fxPath, "operation"),
                         "add_value", OPERATIONS, 3, null);
             }
             case "add_mob_effect" -> {
-                fb.textWithPick("effect", JsonPathOps.child(fxPath, "effect"),
+                fb.textWithPick(tr("label.effect"), JsonPathOps.child(fxPath, "effect"),
                         "minecraft:speed", PickerSources.mobEffects());
-                fb.text("amplifier", JsonPathOps.child(fxPath, "amplifier"), "0", 3);
-                fb.toggle("infinite", JsonPathOps.child(fxPath, "infinite"), true, 3);
-                fb.text("duration_ticks", JsonPathOps.child(fxPath, "duration_ticks"),
+                fb.text(tr("label.amplifier"), JsonPathOps.child(fxPath, "amplifier"), "0", 3);
+                fb.toggle(tr("label.infinite"), JsonPathOps.child(fxPath, "infinite"), true, 3);
+                fb.text(tr("label.duration_ticks"), JsonPathOps.child(fxPath, "duration_ticks"),
                         "200", 3);
             }
-            default -> fb.hint("§cunknown effect type", 3);
+            default -> fb.hint(tr("hint.unknown_effect"), 3);
         }
+    }
+
+    private static String tr(String key, Object... args) {
+        return EditorLang.tr(key, args);
     }
 
     // ── Defaults ───────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.client.screen.editor.filter;
 
 import com.google.gson.JsonObject;
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.json.JsonPathOps;
 import top.theillusivec4.champions.common.client.screen.editor.picker.PickerSources;
 import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder;
@@ -21,15 +22,17 @@ public final class FilterEditor {
 
     private FilterEditor() {}
 
-    private static final List<CycleOption> TYPES = List.of(
-            new CycleOption("any",          "any"),
-            new CycleOption("all_of",       "all_of (AND)"),
-            new CycleOption("any_of",       "any_of (OR)"),
-            new CycleOption("entity_type",  "entity_type"),
-            new CycleOption("entity_tag",   "entity_tag"),
-            new CycleOption("mod_id",       "mod_id"),
-            new CycleOption("mob_category", "mob_category"),
-            new CycleOption("attribute",    "attribute"));
+    private static List<CycleOption> types() {
+        return List.of(
+                new CycleOption("any",          EditorLang.tr("gui.champions.editor.filter.type.any")),
+                new CycleOption("all_of",       EditorLang.tr("gui.champions.editor.filter.type.all_of")),
+                new CycleOption("any_of",       EditorLang.tr("gui.champions.editor.filter.type.any_of")),
+                new CycleOption("entity_type",  EditorLang.tr("gui.champions.editor.filter.type.entity_type")),
+                new CycleOption("entity_tag",   EditorLang.tr("gui.champions.editor.filter.type.entity_tag")),
+                new CycleOption("mod_id",       EditorLang.tr("gui.champions.editor.filter.type.mod_id")),
+                new CycleOption("mob_category", EditorLang.tr("gui.champions.editor.filter.type.mob_category")),
+                new CycleOption("attribute",    EditorLang.tr("gui.champions.editor.filter.type.attribute")));
+    }
 
     /** Builds the rows for the filter node at {@code basePath} with the given indent. */
     public static void build(FormBuilder fb, String basePath, int indent) {
@@ -37,8 +40,8 @@ public final class FilterEditor {
         JsonObject node = JsonPathOps.obj(root, basePath);
 
         if (node == null) {
-            fb.action("+ Add filter", indent, () -> fb.openPicker(
-                    "Filter type", PickerSources.filterTypes(), false, java.util.Set.of(),
+            fb.action(EditorLang.tr("gui.champions.editor.action.add_filter"), indent, () -> fb.openPicker(
+                    EditorLang.tr("gui.champions.picker.title.filter_type"), PickerSources.filterTypes(), false, java.util.Set.of(),
                     ids -> {
                         if (!ids.isEmpty()) {
                             JsonPathOps.set(root, basePath,
@@ -52,7 +55,8 @@ public final class FilterEditor {
         String type = JsonPathOps.str(root, JsonPathOps.child(basePath, "type"), "any");
 
         // Type switcher — structural: replaces the whole node with the new default
-        fb.cycle("type", JsonPathOps.child(basePath, "type"), type, TYPES, indent,
+        fb.cycle(EditorLang.tr("gui.champions.editor.label.type"),
+                JsonPathOps.child(basePath, "type"), type, types(), indent,
                 newType -> {
                     JsonPathOps.set(root, basePath, defaultFilter(newType));
                     fb.rebuild();
@@ -60,14 +64,14 @@ public final class FilterEditor {
 
         // Per-type config rows
         switch (type) {
-            case "any" -> fb.hint("matches every entity", indent + 1);
+            case "any" -> fb.hint(EditorLang.tr("gui.champions.editor.hint.matches_every"), indent + 1);
             case "all_of", "any_of" -> buildComposite(fb, basePath, indent, type);
             case "entity_type" -> buildEntityType(fb, basePath, indent);
             case "entity_tag" -> buildEntityTag(fb, basePath, indent);
             case "mod_id" -> buildModId(fb, basePath, indent);
             case "mob_category" -> buildMobCategory(fb, basePath, indent);
             case "attribute" -> buildAttribute(fb, basePath, indent);
-            default -> fb.hint("§cunknown filter type: " + type, indent + 1);
+            default -> fb.hint(EditorLang.tr("gui.champions.editor.hint.unknown_filter", type), indent + 1);
         }
     }
 
@@ -75,18 +79,19 @@ public final class FilterEditor {
 
     private static void buildComposite(FormBuilder fb, String basePath, int indent, String type) {
         JsonObject root = fb.root();
-        fb.hint(type.equals("all_of") ? "child filters are ANDed" : "child filters are ORed",
-                indent + 1);
+        fb.hint(EditorLang.tr(type.equals("all_of")
+                ? "gui.champions.editor.hint.filters_anded"
+                : "gui.champions.editor.hint.filters_ored"), indent + 1);
 
         String childrenPath = JsonPathOps.child(basePath, "filters");
         int n = JsonPathOps.size(root, childrenPath);
         for (int i = 0; i < n; i++) {
             String childPath = JsonPathOps.index(childrenPath, i);
-            fb.headerWithRemove("Filter " + (i + 1), indent + 1,
+            fb.headerWithRemove(EditorLang.tr("gui.champions.editor.header.filter", i + 1), indent + 1,
                     () -> { JsonPathOps.remove(root, childPath); fb.rebuild(); });
             build(fb, childPath, indent + 2);
         }
-        fb.action("+ Add child filter", indent + 1, () -> {
+        fb.action(EditorLang.tr("gui.champions.editor.action.add_child_filter"), indent + 1, () -> {
             JsonPathOps.append(root, childrenPath, defaultFilter("any"));
             fb.rebuild();
         });
@@ -99,9 +104,9 @@ public final class FilterEditor {
         String typesPath = JsonPathOps.child(basePath, "types");
         List<String> current = JsonPathOps.stringsIn(root, typesPath);
 
-        fb.toggle("whitelist", JsonPathOps.child(basePath, "whitelist"), true, indent + 1);
-        fb.action("Entity types… (" + current.size() + " selected)", indent + 1, () ->
-                fb.openPicker("Entity types", PickerSources.entityTypes(), true,
+        fb.toggle(EditorLang.tr("gui.champions.editor.label.whitelist"), JsonPathOps.child(basePath, "whitelist"), true, indent + 1);
+        fb.action(EditorLang.tr("gui.champions.editor.action.pick_entity_types", current.size()), indent + 1, () ->
+                fb.openPicker(EditorLang.tr("gui.champions.picker.title.entity_types"), PickerSources.entityTypes(), true,
                         new LinkedHashSet<>(current), ids -> {
                             JsonPathOps.setStringArray(root, typesPath, List.copyOf(ids));
                             fb.rebuild();
@@ -112,8 +117,8 @@ public final class FilterEditor {
     }
 
     private static void buildEntityTag(FormBuilder fb, String basePath, int indent) {
-        fb.textRaw("tag", JsonPathOps.child(basePath, "tag"), "minecraft:undead", indent + 1);
-        fb.toggle("whitelist", JsonPathOps.child(basePath, "whitelist"), true, indent + 1);
+        fb.textRaw(EditorLang.tr("gui.champions.editor.label.tag"), JsonPathOps.child(basePath, "tag"), "minecraft:undead", indent + 1);
+        fb.toggle(EditorLang.tr("gui.champions.editor.label.whitelist"), JsonPathOps.child(basePath, "whitelist"), true, indent + 1);
     }
 
     private static void buildModId(FormBuilder fb, String basePath, int indent) {
@@ -121,9 +126,9 @@ public final class FilterEditor {
         String path = JsonPathOps.child(basePath, "mod_ids");
         List<String> current = JsonPathOps.stringsIn(root, path);
 
-        fb.toggle("whitelist", JsonPathOps.child(basePath, "whitelist"), true, indent + 1);
-        fb.action("Mod namespaces… (" + current.size() + " selected)", indent + 1, () ->
-                fb.openPicker("Mod namespaces", PickerSources.modNamespaces(), true,
+        fb.toggle(EditorLang.tr("gui.champions.editor.label.whitelist"), JsonPathOps.child(basePath, "whitelist"), true, indent + 1);
+        fb.action(EditorLang.tr("gui.champions.editor.action.pick_mod_namespaces", current.size()), indent + 1, () ->
+                fb.openPicker(EditorLang.tr("gui.champions.picker.title.mod_namespaces"), PickerSources.modNamespaces(), true,
                         new LinkedHashSet<>(current), ids -> {
                             JsonPathOps.setStringArray(root, path, List.copyOf(ids));
                             fb.rebuild();
@@ -138,8 +143,8 @@ public final class FilterEditor {
         String path = JsonPathOps.child(basePath, "categories");
         List<String> current = JsonPathOps.stringsIn(root, path);
 
-        fb.action("Categories… (" + current.size() + " selected)", indent + 1, () ->
-                fb.openPicker("Mob categories", PickerSources.mobCategories(), true,
+        fb.action(EditorLang.tr("gui.champions.editor.action.pick_categories", current.size()), indent + 1, () ->
+                fb.openPicker(EditorLang.tr("gui.champions.picker.title.mob_categories"), PickerSources.mobCategories(), true,
                         new LinkedHashSet<>(current), ids -> {
                             JsonPathOps.setStringArray(root, path, List.copyOf(ids));
                             fb.rebuild();
@@ -150,10 +155,10 @@ public final class FilterEditor {
     }
 
     private static void buildAttribute(FormBuilder fb, String basePath, int indent) {
-        fb.textWithPick("attribute", JsonPathOps.child(basePath, "attribute"),
+        fb.textWithPick(EditorLang.tr("gui.champions.editor.label.attribute"), JsonPathOps.child(basePath, "attribute"),
                 "minecraft:generic.max_health", PickerSources.attributes());
-        fb.text("min", JsonPathOps.child(basePath, "min"), "0", indent + 1);
-        fb.text("max", JsonPathOps.child(basePath, "max"), "1000000", indent + 1);
+        fb.text(EditorLang.tr("gui.champions.editor.label.min"), JsonPathOps.child(basePath, "min"), "0", indent + 1);
+        fb.text(EditorLang.tr("gui.champions.editor.label.max"), JsonPathOps.child(basePath, "max"), "1000000", indent + 1);
     }
 
     // ── Defaults when adding / switching type ─────────────────────────────────

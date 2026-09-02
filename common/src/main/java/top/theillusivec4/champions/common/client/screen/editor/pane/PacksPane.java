@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.client.screen.editor.pane;
 
 import top.theillusivec4.champions.common.client.screen.ChampionEditorScreen;
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.EditorSession;
 import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder;
 import top.theillusivec4.champions.common.network.EditorPackActionPacket;
@@ -26,34 +27,34 @@ public final class PacksPane implements EditorPane {
         EditorSession session = fb.session();
 
         // ── Import / Export — always visible, first block ─────────────────────
-        fb.header("Import / Export");
-        fb.action("§bExport editor content → zip", 1, () ->
+        fb.header(tr("header.import_export"));
+        fb.action(tr("action.export"), 1, () ->
                 ChampionEditorScreen.sendPackAction(
                         EditorPackActionPacket.export(fb.session().toPayload())));
-        fb.hint("writes champions_<time>.zip into", 1);
-        fb.hint("<world>/champions_exports/", 1);
+        fb.hint(tr("hint.export_target"), 1);
+        fb.hint(tr("hint.exports_dir"), 1);
         fb.gap();
-        fb.action("§bImport zips from champions_imports/", 1, () ->
+        fb.action(tr("action.import"), 1, () ->
                 ChampionEditorScreen.sendPackAction(EditorPackActionPacket.importPacks()));
-        fb.hint("drop datapack zips into <world>/champions_imports/", 1);
-        fb.hint("they are copied into datapacks/ and enabled", 1);
+        fb.hint(tr("hint.import_dir"), 1);
+        fb.hint(tr("hint.import_copied"), 1);
 
         // ── World datapacks ───────────────────────────────────────────────────
-        fb.header("World Datapacks");
+        fb.header(tr("header.world_datapacks"));
         int enabled = 0;
         if (session.packsSnapshot != null) {
             enabled = (int) session.packsSnapshot.stream().filter(EditorPayload.PackInfo::enabled).count();
         }
         fb.hint(session.packsSnapshot == null
-                ? "no packs loaded" : enabled + " / " + session.packsSnapshot.size() + " enabled", 1);
+                ? tr("hint.no_packs") : tr("hint.packs_enabled", enabled, session.packsSnapshot.size()), 1);
 
         if (selectedId != null) {
-            fb.header("Pack: " + selectedId, 1);
+            fb.header(tr("header.pack", selectedId), 1);
             boolean isEnabled = "enabled".equals(session.packsMap().get(selectedId));
-            fb.cycle("state", "", isEnabled ? "enabled" : "disabled",
+            fb.cycle(tr("label.state"), "", isEnabled ? "enabled" : "disabled",
                     List.of(
-                            new FormBuilder.CycleOption("enabled", "§a● enabled"),
-                            new FormBuilder.CycleOption("disabled", "§c○ disabled")),
+                            new FormBuilder.CycleOption("enabled", tr("pack.enabled")),
+                            new FormBuilder.CycleOption("disabled", tr("pack.disabled"))),
                     2, newValue -> {
                         // optimistic local update so the list flips instantly
                         if (session.packsSnapshot != null) {
@@ -68,9 +69,13 @@ public final class PacksPane implements EditorPane {
                                 EditorPackActionPacket.toggle(selectedId));
                         fb.rebuild();
                     });
-            fb.hint("toggling reloads server resources", 2);
+            fb.hint(tr("hint.reload_on_toggle"), 2);
         } else {
-            fb.hint("select a pack in the list to enable/disable it", 1);
+            fb.hint(tr("hint.select_pack"), 1);
         }
+    }
+
+    private static String tr(String key, Object... args) {
+        return EditorLang.tr(key, args);
     }
 }

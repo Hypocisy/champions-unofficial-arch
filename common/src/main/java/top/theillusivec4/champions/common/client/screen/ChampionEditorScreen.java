@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.EditorSession;
 import top.theillusivec4.champions.common.client.screen.editor.pane.ArchetypePane;
 import top.theillusivec4.champions.common.client.screen.editor.pane.ConfigPane;
@@ -103,7 +104,7 @@ public final class ChampionEditorScreen extends Screen {
     // ── Entry / platform API ───────────────────────────────────────────────────
 
     public ChampionEditorScreen(EditorSession session) {
-        super(Component.literal("Champions Editor"));
+        super(Component.translatable("gui.champions.editor.title"));
         this.session = session;
     }
 
@@ -143,36 +144,40 @@ public final class ChampionEditorScreen extends Screen {
         // positions never change between tabs.
         int avail = width - PAD * 2 - 100;
         int tabW = Math.max(46, (avail - 2 * 4) / 5);
-        tabArchetypes = tab("Archetypes", EditorSession.Tab.ARCHETYPES, PAD, tabW);
-        tabTiers      = tab("Tiers",      EditorSession.Tab.TIERS,      PAD + (tabW + 2), tabW);
-        tabModifiers  = tab("Modifiers",  EditorSession.Tab.MODIFIERS,  PAD + (tabW + 2) * 2, tabW);
-        tabConfig     = tab("Config",     EditorSession.Tab.CONFIG,     PAD + (tabW + 2) * 3, tabW);
-        tabPacks      = tab("Packs",      EditorSession.Tab.PACKS,      PAD + (tabW + 2) * 4, tabW);
+        tabArchetypes = tab(tr("gui.champions.editor.tab.archetypes"), EditorSession.Tab.ARCHETYPES, PAD, tabW);
+        tabTiers      = tab(tr("gui.champions.editor.tab.tiers"),      EditorSession.Tab.TIERS,      PAD + (tabW + 2), tabW);
+        tabModifiers  = tab(tr("gui.champions.editor.tab.modifiers"),  EditorSession.Tab.MODIFIERS,  PAD + (tabW + 2) * 2, tabW);
+        tabConfig     = tab(tr("gui.champions.editor.tab.config"),     EditorSession.Tab.CONFIG,     PAD + (tabW + 2) * 3, tabW);
+        tabPacks      = tab(tr("gui.champions.editor.tab.packs"),      EditorSession.Tab.PACKS,      PAD + (tabW + 2) * 4, tabW);
 
         int toggleX = width - PAD - 92;
         btnForm = addRenderableWidget(Button.builder(
-                        Component.literal("Form"), b -> setRawMode(false))
+                        Component.literal(tr("gui.champions.editor.view.form")), b -> setRawMode(false))
                 .bounds(toggleX, 3, 44, TAB_H).build());
         btnJson = addRenderableWidget(Button.builder(
-                        Component.literal("JSON"), b -> setRawMode(true))
+                        Component.literal(tr("gui.champions.editor.view.json")), b -> setRawMode(true))
                 .bounds(toggleX + 46, 3, 44, TAB_H).build());
 
         int botY = barY() + 3;
         btnNew = addRenderableWidget(Button.builder(
-                Component.literal("§a+ New"), b -> onNew()).bounds(PAD, botY, 46, 18).build());
+                Component.literal(tr("gui.champions.editor.new")), b -> onNew()).bounds(PAD, botY, 46, 18).build());
         btnDelete = addRenderableWidget(Button.builder(
-                Component.literal("§cDelete"), b -> onDelete())
+                Component.literal(tr("gui.champions.editor.delete")), b -> onDelete())
                 .bounds(PAD + 50, botY, 54, 18).build());
         btnSave = addRenderableWidget(Button.builder(
-                Component.literal("Save & Reload"), b -> onSave())
+                Component.literal(tr("gui.champions.editor.save_reload")), b -> onSave())
                 .bounds(width - 192, botY, 102, 18).build());
         btnClose = addRenderableWidget(Button.builder(
-                Component.literal("Close"), b -> onClose())
+                Component.literal(tr("gui.champions.editor.close")), b -> onClose())
                 .bounds(width - 86, botY, 82, 18).build());
 
-        // Raw editor survives resize — re-add, re-creating if the size changed
-        // (MultilineTextField wrap width is fixed at construction)
-        ensureRawEditor();
+        // CRITICAL: the raw editor must only be a child while actually shown.
+        // Vanilla 1.21.1 MultiLineEditBox.mouseClicked does NOT check `visible` —
+        // a merely-invisible instance still swallows every click (and steals
+        // focus) anywhere inside its bounds, which made the whole scrollable
+        // form panel unclickable. Detach it instead of hiding it.
+        if (session.rawMode) ensureRawEditor();
+        else hideRawEditor();
 
         refreshTabLabels();
         if (session.selectedId == null) selectFirst();
@@ -196,7 +201,7 @@ public final class ChampionEditorScreen extends Screen {
         if (session.rawMode && (tab == EditorSession.Tab.CONFIG
                 || tab == EditorSession.Tab.PACKS)) {
             session.rawMode = false;
-            if (rawEditor != null) rawEditor.visible = false;
+            hideRawEditor();
         }
         clearForm();
         refreshTabLabels();
@@ -205,19 +210,19 @@ public final class ChampionEditorScreen extends Screen {
 
     private void refreshTabLabels() {
         var t = session.activeTab;
-        tabArchetypes.setMessage(mark("Archetypes", t == EditorSession.Tab.ARCHETYPES));
-        tabTiers     .setMessage(mark("Tiers",      t == EditorSession.Tab.TIERS));
-        tabModifiers .setMessage(mark("Modifiers",  t == EditorSession.Tab.MODIFIERS));
-        tabConfig    .setMessage(mark("Config",     t == EditorSession.Tab.CONFIG));
-        tabPacks     .setMessage(mark("Packs",      t == EditorSession.Tab.PACKS));
+        tabArchetypes.setMessage(mark(tr("gui.champions.editor.tab.archetypes"), t == EditorSession.Tab.ARCHETYPES));
+        tabTiers     .setMessage(mark(tr("gui.champions.editor.tab.tiers"),      t == EditorSession.Tab.TIERS));
+        tabModifiers .setMessage(mark(tr("gui.champions.editor.tab.modifiers"),  t == EditorSession.Tab.MODIFIERS));
+        tabConfig    .setMessage(mark(tr("gui.champions.editor.tab.config"),     t == EditorSession.Tab.CONFIG));
+        tabPacks     .setMessage(mark(tr("gui.champions.editor.tab.packs"),      t == EditorSession.Tab.PACKS));
 
         boolean hasToggle = t != EditorSession.Tab.CONFIG && t != EditorSession.Tab.PACKS;
         btnForm.visible = hasToggle;
         btnJson.visible = hasToggle;
-        btnForm.setMessage(session.rawMode ? Component.literal("Form")
-                : Component.literal("§e▸ Form"));
-        btnJson.setMessage(session.rawMode ? Component.literal("§e▸ JSON")
-                : Component.literal("JSON"));
+        btnForm.setMessage(session.rawMode ? Component.literal(tr("gui.champions.editor.view.form"))
+                : Component.literal("§e▸ " + tr("gui.champions.editor.view.form")));
+        btnJson.setMessage(session.rawMode ? Component.literal("§e▸ " + tr("gui.champions.editor.view.json"))
+                : Component.literal(tr("gui.champions.editor.view.json")));
         btnNew.visible = pane().newEntryPrefix() != null;
     }
 
@@ -247,7 +252,7 @@ public final class ChampionEditorScreen extends Screen {
         } else {
             if (!commitRawIfNeeded()) return;
             session.rawMode = false;
-            if (rawEditor != null) rawEditor.visible = false;
+            hideRawEditor();
             rebuildForm();
             setFormWidgetsVisible(true);
         }
@@ -261,7 +266,7 @@ public final class ChampionEditorScreen extends Screen {
         try {
             var parsed = JsonParser.parseString(text);
             if (!parsed.isJsonObject()) {
-                saveError = "JSON must be an object";
+                saveError = tr("gui.champions.editor.error.not_object");
                 return false;
             }
             liveJson = parsed.getAsJsonObject();
@@ -269,7 +274,7 @@ public final class ChampionEditorScreen extends Screen {
             saveError = null;
             return true;
         } catch (JsonSyntaxException e) {
-            saveError = "Invalid JSON: " + e.getMessage();
+            saveError = tr("gui.champions.editor.error.invalid_json", e.getMessage());
             return false;
         }
     }
@@ -303,7 +308,26 @@ public final class ChampionEditorScreen extends Screen {
             addRenderableWidget(rawEditor);
             rawEditor.setX(panelX());
             rawEditor.setY(panelY());
+            rawEditor.visible = true;
         }
+    }
+
+    /**
+     * Detaches the raw JSON editor from the screen entirely.
+     *
+     * <p>Setting {@code visible = false} is NOT enough: vanilla
+     * {@link MultiLineEditBox#mouseClicked} ignores {@code visible} and
+     * consumes any click within its bounds (with {@code Screen.mouseClicked}
+     * then assigning it keyboard focus), so a hidden box blocks every widget
+     * layered inside its area. Removing it from {@code children} takes it out
+     * of hit-testing; {@link #ensureRawEditor()} re-attaches (and re-creates
+     * at the current size) when raw mode is entered again.</p>
+     */
+    private void hideRawEditor() {
+        if (rawEditor == null) return;
+        if (getFocused() == rawEditor) setFocused(null);
+        removeWidget(rawEditor);
+        rawEditor.visible = false;
     }
 
     private void updateValidation(String text) {
@@ -345,7 +369,7 @@ public final class ChampionEditorScreen extends Screen {
             rawEditor.visible = true;
             updateValidation(rawEditor.getValue());
         } else {
-            if (rawEditor != null) rawEditor.visible = false;
+            hideRawEditor();
             rebuildForm();
         }
     }
@@ -505,7 +529,7 @@ public final class ChampionEditorScreen extends Screen {
         // list panel + header
         frame(g, PAD, listTop(), LIST_W, listH());
         g.fill(PAD + 1, listTop() + 1, PAD + LIST_W - 1, listTop() + 13, C_HEADBG);
-        g.drawString(font, "§8ENTRIES §7" + session.currentMap().size(),
+        g.drawString(font, tr("gui.champions.editor.entries", session.currentMap().size()),
                 PAD + 6, listTop() + 3, C_HINT, false);
 
         // form panel
@@ -523,12 +547,12 @@ public final class ChampionEditorScreen extends Screen {
         super.render(g, mx, my, pt);
 
         // 2. scissored text layers — scrolled content clips at panel borders
-        g.enableScissor(PAD + 1, listTop() + 14, LIST_W - 2, listH() - 15);
+        g.enableScissor(PAD + 1, listTop() + 14, PAD + LIST_W - 1, listTop() + listH() - 1);
         renderEntryList(g, mx, my);
         g.disableScissor();
 
         if (!session.rawMode) {
-            g.enableScissor(panelX() + 1, panelY() + 1, panelW() - 2, panelH() - 2);
+            g.enableScissor(panelX() + 1, panelY() + 1, panelX() + panelW() - 1, panelY() + panelH() - 1);
             renderForm(g);
             g.disableScissor();
         }
@@ -549,7 +573,7 @@ public final class ChampionEditorScreen extends Screen {
             g.drawString(font, clip(font, "§c" + saveError, width / 2),
                     PAD + 112, barY() + 8, 0xFFFF6B6B, false);
         } else if (!session.dirtyIds.isEmpty()) {
-            g.drawString(font, "§e● " + session.dirtyIds.size() + " unsaved",
+            g.drawString(font, tr("gui.champions.editor.unsaved", session.dirtyIds.size()),
                     PAD + 112, barY() + 8, C_ACCENT, false);
         }
     }
@@ -664,6 +688,10 @@ public final class ChampionEditorScreen extends Screen {
     }
 
     // ── Utility ────────────────────────────────────────────────────────────────
+
+    private static String tr(String key, Object... args) {
+        return EditorLang.tr(key, args);
+    }
 
     private static String clip(Font font, String s, int maxW) {
         return font.plainSubstrByWidth(s, Math.max(0, maxW));
