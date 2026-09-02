@@ -62,24 +62,48 @@ modrinth {
 
 tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     group = "publishing"
-    onlyIf { hasCurseforge }
+    onlyIf {
+        boolean tokenOk = !curseforgeToken.toString().blank
+        boolean idOk = !("${findProperty("curseforge_id") ?: ""}").trim().blank
+        if (tokenOk && idOk) return true
+        def why = []
+        if (!tokenOk) why << "token missing (env CURSEFORGE_TOKEN / gradle prop curseforge_token)"
+        if (!idOk) why << "curseforge_id missing in gradle.properties"
+        logger.lifecycle("SKIPPED :fabric:curseforge — ${why.join('; ')}. " +
+                "If you just set the env var, RESTART the terminal first, or put tokens in ~/.gradle/gradle.properties.")
+        return false
+    }
     dependsOn remapJar
     apiToken = curseforgeToken
     debugMode = Boolean.parseBoolean(System.getenv("CF_DEBUG") ?: "false")
     def cfProjectId = "${findProperty("curseforge_id") ?: ""}".trim()
     if (cfProjectId) upload(cfProjectId, remapJar.archiveFile.get().asFile) {
-        displayName = "${mod_name} ${project.version} (Fabric)"
+        displayName = "${mod_name} ${project.version}"
         releaseType = "release"
         changelog = rootProject.ext.releaseChangelog()
         changelogType = "markdown"
         addGameVersion("${minecraft_version}")
+        addEnvironment("Client", "Server")
+        addJavaVersion("Java 21")
         addModLoader("Fabric")
         addRequirement("fabric-api", "forge-config-api-port")
         addOptional("jade", "modmenu")
     }
 }
 
-tasks.named("modrinth") { onlyIf { hasModrinth } }
+tasks.named("modrinth") {
+    onlyIf {
+        boolean tokenOk = !modrinthToken.toString().blank
+        boolean idOk = !("${findProperty("modrinth_project_id") ?: ""}").blank
+        if (tokenOk && idOk) return true
+        def why = []
+        if (!tokenOk) why << "token missing (env MODRINTH_TOKEN / gradle prop modrinth_token)"
+        if (!idOk) why << "modrinth_project_id missing in gradle.properties"
+        logger.lifecycle("SKIPPED :fabric:modrinth — ${why.join('; ')}. " +
+                "If you just set the env var, RESTART the terminal first, or put tokens in ~/.gradle/gradle.properties.")
+        return false
+    }
+}
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 

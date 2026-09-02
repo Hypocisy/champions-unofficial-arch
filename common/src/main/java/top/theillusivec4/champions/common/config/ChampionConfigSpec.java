@@ -215,36 +215,48 @@ public final class ChampionConfigSpec {
             b.push("affixes");
 
             b.push("adaptable");
-            adaptableReductionIncrement = b.defineInRange("reductionIncrement", 0.15, 0.0, 1.0);
-            adaptableMaxReduction       = b.defineInRange("maxReduction", 0.90, 0.0, 1.0);
+            adaptableReductionIncrement = b.comment("Damage reduction gained per consecutive hit of the same damage type (scales with affix strength)")
+                    .defineInRange("reductionIncrement", 0.15, 0.0, 1.0);
+            adaptableMaxReduction       = b.comment("Cap for the adaptable damage reduction")
+                    .defineInRange("maxReduction", 0.90, 0.0, 1.0);
             b.pop();
 
             b.push("arctic");
-            arcticAttackInterval = b.defineInRange("attackInterval", 3, 1, 100);
+            arcticAttackInterval = b.comment("Interval, in seconds, between Arctic ice-shot attacks")
+                    .defineInRange("attackInterval", 3, 1, 100);
             b.pop();
 
             b.push("dampening");
-            dampeningReduction = b.defineInRange("reduction", 0.30, 0.0, 1.0);
+            dampeningReduction = b.comment("Base fraction of direct melee/projectile damage reduced (scales with strength, hard cap 90%)")
+                    .defineInRange("reduction", 0.30, 0.0, 1.0);
             b.pop();
 
             b.push("desecrating");
-            desecratingInterval       = b.defineInRange("interval", 3, 1, Integer.MAX_VALUE);
-            desecratingActivationTime = b.defineInRange("activationTime", 1, 0, Integer.MAX_VALUE);
-            desecratingRadius         = b.defineInRange("radius", 4.0, 1.0, 32.0);
-            desecratingDuration       = b.defineInRange("duration", 10, 1, Integer.MAX_VALUE);
+            desecratingInterval       = b.comment("Interval, in seconds, between harm-cloud drops at the target's position")
+                    .defineInRange("interval", 3, 1, Integer.MAX_VALUE);
+            desecratingActivationTime = b.comment("Currently unused (reserved). Intended: delay, in seconds, before the first cloud")
+                    .defineInRange("activationTime", 1, 0, Integer.MAX_VALUE);
+            desecratingRadius         = b.comment("Initial radius, in blocks, of the harm cloud")
+                    .defineInRange("radius", 4.0, 1.0, 32.0);
+            desecratingDuration       = b.comment("Currently unused — cloud lifetime is 200 + 40 x strength ticks")
+                    .defineInRange("duration", 10, 1, Integer.MAX_VALUE);
             b.pop();
 
             b.push("enkindling");
-            enkindlingAttackInterval = b.defineInRange("attackInterval", 3, 1, 100);
+            enkindlingAttackInterval = b.comment("Interval, in seconds, between Enkindling fire-shot attacks")
+                    .defineInRange("attackInterval", 3, 1, 100);
             b.pop();
 
             b.push("hasty");
-            hastySpeedBonus = b.defineInRange("speedBonus", 0.25, 0.0, 10.0);
+            hastySpeedBonus = b.comment("Movement speed bonus applied while the affix is active (scales with strength)")
+                    .defineInRange("speedBonus", 0.25, 0.0, 10.0);
             b.pop();
 
             b.push("infested");
-            infestedAmount   = b.defineInRange("amount", 2, 1, 100);
-            infestedInterval = b.defineInRange("interval", 10, 1, 600);
+            infestedAmount   = b.comment("Base number of parasites per spawn wave (scales with strength)")
+                    .defineInRange("amount", 2, 1, 100);
+            infestedInterval = b.comment("Currently unused (reserved). Intended: interval, in seconds, between parasite waves")
+                    .defineInRange("interval", 10, 1, 600);
             infestedParasite = b.comment("The mob to use as a parasite for infestation")
                     .define("parasite", "minecraft:silverfish");
             infestedEnderParasite = b.comment("The mob to use as a parasite for infestation of ender mob")
@@ -252,49 +264,68 @@ public final class ChampionConfigSpec {
             b.pop();
 
             b.push("knocking");
-            knockingKnockback = b.defineInRange("knockback", 5.0, 0.0, 100.0);
+            knockingKnockback = b.comment("Knockback force applied to attackers (scales with strength)")
+                    .defineInRange("knockback", 5.0, 0.0, 100.0);
             b.pop();
 
             b.push("lively");
-            livelyHealAmount        = b.defineInRange("healAmount", 1.0, 0.0, 100.0);
-            livelyPassiveMultiplier = b.defineInRange("passiveMultiplier", 5.0, 1.0, 100.0);
-            livelyCooldown          = b.defineInRange("cooldown", 3, 1, 600);
+            livelyHealAmount        = b.comment("HP healed per second once the cooldown has elapsed (scales with strength)")
+                    .defineInRange("healAmount", 1.0, 0.0, 100.0);
+            livelyPassiveMultiplier = b.comment("Bonus multiplier while the champion has been idle/unprovoked for a while")
+                    .defineInRange("passiveMultiplier", 5.0, 1.0, 100.0);
+            livelyCooldown          = b.comment("Seconds without taking damage before regeneration starts (scales inversely with strength)")
+                    .defineInRange("cooldown", 3, 1, 600);
             b.pop();
 
             b.push("magnetic");
-            magneticStrength  = b.defineInRange("strength", 0.8, 0.0, 10.0);
-            magneticPullRange = b.defineInRange("pullRange", 16.0, 1.0, 64.0);
+            magneticStrength  = b.comment("Pull force applied to targets (scales with strength)")
+                    .defineInRange("strength", 0.8, 0.0, 10.0);
+            magneticPullRange = b.comment("Radius, in blocks, in which targets are pulled toward the champion")
+                    .defineInRange("pullRange", 16.0, 1.0, 64.0);
             b.pop();
 
             b.push("molten");
-            moltenFireTicks  = b.defineInRange("fireTicks", 80, 1, 2000);
-            moltenAuraDamage = b.defineInRange("auraDamage", 2.0, 0.0, 100.0);
-            moltenAuraRange  = b.defineInRange("auraRange", 3.0, 0.5, 32.0);
+            moltenFireTicks  = b.comment("Fire duration, in ticks, applied on hits in either direction (scales with strength)")
+                    .defineInRange("fireTicks", 80, 1, 2000);
+            moltenAuraDamage = b.comment("Fire damage dealt by the aura per second and by hit bursts (scales with strength)")
+                    .defineInRange("auraDamage", 2.0, 0.0, 100.0);
+            moltenAuraRange  = b.comment("Radius, in blocks, of the fire aura (scales with strength)")
+                    .defineInRange("auraRange", 3.0, 0.5, 32.0);
             b.pop();
 
             b.push("paralyzing");
-            paralyzingChance   = b.defineInRange("chance", 0.20, 0.0, 1.0);
-            paralyzingDuration = b.defineInRange("duration", 60, 1, 1200);
+            paralyzingChance   = b.comment("Chance per champion attack to paralyse the victim (scales with strength, capped at 95%)")
+                    .defineInRange("chance", 0.20, 0.0, 1.0);
+            paralyzingDuration = b.comment("Paralysis duration, in ticks")
+                    .defineInRange("duration", 60, 1, 1200);
             b.pop();
 
             b.push("plagued");
-            plaguedRange = b.defineInRange("range", 5.0, 1.0, 32.0);
+            plaguedRange = b.comment("Base radius, in blocks, of the debuff aura (scales with strength)")
+                    .defineInRange("range", 5.0, 1.0, 32.0);
             b.pop();
 
             b.push("reflective");
-            reflectiveMinPercent = b.defineInRange("minPercent", 0.10, 0.0, 1.0);
-            reflectiveMaxPercent = b.defineInRange("maxPercent", 0.35, 0.0, 1.0);
-            reflectiveMax        = b.defineInRange("max", 8.0, 0.0, 10000.0);
-            reflectiveLethal     = b.define("lethal", false);
+            reflectiveMinPercent = b.comment("Minimum fraction of damage reflected back at the attacker")
+                    .defineInRange("minPercent", 0.10, 0.0, 1.0);
+            reflectiveMaxPercent = b.comment("Maximum fraction of damage reflected (scales with strength)")
+                    .defineInRange("maxPercent", 0.35, 0.0, 1.0);
+            reflectiveMax        = b.comment("Absolute cap on reflected damage")
+                    .defineInRange("max", 8.0, 0.0, 10000.0);
+            reflectiveLethal     = b.comment("Whether reflected damage can kill the attacker")
+                    .define("lethal", false);
             b.pop();
 
             b.push("shielding");
-            shieldingChance = b.defineInRange("chance", 0.50, 0.0, 1.0);
+            shieldingChance = b.comment("Base chance to fully block an attack (scales with strength)")
+                    .defineInRange("chance", 0.50, 0.0, 1.0);
             b.pop();
 
             b.push("wounding");
-            woundingChance   = b.defineInRange("chance", 0.40, 0.0, 1.0);
-            woundingDuration = b.defineInRange("duration", 200, 1, 6000);
+            woundingChance   = b.comment("Chance per champion attack to wound the victim (scales with strength)")
+                    .defineInRange("chance", 0.40, 0.0, 1.0);
+            woundingDuration = b.comment("Wound duration, in ticks (scales with strength)")
+                    .defineInRange("duration", 200, 1, 6000);
             b.pop();
 
             b.pop(); // affixes
