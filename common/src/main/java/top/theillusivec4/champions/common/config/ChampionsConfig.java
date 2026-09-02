@@ -49,6 +49,8 @@ public final class ChampionsConfig {
             "5;minecraft:diamond;3;true;3"
     );
     public static boolean lootScaling = true;
+    /** Which loot sources are rolled — see {@link LootSource}. */
+    public static LootSource lootSource = LootSource.CONFIG_AND_LOOT_TABLE;
 
     // ── Mob split ─────────────────────────────────────────────────────────────
     public static boolean mobInherit           = false;
@@ -108,6 +110,7 @@ public final class ChampionsConfig {
 
         lootDrops   = v.lootDrops;
         lootScaling = v.lootScaling;
+        lootSource  = v.lootSource;
 
         mobInherit           = v.mobInherit;
         rankReduce            = v.rankReduce;
@@ -178,6 +181,7 @@ public final class ChampionsConfig {
                 "5;minecraft:netherite_scrap;1;false;2",
                 "5;minecraft:diamond;3;true;3");
         public boolean lootScaling = true;
+        public LootSource lootSource = LootSource.CONFIG_AND_LOOT_TABLE;
         // Mob split
         public boolean mobInherit          = false;
         public int     rankReduce           = 1;

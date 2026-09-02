@@ -19,6 +19,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.common.config.ChampionsConfig;
+import top.theillusivec4.champions.common.config.LootSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,8 @@ import java.util.Optional;
 /**
  * Handles champion loot drops on death.
  *
- * <p>Two loot sources are combined:</p>
+ * <p>Two loot sources exist, gated by {@link ChampionsConfig#lootSource}
+ * ({@link LootSource}) so each can be enabled independently:</p>
  * <ol>
  *   <li><b>Loot table</b> — {@code champions:loot_tables/champion_loot.json} is rolled once.
  *       The table uses {@code champions:champion_properties} conditions to gate entries by tier.</li>
@@ -63,11 +65,15 @@ public final class ChampionLootHandler {
 
         IS_PROCESSING.set(true);
         try {
-            // ── 1. Roll loot table ────────────────────────────────────────────
-            rollLootTable(entity, champion, level, source);
+            // 1. Roll loot table (only when enabled by lootSource)
+            if (ChampionsConfig.lootSource.rollsLootTable()) {
+                rollLootTable(entity, champion, level, source);
+            }
 
-            // ── 2. Config-string drops ────────────────────────────────────────
-            rollConfigDrops(entity, champion, level);
+            // 2. Config-string drops (only when enabled by lootSource)
+            if (ChampionsConfig.lootSource.rollsConfig()) {
+                rollConfigDrops(entity, champion, level);
+            }
         } finally {
             IS_PROCESSING.set(false);
         }

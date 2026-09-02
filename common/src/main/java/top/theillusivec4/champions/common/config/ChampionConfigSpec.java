@@ -51,6 +51,7 @@ public final class ChampionConfigSpec {
 
         v.lootDrops  = ENTRIES.lootDrops.get();
         v.lootScaling= ENTRIES.lootScaling.get();
+        v.lootSource = ENTRIES.lootSource.get();
 
         v.mobInherit           = ENTRIES.mobInherit.get();
         v.rankReduce            = ENTRIES.rankReduce.get();
@@ -111,6 +112,7 @@ public final class ChampionConfigSpec {
 
         final ModConfigSpec.ConfigValue<List<? extends String>> lootDrops;
         final ModConfigSpec.BooleanValue lootScaling;
+        final ModConfigSpec.EnumValue<LootSource> lootSource;
 
         final ModConfigSpec.BooleanValue mobInherit;
         final ModConfigSpec.IntValue     rankReduce;
@@ -194,6 +196,11 @@ public final class ChampionConfigSpec {
                             () -> "1;minecraft:iron_ingot;1;false;10", s -> s instanceof String);
             lootScaling = b.comment("Scale number of loot draws to tier level")
                     .define("lootScaling", true);
+            lootSource = b.comment("Which loot sources are rolled on champion death:",
+                            "CONFIG - only the lootDrops config entries above",
+                            "LOOT_TABLE - only the champions:champion_loot datapack loot table",
+                            "CONFIG_AND_LOOT_TABLE - roll both sources")
+                    .defineEnum("lootSource", LootSource.CONFIG_AND_LOOT_TABLE);
             b.pop();
 
             b.push("mobSplit");
