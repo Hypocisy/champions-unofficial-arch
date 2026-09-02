@@ -7,7 +7,6 @@ import net.minecraft.world.damagesource.DamageType;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.common.datagen.ChampionLanguageProvider;
-import top.theillusivec4.champions.common.registry.ModDamageTypes;
 
 /**
  * NeoForge language provider.
@@ -34,17 +33,15 @@ public class NeoForgeLanguageProvider extends ChampionLanguageProvider {
      * addDamageType(ModDamageTypes.ENKINDLING_BULLET,
      *     "%1$s was struck by flames",
      *     "%1$s was struck by flames whilst fighting %2$s");
-     * addDamageType(ModDamageTypes.REFLECTION_DAMAGE,
-     *     "%1$s got a taste of their own medicine", "");
      * }</pre>
+     *
+     * <p>Note: the {@code champions:reflection} death messages are generated for
+     * ALL locales by the common base class ({@code addBuiltinDeathMessages()}) —
+     * do NOT re-add them here, the provider throws on duplicate keys.</p>
      */
     @Override
     protected void addPlatformEntries() {
-        if (!"en_us".equals(getLocale())) return;
-        // Damage type death messages
-        addDamageType(ModDamageTypes.REFLECTION,
-                "%1$s got a taste of their own medicine",
-                "%1$s got a taste of their own medicine whilst fighting %2$s");
+        // intentionally empty — reflection death messages now live in common
     }
 
     // ── Convenience overloads kept for backward compat ────────────────────────

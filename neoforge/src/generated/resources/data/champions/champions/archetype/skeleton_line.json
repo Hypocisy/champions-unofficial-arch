@@ -1,0 +1,88 @@
+{
+  "affix_pools": [
+    {
+      "candidates": [
+        {
+          "affix": "champions:knocking",
+          "max_strength": 2,
+          "weight": 12
+        },
+        {
+          "affix": "champions:hasty",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:shielding",
+          "max_strength": 2,
+          "weight": 8
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "max": 3
+      }
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:enkindling",
+          "max_strength": 3
+        },
+        {
+          "affix": "champions:desecrating",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 8
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:shielding",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 8
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "min": 4
+      }
+    }
+  ],
+  "entity_filter": {
+    "type": "entity_type",
+    "types": [
+      "minecraft:skeleton_horse",
+      "minecraft:bogged",
+      "minecraft:stray",
+      "minecraft:wither_skeleton",
+      "minecraft:skeleton"
+    ]
+  },
+  "id": "champions:skeleton_line",
+  "phases": [
+    {
+      "condition": {
+        "type": "time_elapsed",
+        "seconds": 45
+      },
+      "effects": [
+        {
+          "type": "add_affix",
+          "affix": "champions:enkindling",
+          "strength": 2
+        }
+      ],
+      "id": "champions:skeleton_line_archer_rage"
+    }
+  ],
+  "tier_range": {}
+}

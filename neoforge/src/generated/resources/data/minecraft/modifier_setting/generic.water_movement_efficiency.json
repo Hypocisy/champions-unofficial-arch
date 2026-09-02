@@ -1,0 +1,8 @@
+{
+  "attributeType": "minecraft:generic.water_movement_efficiency",
+  "enable": false,
+  "modifier": {
+    "operation": "add_value",
+    "value": 0.0
+  }
+}

@@ -1,0 +1,9 @@
+// 1.21.1	2026-09-02T18:44:56.4058661	Champions Archetypes
+03d3deeee6e778202cc612c4c002e8ef1e0cf5d0 data/champions/champions/archetype/boss_line.json
+be907b5cb3b99060493fe753f089f525d669186f data/champions/champions/archetype/creeper_arch.json
+5ca71fa1eefb0a208ea1db56ab0b0d7ad1cb677b data/champions/champions/archetype/endermen_line.json
+ae1ac885123ace9e49c9db45f1dcec0c91329b65 data/champions/champions/archetype/modded_mob.json
+c0b907b67f8d98ce809a2a5f3cb0c7a9246a24c3 data/champions/champions/archetype/skeleton_line.json
+16d7fb0222cab63673624533ba558fe345a88fb5 data/champions/champions/archetype/spider_arch.json
+03dddac32b4f1748e55095c3cb227563d23631a7 data/champions/champions/archetype/witch_arch.json
+6c342722ee0e339efe416c52cb3d02118f66e9c2 data/champions/champions/archetype/zombie_line.json

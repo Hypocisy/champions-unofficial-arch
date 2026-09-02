@@ -1,0 +1,74 @@
+{
+  "affix_pools": [
+    {
+      "candidates": [
+        {
+          "affix": "champions:knocking",
+          "max_strength": 2,
+          "weight": 12
+        },
+        {
+          "affix": "champions:hasty",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:shielding",
+          "max_strength": 2,
+          "weight": 8
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "max": 3
+      }
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:shielding",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:knocking",
+          "max_strength": 3,
+          "min_strength": 2
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "min": 4
+      }
+    }
+  ],
+  "entity_filter": {
+    "type": "entity_type",
+    "types": [
+      "minecraft:enderman"
+    ]
+  },
+  "id": "champions:endermen_line",
+  "phases": [
+    {
+      "condition": {
+        "type": "time_elapsed",
+        "seconds": 30
+      },
+      "effects": [
+        {
+          "type": "add_attribute",
+          "amount": 0.3,
+          "attribute": "minecraft:generic.attack_damage",
+          "operation": "add_multiplied_total"
+        }
+      ],
+      "id": "champions:endermen_line_teleport_rage"
+    }
+  ],
+  "tier_range": {}
+}

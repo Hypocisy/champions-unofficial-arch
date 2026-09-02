@@ -1,0 +1,82 @@
+{
+  "affix_pools": [
+    {
+      "candidates": [
+        {
+          "affix": "champions:shielding",
+          "max_strength": 2,
+          "weight": 12
+        },
+        {
+          "affix": "champions:hasty",
+          "max_strength": 2
+        },
+        {
+          "affix": "champions:lively",
+          "max_strength": 2,
+          "weight": 8
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "max": 3
+      }
+    },
+    {
+      "candidates": [
+        {
+          "affix": "champions:shielding",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 12
+        },
+        {
+          "affix": "champions:reflective",
+          "max_strength": 3,
+          "min_strength": 2
+        },
+        {
+          "affix": "champions:plagued",
+          "max_strength": 3,
+          "min_strength": 2,
+          "weight": 8
+        }
+      ],
+      "max_count": 2,
+      "tier_range": {
+        "min": 4
+      }
+    }
+  ],
+  "entity_filter": {
+    "type": "entity_type",
+    "types": [
+      "minecraft:creeper"
+    ]
+  },
+  "id": "champions:creeper_arch",
+  "phases": [
+    {
+      "condition": {
+        "type": "health_percent",
+        "below": 0.35
+      },
+      "effects": [
+        {
+          "type": "add_attribute",
+          "amount": 1.0,
+          "attribute": "minecraft:generic.attack_damage",
+          "operation": "add_multiplied_total"
+        },
+        {
+          "type": "add_mob_effect",
+          "amplifier": 1,
+          "duration_ticks": 0,
+          "effect": "minecraft:speed"
+        }
+      ],
+      "id": "champions:creeper_arch_detonate"
+    }
+  ],
+  "tier_range": {}
+}
