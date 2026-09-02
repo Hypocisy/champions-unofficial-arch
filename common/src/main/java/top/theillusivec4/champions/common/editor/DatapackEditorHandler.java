@@ -71,6 +71,7 @@ public final class DatapackEditorHandler {
         try {
             Path packRoot = worldDir(server).resolve("datapacks").resolve(PACK_FOLDER);
             ensurePackMeta(packRoot);
+            cleanupPolluted(packRoot.resolve("data"));
             writeFiles(packRoot.resolve("data"), request.payload());
 
             var repo = server.getPackRepository();
@@ -227,7 +228,10 @@ public final class DatapackEditorHandler {
             }
             int colon = key.indexOf(':');
             String namespace = colon > 0 ? key.substring(0, colon) : "champions";
-            String idPath    = colon > 0 ? key.substring(colon + 1) : key;
+            String idPath    = normalizeIdPath(
+                    colon > 0 ? key.substring(colon + 1) : key,
+                    subfolder.split("/")[0]);
+            if (idPath.isEmpty()) continue;
 
             zos.putNextEntry(new ZipEntry("data/" + namespace + "/" + subfolder
                     + "/" + idPath + ".json"));
@@ -236,10 +240,41 @@ public final class DatapackEditorHandler {
         }
     }
 
+    /** Strips repeated subfolder prefixes / extensions that older ids carried. */
+    private static String normalizeIdPath(String idPath, String firstSegment) {
+        while (idPath.startsWith(firstSegment + "/")) {
+            idPath = idPath.substring(firstSegment.length() + 1);
+        }
+        while (idPath.endsWith(".json")) {
+            idPath = idPath.substring(0, idPath.length() - 5);
+        }
+        return idPath;
+    }
+
     // ── File IO helpers ────────────────────────────────────────────────────────
 
     private static Path worldDir(MinecraftServer server) {
         return server.getWorldPath(LevelResource.ROOT);
+    }
+
+    /**
+     * Removes files written by older saves whose ids carried the folder prefix
+     * and extension (e.g. {@code modifier_setting/modifier_setting/x.json.json})
+     * so the pack heals after upgrading.
+     */
+    private static void cleanupPolluted(Path dataRoot) throws IOException {
+        if (!Files.isDirectory(dataRoot)) return;
+        try (var walk = Files.walk(dataRoot)) {
+            for (Path p : walk.filter(Files::isRegularFile).toList()) {
+                String rel = dataRoot.relativize(p).toString().replace('\\', '/');
+                boolean doubled = rel.contains("/modifier_setting/modifier_setting/")
+                        || rel.startsWith("modifier_setting/modifier_setting/");
+                boolean doubleExt = rel.endsWith(".json.json");
+                if (doubled || doubleExt) {
+                    Files.deleteIfExists(p);
+                }
+            }
+        }
     }
 
     private static void writeFiles(Path dataRoot, EditorPayload payload) throws IOException {
@@ -264,7 +299,10 @@ public final class DatapackEditorHandler {
             }
             int colon = key.indexOf(':');
             String namespace = colon > 0 ? key.substring(0, colon) : "champions";
-            String idPath    = colon > 0 ? key.substring(colon + 1) : key;
+            String idPath    = normalizeIdPath(
+                    colon > 0 ? key.substring(colon + 1) : key,
+                    subfolder.split("/")[0]);
+            if (idPath.isEmpty()) continue;
 
             Path dir = dataRoot.resolve(namespace).resolve(subfolder);
             Files.createDirectories(dir);

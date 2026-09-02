@@ -62,7 +62,7 @@ public final class ChampionEditorScreen extends Screen {
     private static final int LIST_W    = 138;
     private static final int ENTRY_H   = 13;
     private static final int PAD       = 5;
-    private static final int FIELD_ADV = 21;
+    private static final int FIELD_ADV = 23;
     private static final int HEAD_ADV  = 20;
     private static final int INDENT_PX = 11;
     private static final int VALIDATOR_H = 46;
@@ -170,11 +170,9 @@ public final class ChampionEditorScreen extends Screen {
                 Component.literal("Close"), b -> onClose())
                 .bounds(width - 86, botY, 82, 18).build());
 
-        // Raw editor survives resize — re-add + reposition
-        if (rawEditor != null) {
-            addRenderableWidget(rawEditor);
-            positionRawEditor();
-        }
+        // Raw editor survives resize — re-add, re-creating if the size changed
+        // (MultilineTextField wrap width is fixed at construction)
+        ensureRawEditor();
 
         refreshTabLabels();
         if (session.selectedId == null) selectFirst();
@@ -276,25 +274,36 @@ public final class ChampionEditorScreen extends Screen {
         }
     }
 
+    /**
+     * Creates or re-attaches the raw JSON editor.
+     *
+     * <p>Note: {@code MultilineTextField}'s wrap width is FINAL — fixed at
+     * construction. {@code setWidth()} only resizes the frame, leaving the
+     * wrap width at the constructed value (classic "one character per line"
+     * bug). So the box must be created with its real bounds and RE-CREATED
+     * whenever the size changes (window resize), preserving the text.</p>
+     */
     private void ensureRawEditor() {
-        if (rawEditor != null) {
-            if (!children().contains(rawEditor)) addRenderableWidget(rawEditor);
-            positionRawEditor();
-            return;
+        int w = panelW();
+        int h = Math.max(20, panelH() - VALIDATOR_H);
+        if (rawEditor == null) {
+            rawEditor = new MultiLineEditBox(font, panelX(), panelY(), w, h,
+                    Component.empty(), Component.literal("{}"));
+            rawEditor.setValueListener(this::updateValidation);
+            addRenderableWidget(rawEditor);
+        } else if (rawEditor.getWidth() != w || rawEditor.getHeight() != h) {
+            String text = rawEditor.getValue();
+            removeWidget(rawEditor);
+            rawEditor = new MultiLineEditBox(font, panelX(), panelY(), w, h,
+                    Component.empty(), Component.literal("{}"));
+            rawEditor.setValueListener(this::updateValidation);
+            addRenderableWidget(rawEditor);
+            rawEditor.setValue(text); // fires the listener → validation refresh
+        } else if (!children().contains(rawEditor)) {
+            addRenderableWidget(rawEditor);
+            rawEditor.setX(panelX());
+            rawEditor.setY(panelY());
         }
-        rawEditor = new MultiLineEditBox(font, 0, 0, 10, 10,
-                Component.empty(), Component.literal("{}"));
-        rawEditor.setValueListener(this::updateValidation);
-        addRenderableWidget(rawEditor);
-        positionRawEditor();
-    }
-
-    private void positionRawEditor() {
-        if (rawEditor == null) return;
-        rawEditor.setX(panelX());
-        rawEditor.setY(panelY());
-        rawEditor.setWidth(panelW());
-        rawEditor.setHeight(Math.max(20, panelH() - VALIDATOR_H));
     }
 
     private void updateValidation(String text) {
@@ -478,20 +487,16 @@ public final class ChampionEditorScreen extends Screen {
     // ── Rendering ──────────────────────────────────────────────────────────────
 
     /**
-     * No-op: 1.21's {@code Screen.render} base calls this BEFORE rendering
-     * widgets — the vanilla implementation blurs the current framebuffer and
-     * overlays a gradient, which would smear our chrome (drawn before
-     * {@code super.render}). We draw our own opaque background in render().
+     * Chrome layer — replaces vanilla's blur + gradient background. Called by
+     * {@code Screen.render} BEFORE widgets are drawn, so panels sit under all
+     * widgets while our opaque fills also suppress the vanilla menu blur.
      */
     @Override
     public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // intentionally empty
-    }
-
-    @Override
-    public void render(GuiGraphics g, int mx, int my, float pt) {
-        // 1. Backdrop & static chrome
+        // backdrop
         g.fill(0, 0, width, height, C_BACKDROP);
+
+        // tab strip + bottom bar
         g.fill(0, 0, width, STRIP_H, C_STRIP);
         g.fill(0, 0, width, 1, C_BORDER);
         g.fill(0, barY(), width, height, C_STRIP);
@@ -505,11 +510,19 @@ public final class ChampionEditorScreen extends Screen {
 
         // form panel
         frame(g, panelX(), panelY(), panelW(), panelH());
+    }
 
-        // 2. Widgets
+    /**
+     * Widget + text layers: {@code super.render} first paints the chrome via
+     * {@link #renderBackground} and then all widgets; afterwards we add the
+     * scissored text layers and status strips.
+     */
+    @Override
+    public void render(GuiGraphics g, int mx, int my, float pt) {
+        // 1. chrome (renderBackground) + widgets
         super.render(g, mx, my, pt);
 
-        // 3. Scissored text layers — scrolled content clips at panel borders
+        // 2. scissored text layers — scrolled content clips at panel borders
         g.enableScissor(PAD + 1, listTop() + 14, LIST_W - 2, listH() - 15);
         renderEntryList(g, mx, my);
         g.disableScissor();
@@ -520,7 +533,7 @@ public final class ChampionEditorScreen extends Screen {
             g.disableScissor();
         }
 
-        // 4. Validation strip (JSON mode)
+        // 3. validation strip (JSON mode)
         if (session.rawMode && rawEditor != null) {
             int vy = formBottom() - VALIDATOR_H + 4;
             g.fill(panelX() + 1, vy - 4, width - PAD - 1, formBottom() - 1, 0xE60C0F14);
@@ -531,7 +544,7 @@ public final class ChampionEditorScreen extends Screen {
             }
         }
 
-        // bottom bar status
+        // 4. bottom bar status
         if (saveError != null) {
             g.drawString(font, clip(font, "§c" + saveError, width / 2),
                     PAD + 112, barY() + 8, 0xFFFF6B6B, false);

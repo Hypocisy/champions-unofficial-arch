@@ -56,6 +56,7 @@ public final class AttributesModifierDataLoader
         for (Map.Entry<ResourceLocation, Resource> entry :
                 manager.listResources(FOLDER, p -> p.getPath().endsWith(".json")).entrySet()) {
             ResourceLocation fileKey = entry.getKey();
+            ResourceLocation modifierId = fileKeyToId(fileKey);
             try (Reader reader = entry.getValue().openAsReader()) {
                 JsonElement element = JsonParser.parseReader(reader);
                 if (DataLoaders.isDisabled(element)) {
@@ -66,11 +67,11 @@ public final class AttributesModifierDataLoader
                         .resultOrPartial(error -> LOGGER.warn(
                                 "[Champions] Failed to parse modifier_setting '{}': {}", fileKey, error))
                         .ifPresent(setting -> {
-                            result.put(fileKey, setting);
+                            result.put(modifierId, setting);
                             loaded[0] = true;
                         });
                 if (loaded[0] && DataLoaders.isBuiltin(entry.getValue())) {
-                    builtins.add(fileKey);
+                    builtins.add(modifierId);
                 }
             } catch (Exception e) {
                 LOGGER.error("[Champions] Error loading modifier_setting '{}': {}",
@@ -101,5 +102,23 @@ public final class AttributesModifierDataLoader
     /** ids backed by a jar (built-in) pack — used by the editor to distinguish overridable entries. */
     public Set<ResourceLocation> getBuiltinIds() {
         return builtinIds;
+    }
+
+    /**
+     * Strips the folder prefix and {@code .json} suffix from a raw resource key.
+     * Both are stripped repeatedly so installs already polluted by older editor
+     * saves (e.g. {@code modifier_setting/modifier_setting/x.json.json}) heal
+     * back to the canonical id.
+     */
+    private static ResourceLocation fileKeyToId(ResourceLocation fileKey) {
+        String path = fileKey.getPath();
+        while (path.startsWith(FOLDER + "/")) {
+            path = path.substring(FOLDER.length() + 1);
+        }
+        while (path.endsWith(".json")) {
+            path = path.substring(0, path.length() - 5);
+        }
+        if (path.isEmpty()) return fileKey;
+        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), path);
     }
 }

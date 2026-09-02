@@ -65,7 +65,7 @@ public final class RegistryPickerScreen extends Screen {
         y1 = y0 + h;
 
         search = new EditBox(Minecraft.getInstance().font,
-                x0 + PAD, y0 + 26, w - PAD * 2, 16, Component.literal("search"));
+                x0 + PAD, y0 + 26, w - PAD * 2, 18, Component.literal("search"));
         search.setMaxLength(256);
         search.setHint(Component.literal("§7Search…"));
         search.setResponder(q -> { recompute(); scroll = 0; });
@@ -99,20 +99,15 @@ public final class RegistryPickerScreen extends Screen {
     }
 
     /**
-     * No-op: 1.21's {@code Screen.render} base calls this BEFORE rendering
-     * widgets — the vanilla implementation blurs the current framebuffer and
-     * overlays a gradient, which would smear the window chrome drawn before
-     * {@code super.render}. We draw our own opaque background in render().
+     * Chrome layer — replaces vanilla's blur + gradient background. Called by
+     * {@code Screen.render} BEFORE widgets, so the window frame sits under the
+     * search box / buttons while our opaque fills suppress the vanilla menu blur.
      */
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
-        // intentionally empty
-    }
-
-    @Override
-    public void render(GuiGraphics g, int mx, int my, float pt) {
-        // 1. OPAQUE backdrop (no world/shader blur bleeding through) + window frame
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // opaque backdrop (no world/shader blur bleeding through)
         g.fill(0, 0, width, height, 0xFF0D1014);
+        // window frame
         g.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 0xFF2B3442);
         g.fill(x0, y0, x1, y1, 0xFF12161F);
         // title strip (title INSIDE the window)
@@ -120,15 +115,30 @@ public final class RegistryPickerScreen extends Screen {
         g.fill(x0, y0, x0 + 2, y0 + 22, 0xFFB98A38);
         g.drawString(font, getTitle(), x0 + 8, y0 + 7, 0xFFE3B557, false);
         g.fill(x0, y0 + 22, x1, y0 + 23, 0xFF2B3442);
+        // list area + footer backgrounds
+        g.fill(x0 + 1, listY(), x1 - 1, listY() + listH(), 0xFF0C0F14);
+        g.fill(x0, y1 - FOOT_H, x1, y1, 0xFF12161F);
+        g.fill(x0, y1 - FOOT_H, x1, y1 - FOOT_H + 1, 0xFF2B3442);
+    }
 
-        // 2. List area (no widgets there)
+    /**
+     * Widget + text layers: {@code super.render} paints the chrome via
+     * {@link #renderBackground} and then the widgets (search box, Done/Cancel);
+     * afterwards the list rows go on top.
+     */
+    @Override
+    public void render(GuiGraphics g, int mx, int my, float pt) {
+        // 1. chrome (renderBackground) + widgets
+        super.render(g, mx, my, pt);
+
+        // 2. list rows — scissored to the list area
         int ly = listY();
         int lh = listH();
         int vis = Math.max(1, lh / ENTRY_H);
-        g.fill(x0 + 1, ly, x1 - 1, ly + lh, 0xFF0C0F14);
         int max = Math.max(0, filtered.size() - vis);
         scroll = Math.min(scroll, max);
 
+        g.enableScissor(x0 + 1, ly, x1 - x0 - 2, lh);
         for (int i = scroll; i < Math.min(filtered.size(), scroll + vis); i++) {
             PickerEntry e = filtered.get(i);
             int iy = ly + (i - scroll) * ENTRY_H;
@@ -141,7 +151,6 @@ public final class RegistryPickerScreen extends Screen {
             String box = multi ? (sel ? "☑ " : "☐ ") : (sel ? "● " : "○ ");
             String name = e.display().getString();
             int nameColor = sel ? 0xFFE3B557 : 0xFFDCDCDC;
-            // name left, id right — clip both so they never overlap
             String idTxt = e.id();
             int idW = Math.min(120, font.width(idTxt) + 4);
             String clippedName = font.plainSubstrByWidth(
@@ -150,24 +159,20 @@ public final class RegistryPickerScreen extends Screen {
             g.drawString(font, "§8" + font.plainSubstrByWidth(idTxt, idW),
                     x1 - PAD - idW, iy + 2, 0xFF777777, false);
         }
+        g.disableScissor();
 
-        // scrollbar
+        // 3. scrollbar + footer info
         if (filtered.size() > vis && max > 0) {
             int barH = Math.max(8, lh * vis / filtered.size());
             int barY = ly + (lh - barH) * scroll / max;
-            g.fill(x1 - 2, barY, x1, barY + barH, 0xFF6E6E6E);
+            g.fill(x1 - 2, barY, x1, barY + barH, 0xFF566070);
         }
-
-        // 3. Widgets (search box, buttons) ON TOP of everything
-        super.render(g, mx, my, pt);
-
-        // 4. Footer info
         String info = (multi ? "Selected: " + selected.size() + "  ·  " : "")
                 + filtered.size() + " / " + all.size();
-        g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF888888, false);
+        g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF79808B, false);
     }
 
-    private int listY() { return y0 + 46; }
+    private int listY() { return y0 + 48; }
     private int listH() { return (y1 - FOOT_H) - listY() - 2; }
 
     @Override

@@ -11,7 +11,7 @@ import java.util.List;
  */
 public final class Row {
 
-    public static final int FIELD_H  = 18;
+    public static final int FIELD_H  = 20;   // vanilla EditBox height — smaller squishes the frame sprite
     public static final int HEADER_H = 16;
     public static final int GAP_H    = 4;
 
