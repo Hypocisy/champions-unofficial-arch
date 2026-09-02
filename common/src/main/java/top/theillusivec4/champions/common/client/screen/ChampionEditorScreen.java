@@ -477,6 +477,17 @@ public final class ChampionEditorScreen extends Screen {
 
     // ── Rendering ──────────────────────────────────────────────────────────────
 
+    /**
+     * No-op: 1.21's {@code Screen.render} base calls this BEFORE rendering
+     * widgets — the vanilla implementation blurs the current framebuffer and
+     * overlays a gradient, which would smear our chrome (drawn before
+     * {@code super.render}). We draw our own opaque background in render().
+     */
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // intentionally empty
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         // 1. Backdrop & static chrome

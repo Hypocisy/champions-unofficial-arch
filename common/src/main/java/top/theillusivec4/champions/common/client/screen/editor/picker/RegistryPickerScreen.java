@@ -98,6 +98,17 @@ public final class RegistryPickerScreen extends Screen {
         }
     }
 
+    /**
+     * No-op: 1.21's {@code Screen.render} base calls this BEFORE rendering
+     * widgets — the vanilla implementation blurs the current framebuffer and
+     * overlays a gradient, which would smear the window chrome drawn before
+     * {@code super.render}. We draw our own opaque background in render().
+     */
+    @Override
+    public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
+        // intentionally empty
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         // 1. OPAQUE backdrop (no world/shader blur bleeding through) + window frame
