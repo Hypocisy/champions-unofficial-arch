@@ -67,10 +67,11 @@ public final class ChampionEditorScreen extends Screen {
     private static final int INDENT_PX = 11;
     private static final int VALIDATOR_H = 46;
 
-    // ── Palette — dark blue-gray + gold accent ─────────────────────────────────
+    // ── Palette — dark blue-gray + gold accent (fully opaque: no world/shader
+    // blur bleeding through translucent fills) ──────────────────────────────
 
-    private static final int C_BACKDROP  = 0xB40D1014;
-    private static final int C_PANEL     = 0xF4121620;
+    private static final int C_BACKDROP  = 0xFF0D1014;
+    private static final int C_PANEL     = 0xFF121620;
     private static final int C_BORDER    = 0xFF2B3442;
     private static final int C_STRIP     = 0xFF181D26;
     private static final int C_HEADBG    = 0xFF1A2029;

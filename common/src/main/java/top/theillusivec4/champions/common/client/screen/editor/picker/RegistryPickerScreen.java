@@ -58,14 +58,14 @@ public final class RegistryPickerScreen extends Screen {
     @Override
     protected void init() {
         int w = Math.min(340, width - 30);
-        int h = Math.min(height - 30, 360);
+        int h = Math.min(height - 20, 360);
         x0 = (width - w) / 2;
-        y0 = (height - h) / 2 + 8;
+        y0 = (height - h) / 2;
         x1 = x0 + w;
         y1 = y0 + h;
 
         search = new EditBox(Minecraft.getInstance().font,
-                x0 + PAD, y0 + PAD, w - PAD * 2, 16, Component.literal("search"));
+                x0 + PAD, y0 + 26, w - PAD * 2, 16, Component.literal("search"));
         search.setMaxLength(256);
         search.setHint(Component.literal("§7Search…"));
         search.setResponder(q -> { recompute(); scroll = 0; });
@@ -100,14 +100,15 @@ public final class RegistryPickerScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
-        // 1. Backdrop + window frame FIRST
-        g.fill(0, 0, width, height, 0xB40D1014);
+        // 1. OPAQUE backdrop (no world/shader blur bleeding through) + window frame
+        g.fill(0, 0, width, height, 0xFF0D1014);
         g.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 0xFF2B3442);
-        g.fill(x0, y0, x1, y1, 0xF4121620);
-        // title strip
-        g.fill(x0, y0, x1, y0 + PAD + 22, 0xFF1A2029);
-        g.fill(x0, y0, x0 + 2, y0 + PAD + 22, 0xFFB98A38);
-        g.drawString(font, getTitle(), x0 + PAD + 2, y0 - 10, 0xFFE3B557, true);
+        g.fill(x0, y0, x1, y1, 0xFF12161F);
+        // title strip (title INSIDE the window)
+        g.fill(x0, y0, x1, y0 + 22, 0xFF1A2029);
+        g.fill(x0, y0, x0 + 2, y0 + 22, 0xFFB98A38);
+        g.drawString(font, getTitle(), x0 + 8, y0 + 7, 0xFFE3B557, false);
+        g.fill(x0, y0 + 22, x1, y0 + 23, 0xFF2B3442);
 
         // 2. List area (no widgets there)
         int ly = listY();
@@ -155,8 +156,8 @@ public final class RegistryPickerScreen extends Screen {
         g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF888888, false);
     }
 
-    private int listY() { return y0 + PAD + 20; }
-    private int listH() { return (y1 - FOOT_H) - listY() - 4; }
+    private int listY() { return y0 + 46; }
+    private int listH() { return (y1 - FOOT_H) - listY() - 2; }
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
