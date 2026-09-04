@@ -1,6 +1,6 @@
 # Changelog
 
-## [21.1.1.5] — 2026-09-02
+## [20.1.1.5] — 2026-09-05
 
 > This release is the **complete editor refactor**, consolidating all changes since the last CurseForge release (several unreleased versions merged into one).
 
