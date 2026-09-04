@@ -36,3 +36,5 @@ common/src/generated/
 forge/src/generated/
 fabric/src/generated/
 neoforge/src/generated/
+
+build.log
