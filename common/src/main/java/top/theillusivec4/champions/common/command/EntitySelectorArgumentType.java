@@ -60,7 +60,7 @@ public final class EntitySelectorArgumentType implements ArgumentType<EntitySele
         if (input.startsWith("@archetype:")) {
             String idStr = input.substring("@archetype:".length());
             try {
-                ResourceLocation id = ResourceLocation.parse(idStr);
+                ResourceLocation id = new ResourceLocation(idStr);
                 return new Selector(SelectorType.ARCHETYPE, id, null);
             } catch (Exception e) {
                 reader.setCursor(start);
@@ -70,7 +70,7 @@ public final class EntitySelectorArgumentType implements ArgumentType<EntitySele
 
         // Direct entity ID
         try {
-            ResourceLocation id = ResourceLocation.parse(input);
+            ResourceLocation id = new ResourceLocation(input);
             return new Selector(SelectorType.DIRECT, id, null);
         } catch (Exception e) {
             reader.setCursor(start);

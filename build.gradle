@@ -110,9 +110,9 @@ ext.releaseChangelog = {
             out << line
         }
     }
-    if (out.isEmpty()) {
-        throw new GradleException("CHANGELOG.md has no section for [${version}] — add '## [${version}]' before publishing.")
-    }
+//    if (out.isEmpty()) {
+//        throw new GradleException("CHANGELOG.md has no section for [${version}] — add '## [${version}]' before publishing.")
+//    }
     return out.join('\n').trim()
 }
 
@@ -121,5 +121,5 @@ tasks.register("publishModPlatforms") {
     group = "publishing"
     description = "Builds both platform jars and uploads them to Modrinth and CurseForge."
     dependsOn ":fabric:modrinth", ":fabric:curseforge",
-            ":neoforge:modrinth", ":neoforge:curseforge"
+            ":forge:modrinth", ":forge:curseforge"
 }

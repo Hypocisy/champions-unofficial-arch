@@ -32,7 +32,7 @@ public record ChampionData(
 ) {
 
     public static final ChampionData EMPTY = new ChampionData(
-            ResourceLocation.withDefaultNamespace("tier_1"),
+            new ResourceLocation("minecraft", "tier_1"),
             List.of(),
             List.of(),
             Optional.empty()

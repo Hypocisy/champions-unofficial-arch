@@ -1,6 +1,5 @@
 package top.theillusivec4.champions.common.affix.builtin.spawn_tick_affixes;
 
-import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -53,7 +52,7 @@ public final class PlaguedAffix extends AffixType<EmptyAffixData> {
                 float angle = entity.getRandom().nextFloat() * 2f * (float) Math.PI;
                 float r = Mth.sqrt(entity.getRandom().nextFloat()) * radius;
                 entity.level().addParticle(
-                        ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0x7D9F8F32),
+                        ParticleTypes.ENTITY_EFFECT,
                         entity.getX() + Mth.cos(angle) * r,
                         entity.getY(),
                         entity.getZ() + Mth.sin(angle) * r,

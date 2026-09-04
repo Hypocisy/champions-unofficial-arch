@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.data;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -126,7 +127,7 @@ public final class ArchetypeDataLoader
         String path = fileKey.getPath()
                 .substring((FOLDER + "/").length())
                 .replace(".json", "");
-        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), path);
+        return Utils.key(fileKey.getNamespace(), path);
     }
 
     private static ChampionArchetype fixId(ChampionArchetype archetype, ResourceLocation id) {

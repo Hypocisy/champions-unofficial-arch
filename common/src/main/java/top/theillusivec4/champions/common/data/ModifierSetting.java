@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import top.theillusivec4.champions.common.utils.ChampionsCodecs;
 
 import java.util.Optional;
 
@@ -54,7 +55,7 @@ public record ModifierSetting(
                     RecordCodecBuilder.<Pair<Double, AttributeModifier.Operation>>create(inst ->
                             inst.group(
                                     Codec.DOUBLE.fieldOf("value").forGetter(Pair::getFirst),
-                                    AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Pair::getSecond)
+                                    ChampionsCodecs.OPERATION_CODEC.fieldOf("operation").forGetter(Pair::getSecond)
                             ).apply(inst, Pair::new)
                     ).fieldOf("modifier").forGetter(ModifierSetting::setting),
                     ChampionModifierCondition.MAP_CODEC.codec()

@@ -3,8 +3,11 @@ package top.theillusivec4.champions.common.item;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -42,7 +45,7 @@ import static net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE;
  *
  * <p>Two modes:</p>
  * <ul>
- *   <li><b>Preset</b>: stack has {@link ChampionItems#presetComponent()} set.
+ *   <li><b>Preset</b>: stack carries a {@link ChampionData} preset in its NBT.
  *       Calls {@link top.theillusivec4.champions.common.champion.ChampionBuilder#trySpawnWithAffixes}
  *       to reproduce the exact tier + affix list.</li>
  *   <li><b>Random</b>: no preset component. Calls
@@ -72,7 +75,7 @@ public final class ChampionEggItem extends Item {
             MutableComponent tierName = Component.translatableWithFallback(
                     "rank.champions.title." + t.level(), "Tier " + t.level())
                     .copy()
-                    .withColor(t.display().color());
+                    .withStyle(style -> style.withColor(TextColor.fromRgb(t.display().color() & 0xFFFFFF)));
             root.append(tierName);
             root.append(" ");
         } else {
@@ -93,7 +96,7 @@ public final class ChampionEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext ctx,
+    public void appendHoverText(ItemStack stack, Level level,
                                 List<Component> tooltip, TooltipFlag flag) {
         Optional<ChampionData> preset = getPreset(stack);
         if (preset.isPresent()) {
@@ -171,15 +174,23 @@ public final class ChampionEggItem extends Item {
     }
 
     // ── Data accessors ────────────────────────────────────────────────────────
+    // 1.20.1 has no data components — the egg's payload lives in stack NBT.
+
+    private static final String TAG_ENTITY_TYPE = "EntityType";
+    private static final String TAG_PRESET = "Preset";
 
     public static Optional<EntityType<?>> getEntityType(ItemStack stack) {
-        ResourceLocation id = stack.get(ChampionItems.entityTypeComponent());
-        if (id == null) return Optional.empty();
-        return ENTITY_TYPE.getOptional(id);
+        if (!stack.hasTag()) return Optional.empty();
+        String id = stack.getTag().getString(TAG_ENTITY_TYPE);
+        if (id.isEmpty() || !ResourceLocation.isValidResourceLocation(id)) return Optional.empty();
+        return ENTITY_TYPE.getOptional(new ResourceLocation(id));
     }
 
     public static Optional<ChampionData> getPreset(ItemStack stack) {
-        return Optional.ofNullable(stack.get(ChampionItems.presetComponent()));
+        if (!stack.hasTag()) return Optional.empty();
+        CompoundTag presetTag = stack.getTag().getCompound(TAG_PRESET);
+        if (presetTag.isEmpty()) return Optional.empty();
+        return ChampionData.CODEC.parse(NbtOps.INSTANCE, presetTag).result();
     }
 
     public static Optional<ChampionTier> getPresetTier(ItemStack stack) {
@@ -188,16 +199,16 @@ public final class ChampionEggItem extends Item {
 
     public static ItemStack createPreset(EntityType<?> entityType, ChampionData preset) {
         ItemStack stack = new ItemStack(ChampionItems.egg());
-        ResourceLocation id = ENTITY_TYPE.getKey(entityType);
-        stack.set(ChampionItems.entityTypeComponent(), id);
-        stack.set(ChampionItems.presetComponent(), preset);
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString(TAG_ENTITY_TYPE, ENTITY_TYPE.getKey(entityType).toString());
+        ChampionData.CODEC.encodeStart(NbtOps.INSTANCE, preset).result()
+                .ifPresent(encoded -> tag.put(TAG_PRESET, encoded));
         return stack;
     }
 
     public static ItemStack createRandom(EntityType<?> entityType) {
         ItemStack stack = new ItemStack(ChampionItems.egg());
-        ResourceLocation id = ENTITY_TYPE.getKey(entityType);
-        stack.set(ChampionItems.entityTypeComponent(), id);
+        stack.getOrCreateTag().putString(TAG_ENTITY_TYPE, ENTITY_TYPE.getKey(entityType).toString());
         return stack;
     }
 
@@ -205,7 +216,7 @@ public final class ChampionEggItem extends Item {
 
     private static void spawnChampion(EntityType<?> type, ServerLevel level,
                                       BlockPos pos, ItemStack stack, boolean creative) {
-        var entity = type.create(level, null, pos, MobSpawnType.SPAWN_EGG, true, false);
+        var entity = type.create(level, null, null, pos, MobSpawnType.SPAWN_EGG, true, false);
         if (!(entity instanceof LivingEntity living)) return;
 
         RandomSource random = level.getRandom();

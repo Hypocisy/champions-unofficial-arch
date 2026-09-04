@@ -1,17 +1,17 @@
 package top.theillusivec4.champions.fabric.platform;
 
+import dev.onyxstudios.cca.api.v3.component.Component;
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
+import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
+import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
-import org.ladysnake.cca.api.v3.component.Component;
-import org.ladysnake.cca.api.v3.component.ComponentKey;
-import org.ladysnake.cca.api.v3.component.ComponentRegistry;
-import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
 import top.theillusivec4.champions.common.champion.ChampionData;
+import top.theillusivec4.champions.common.utils.Utils;
 
 /**
  * Cardinal Components {@link Component} that holds {@link ChampionData} on a
@@ -33,7 +33,7 @@ public final class FabricChampionComponent implements Component, EntityComponent
      */
     public static final ComponentKey<FabricChampionComponent> SERVER =
             ComponentRegistry.getOrCreate(
-                    ResourceLocation.fromNamespaceAndPath("champions", "champion_data"),
+                    Utils.key("champion_data"),
                     FabricChampionComponent.class
             );
 
@@ -42,7 +42,7 @@ public final class FabricChampionComponent implements Component, EntityComponent
      */
     public static final ComponentKey<FabricChampionComponent> CLIENT =
             ComponentRegistry.getOrCreate(
-                    ResourceLocation.fromNamespaceAndPath("champions", "champion_data_client"),
+                    Utils.key("champion_data_client"),
                     FabricChampionComponent.class
             );
 
@@ -81,10 +81,8 @@ public final class FabricChampionComponent implements Component, EntityComponent
     }
 
     // ── Component NBT (Cardinal Components contract) ─────────────────────────
-
-
     @Override
-    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag) {
         ChampionData.CODEC.parse(NbtOps.INSTANCE, tag)
                 .resultOrPartial(err ->
                         System.err.println("[Champions] Failed to read champion component: " + err))
@@ -92,7 +90,7 @@ public final class FabricChampionComponent implements Component, EntityComponent
     }
 
     @Override
-    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag) {
         ChampionData.CODEC.encodeStart(NbtOps.INSTANCE, data)
                 .resultOrPartial(err ->
                         System.err.println("[Champions] Failed to write champion component: " + err))

@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.client.screen.editor.pane;
 
 import com.google.gson.JsonObject;
+import net.minecraft.network.chat.Component;
 import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.filter.FilterEditor;
 import top.theillusivec4.champions.common.client.screen.editor.json.JsonPathOps;
@@ -240,7 +241,7 @@ public final class ArchetypePane implements EditorPane {
     }
 
     private static String tr(String key, Object... args) {
-        return EditorLang.tr(key, args);
+        return Component.translatable(key, args).toString();
     }
 
     // ── Defaults ───────────────────────────────────────────────────────────────

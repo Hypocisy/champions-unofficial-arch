@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.data;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -119,6 +120,6 @@ public final class AttributesModifierDataLoader
             path = path.substring(0, path.length() - 5);
         }
         if (path.isEmpty()) return fileKey;
-        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), path);
+        return Utils.key(fileKey.getNamespace(), path);
     }
 }

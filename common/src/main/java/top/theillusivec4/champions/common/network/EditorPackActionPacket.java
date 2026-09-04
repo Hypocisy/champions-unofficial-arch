@@ -1,10 +1,9 @@
 package top.theillusivec4.champions.common.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import top.theillusivec4.champions.common.utils.Utils;
 
 /**
  * C2S: pack-management actions from the editor's Packs tab.
@@ -21,27 +20,26 @@ public record EditorPackActionPacket(
         String action,
         String packId,
         EditorPayload payload
-) implements CustomPacketPayload {
+) {
 
     public static final String TOGGLE  = "toggle";
     public static final String EXPORT  = "export";
     public static final String IMPORT  = "import";
 
-    public static final Type<EditorPackActionPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath("champions", "editor_pack_action"));
+    public static final ResourceLocation ID = Utils.key("editor_pack_action");
 
-    public static final StreamCodec<FriendlyByteBuf, EditorPackActionPacket> STREAM_CODEC =
-            StreamCodec.of(
-                    (buf, p) -> {
-                        buf.writeUtf(p.action);
-                        buf.writeUtf(p.packId == null ? "" : p.packId);
-                        EditorPayload.STREAM_CODEC.encode(buf, p.payload);
-                    },
-                    buf -> new EditorPackActionPacket(
-                            buf.readUtf(),
-                            readId(buf),
-                            EditorPayload.STREAM_CODEC.decode(buf))
-            );
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeUtf(action);
+        buf.writeUtf(packId == null ? "" : packId);
+        payload.encode(buf);
+    }
+
+    public static EditorPackActionPacket decode(FriendlyByteBuf buf) {
+        String action = buf.readUtf();
+        String packId = readId(buf);
+        EditorPayload payload = EditorPayload.decode(buf);
+        return new EditorPackActionPacket(action, packId, payload);
+    }
 
     private static String readId(FriendlyByteBuf buf) {
         String s = buf.readUtf();
@@ -61,7 +59,4 @@ public record EditorPackActionPacket(
     public static EditorPackActionPacket importPacks() {
         return new EditorPackActionPacket(IMPORT, null, EditorPayload.empty());
     }
-
-    @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() { return TYPE; }
 }

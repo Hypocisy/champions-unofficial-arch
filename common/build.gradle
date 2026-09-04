@@ -10,7 +10,7 @@ dependencies {
     modCompileOnly "curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}"
 
     // Jade (optional) — compile-only so common code can reference the API
-    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid_fabric}"
 }
 loom {
     accessWidenerPath = file("src/main/resources/champions.accesswidener")

@@ -2,6 +2,7 @@ package top.theillusivec4.champions.common.champion;
 
 import dev.architectury.event.EventResult;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -23,6 +24,7 @@ import top.theillusivec4.champions.common.network.ChampionSyncData;
 import top.theillusivec4.champions.common.network.PacketHandler;
 import top.theillusivec4.champions.common.strategy.ArchetypeStrategy;
 import top.theillusivec4.champions.common.strategy.ChampionBuildStrategy;
+import top.theillusivec4.champions.common.utils.Utils;
 import top.theillusivec4.champions.platform.ChampionAttachmentProvider;
 
 import java.util.ArrayList;
@@ -279,27 +281,28 @@ public final class ChampionBuilder {
                     .orElse(true);
             if (!matches) return;
 
-            var attrHolder = BuiltInRegistries.ATTRIBUTE.getHolder(setting.attributeType());
+            var attrHolder = BuiltInRegistries.ATTRIBUTE.getHolder(
+                    ResourceKey.create(BuiltInRegistries.ATTRIBUTE.key(), setting.attributeType()));
             attrHolder.ifPresent(attr -> {
-                var attrInstance = entity.getAttributes().getInstance(attr);
+                var attrInstance = entity.getAttributes().getInstance(attr.value());
                 if (attrInstance == null) return;
 
-                // Modifier id: champions:<namespace>_<path>_modifier
-                // (same derivation as the old project's Utils.getLocation call)
+                // Modifier name: champions:<namespace>_<path>_modifier
+                // (1.20.1 keys modifiers by UUID; the String ctor derives a stable UUID
+                // from the name, so removal can find them by the "champions:" prefix)
                 ResourceLocation settingPath = setting.attributeType();
-                ResourceLocation modId = ResourceLocation.fromNamespaceAndPath(
-                        "champions",
-                        settingPath.getNamespace() + "_" + settingPath.getPath().replace('/', '_') + "_modifier"
-                );
+                String modName = "champions:" + settingPath.getNamespace() + "_"
+                        + settingPath.getPath().replace('/', '_') + "_modifier";
 
                 double amount = setting.setting().getFirst() * growthFactor;
                 AttributeModifier.Operation op = setting.setting().getSecond();
 
-                attrInstance.addOrReplacePermanentModifier(
-                        new AttributeModifier(modId, amount, op));
+                AttributeModifier modifier = new AttributeModifier(modName, amount, op);
+                attrInstance.removePermanentModifier(modifier.getId());
+                attrInstance.addPermanentModifier(modifier);
 
                 // Keep health in sync after increasing max_health
-                if (attr.value() == Attributes.MAX_HEALTH.value()) {
+                if (attr.value() == Attributes.MAX_HEALTH) {
                     entity.setHealth(entity.getMaxHealth());
                 }
             });
@@ -321,13 +324,14 @@ public final class ChampionBuilder {
         LivingEntity entity = champion.entity();
         ChampionsRegistries.modifiers().getLoadedData().forEach((fileKey, setting) -> {
             if (!setting.enable()) return;
-            var attrHolder = BuiltInRegistries.ATTRIBUTE.getHolder(setting.attributeType());
+            var attrHolder = BuiltInRegistries.ATTRIBUTE.getHolder(
+                    ResourceKey.create(BuiltInRegistries.ATTRIBUTE.key(), setting.attributeType()));
             attrHolder.ifPresent(attr -> {
-                var attrInstance = entity.getAttributes().getInstance(attr);
+                var attrInstance = entity.getAttributes().getInstance(attr.value());
                 if (attrInstance == null) return;
                 // Collect first to avoid ConcurrentModificationException
                 List<AttributeModifier> toRemove = attrInstance.getModifiers().stream()
-                        .filter(m -> "champions".equals(m.id().getNamespace()))
+                        .filter(m -> m.getName().startsWith("champions:"))
                         .toList();
                 toRemove.forEach(attrInstance::removeModifier);
             });

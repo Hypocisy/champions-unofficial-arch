@@ -31,3 +31,8 @@ crash-reports/
 local.properties
 fabric/src/generated/
 neoforge/src/generated/
+# Architectury datagen output (regenerate with runData)
+common/src/generated/
+forge/src/generated/
+fabric/src/generated/
+neoforge/src/generated/

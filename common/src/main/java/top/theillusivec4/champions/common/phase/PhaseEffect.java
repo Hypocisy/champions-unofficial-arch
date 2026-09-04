@@ -1,9 +1,11 @@
 package top.theillusivec4.champions.common.phase;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -11,6 +13,8 @@ import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.common.champion.ChampionView;
+
+import java.util.UUID;
 
 /**
  * Effect applied when a {@link ChampionPhase} triggers.
@@ -36,7 +40,7 @@ public interface PhaseEffect {
 
     Codec<PhaseEffect> CODEC = Codec.STRING.dispatch(
             PhaseEffect::typeKey,
-            PhaseEffect::codecFor
+            type -> PhaseEffect.codecFor(type).codec()
     );
 
     private static String typeKey(PhaseEffect effect) {
@@ -120,8 +124,9 @@ public interface PhaseEffect {
             String operation
     ) implements PhaseEffect {
 
-        private static final ResourceLocation MODIFIER_ID =
-                ResourceLocation.fromNamespaceAndPath("champions", "phase_modifier");
+        // 1.20.1 keys modifiers by UUID — derive a stable one from the logical name
+        private static final String MODIFIER_NAME = Utils.key("phase_modifier").toString();
+        private static final UUID MODIFIER_UUID = UUID.nameUUIDFromBytes(MODIFIER_NAME.getBytes());
 
         public static final MapCodec<AddAttribute> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
                 ResourceLocation.CODEC.fieldOf("attribute").forGetter(AddAttribute::attribute),
@@ -141,26 +146,30 @@ public interface PhaseEffect {
 
         @Override
         public void remove(Champion.Server champion) {
-            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(attribute);
+            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(
+                    ResourceKey.create(BuiltInRegistries.ATTRIBUTE.key(), attribute));
             if (attr.isEmpty()) return;
-            var instance = champion.entity().getAttribute(attr.get());
-            if (instance != null) instance.removeModifier(MODIFIER_ID);
+            var instance = champion.entity().getAttribute(attr.get().value());
+            if (instance != null) instance.removeModifier(MODIFIER_UUID);
         }
 
         private void applyModifier(Champion.Server champion) {
-            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(attribute);
+            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(
+                    ResourceKey.create(BuiltInRegistries.ATTRIBUTE.key(), attribute));
             if (attr.isEmpty()) return;
-            var instance = champion.entity().getAttribute(attr.get());
+            var instance = champion.entity().getAttribute(attr.get().value());
             if (instance == null) return;
             AttributeModifier.Operation op = switch (operation) {
-                case "add_multiplied_base" -> AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
-                case "add_multiplied_total" -> AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
-                default -> AttributeModifier.Operation.ADD_VALUE;
+                case "add_multiplied_base" -> AttributeModifier.Operation.MULTIPLY_BASE;
+                case "add_multiplied_total" -> AttributeModifier.Operation.MULTIPLY_TOTAL;
+                default -> AttributeModifier.Operation.ADDITION;
             };
             // addOrReplace: phase restore can run on every server-view reconstruction,
             // so a plain addPermanentModifier would throw on the second call for the
-            // same (attribute, modifier id) pair.
-            instance.addOrReplacePermanentModifier(new AttributeModifier(MODIFIER_ID, amount, op));
+            // same (attribute, modifier id) pair. 1.20.1 has no addOrReplace — remove first.
+            AttributeModifier modifier = new AttributeModifier(MODIFIER_UUID, MODIFIER_NAME, amount, op);
+            instance.removePermanentModifier(modifier.getId());
+            instance.addPermanentModifier(modifier);
         }
     }
 
@@ -197,16 +206,18 @@ public interface PhaseEffect {
 
         @Override
         public void remove(Champion.Server champion) {
-            BuiltInRegistries.MOB_EFFECT.getHolder(effectId)
-                    .ifPresent(e -> champion.entity().removeEffect(e));
+            BuiltInRegistries.MOB_EFFECT.getHolder(
+                    ResourceKey.create(BuiltInRegistries.MOB_EFFECT.key(), effectId))
+                    .ifPresent(e -> champion.entity().removeEffect(e.value()));
         }
 
         private void applyEffect(Champion.Server champion) {
-            var effectHolder = BuiltInRegistries.MOB_EFFECT.getHolder(effectId);
+            var effectHolder = BuiltInRegistries.MOB_EFFECT.getHolder(
+                    ResourceKey.create(BuiltInRegistries.MOB_EFFECT.key(), effectId));
             if (effectHolder.isEmpty()) return;
             int duration = infinite ? MobEffectInstance.INFINITE_DURATION : durationTicks;
             champion.entity().addEffect(
-                    new MobEffectInstance(effectHolder.get(), duration, amplifier, false, true)
+                    new MobEffectInstance(effectHolder.get().value(), duration, amplifier, false, true)
             );
         }
     }

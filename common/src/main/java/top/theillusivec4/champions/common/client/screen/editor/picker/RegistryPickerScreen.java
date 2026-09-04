@@ -108,7 +108,7 @@ public final class RegistryPickerScreen extends Screen {
      * search box / buttons while our opaque fills suppress the vanilla menu blur.
      */
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics g) {
         // opaque backdrop (no world/shader blur bleeding through)
         g.fill(0, 0, width, height, 0xFF0D1014);
         // window frame
@@ -207,16 +207,16 @@ public final class RegistryPickerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mx, double my, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mx, double my, double delta) {
         int ly = listY();
         int lh = listH();
         if (mx >= x0 && mx <= x1 && my >= ly && my < ly + lh) {
             int vis = Math.max(1, lh / ENTRY_H);
             int max = Math.max(0, filtered.size() - vis);
-            scroll = (int) Math.max(0, Math.min(max, scroll - scrollY));
+            scroll = (int) Math.max(0, Math.min(max, scroll - delta));
             return true;
         }
-        return super.mouseScrolled(mx, my, scrollX, scrollY);
+        return super.mouseScrolled(mx, my, delta);
     }
 
     @Override

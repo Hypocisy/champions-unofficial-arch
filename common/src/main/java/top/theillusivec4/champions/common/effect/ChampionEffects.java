@@ -48,7 +48,7 @@ public final class ChampionEffects {
     public static void applyWound(LivingEntity entity, int durationTicks) {
         wound().ifPresent(effect ->
                 entity.addEffect(new MobEffectInstance(
-                        holdFor(effect), durationTicks, 0, false, true)));
+                        effect, durationTicks, 0, false, true)));
     }
 
     /**
@@ -57,15 +57,15 @@ public final class ChampionEffects {
     public static void applyParalysis(LivingEntity entity, int durationTicks) {
         paralysis().ifPresent(effect ->
                 entity.addEffect(new MobEffectInstance(
-                        holdFor(effect), durationTicks, 0, false, true)));
+                        effect, durationTicks, 0, false, true)));
     }
 
     public static boolean hasWound(LivingEntity entity) {
-        return wound().map(e -> entity.hasEffect(holdFor(e))).orElse(false);
+        return wound().map(entity::hasEffect).orElse(false);
     }
 
     public static boolean hasParalysis(LivingEntity entity) {
-        return paralysis().map(e -> entity.hasEffect(holdFor(e))).orElse(false);
+        return paralysis().map(entity::hasEffect).orElse(false);
     }
 
     /** Wrap a bare MobEffect in the holder type expected by the effect API. */

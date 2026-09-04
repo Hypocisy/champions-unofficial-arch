@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.fabric.registry;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.core.Registry;
@@ -14,7 +15,7 @@ public class ModParticles {
     public static void register() {
         Registry.register(
                 BuiltInRegistries.PARTICLE_TYPE,
-                ResourceLocation.fromNamespaceAndPath("champions", "rank"),
+                Utils.key("rank"),
                 MAGIC
         );
     }

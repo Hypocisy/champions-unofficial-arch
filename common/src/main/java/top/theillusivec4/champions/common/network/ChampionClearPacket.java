@@ -1,25 +1,22 @@
 package top.theillusivec4.champions.common.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import top.theillusivec4.champions.common.utils.Utils;
 
 /**
  * S2C packet telling the client to clear champion data for a specific entity.
  * Sent by {@link PacketHandler#clearChampionForTrackers} after a /champions remove.
  */
-public record ChampionClearPacket(int entityId) implements CustomPacketPayload {
+public record ChampionClearPacket(int entityId) {
 
-    public static final Type<ChampionClearPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath("champions", "champion_clear"));
+    public static final ResourceLocation ID = Utils.key("champion_clear");
 
-    public static final StreamCodec<ByteBuf, ChampionClearPacket> STREAM_CODEC =
-            ByteBufCodecs.VAR_INT.map(ChampionClearPacket::new, ChampionClearPacket::entityId);
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeVarInt(entityId);
+    }
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public static ChampionClearPacket decode(FriendlyByteBuf buf) {
+        return new ChampionClearPacket(buf.readVarInt());
     }
 }

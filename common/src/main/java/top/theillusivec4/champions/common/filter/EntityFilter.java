@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -43,7 +44,7 @@ public interface EntityFilter {
 
     Codec<EntityFilter> CODEC = Codec.STRING.dispatch(
             EntityFilter::filterTypeKey,
-            EntityFilter::codecFor
+            type -> EntityFilter.codecFor(type).codec()
     );
 
     private static String filterTypeKey(EntityFilter filter) {
@@ -166,9 +167,10 @@ public interface EntityFilter {
 
         @Override
         public boolean matches(LivingEntity entity) {
-            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(attribute);
+            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(
+                    ResourceKey.create(BuiltInRegistries.ATTRIBUTE.key(), attribute));
             if (attr.isEmpty()) return false;
-            var inst = entity.getAttribute(attr.get());
+            var inst = entity.getAttribute(attr.get().value());
             if (inst == null) return false;
             double val = inst.getValue();
             return val >= min && val <= max;

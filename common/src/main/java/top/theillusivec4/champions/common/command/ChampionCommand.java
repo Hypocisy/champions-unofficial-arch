@@ -296,7 +296,7 @@ public final class ChampionCommand {
                 ? explicitPos
                 : BlockPos.containing(src.x, src.y, src.z);
 
-        Entity raw = entityType.create(level, null, spawnPos, MobSpawnType.COMMAND, false, false);
+        Entity raw = entityType.create(level, null,null, spawnPos, MobSpawnType.COMMAND, false, false);
         if (!(raw instanceof LivingEntity living)) {
             source.sendFailure(Component.translatable(
                     "command.champions.not_living_entity",
@@ -427,7 +427,7 @@ public final class ChampionCommand {
 
         // @archetype:<id> → pick random entity from that archetype's entity filter
         if ("archetype".equals(id.getNamespace())) {
-            ResourceLocation archetypeId = ResourceLocation.parse(path);
+            ResourceLocation archetypeId = new ResourceLocation(path);
             var archetype = ChampionsRegistries.archetypes().get(archetypeId);
             if (archetype.isEmpty()) {
                 throw UNKNOWN_ENTITY.create(id);

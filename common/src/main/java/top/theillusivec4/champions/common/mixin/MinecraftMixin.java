@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.mixin;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -40,9 +41,9 @@ public abstract class MinecraftMixin {
 					ResourceLocation archetypeId = null;
 					if (champion instanceof ChampionView.Server server) {
 						triggered = server.getTriggeredPhaseIds().stream()
-								.map(ResourceLocation::parse)
+								.map(ResourceLocation::new)
 								.toList();
-						archetypeId = server.archetypeId().orElse(ResourceLocation.fromNamespaceAndPath("champions", "zombie_line"));
+						archetypeId = server.archetypeId().orElse(Utils.key("zombie_line"));
 					}
 					ChampionData preset = toChampionData(
 							champion.tier(), champion.affixes(),

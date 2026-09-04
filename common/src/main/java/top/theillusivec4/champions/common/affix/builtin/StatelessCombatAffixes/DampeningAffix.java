@@ -16,7 +16,7 @@ public final class DampeningAffix extends AffixType<EmptyAffixData> {
     @Override
     public void registerHandlers(HandlerRegistry<EmptyAffixData> registry) {
         registry.on(HurtEvent.class, (champion, data, strength, evt) -> {
-            if (!evt.source().isDirect()) return;
+            if (evt.source().isIndirect()) return;
             float reduction = (float) (ChampionsConfig.dampeningReduction * strength * 0.25);
             evt.setDamage(evt.currentDamage() * (1f - Math.min(reduction, 0.9f)));
         });

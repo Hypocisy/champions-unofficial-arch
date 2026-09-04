@@ -9,7 +9,6 @@ architectury {
     neoForge()
 }
 
-
 base {
     archivesName = "${mod_id}-neoforge"
 }
@@ -47,10 +46,10 @@ dependencies {
     }
 
     // KubeJS NeoForge (optional)
-    modCompileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+    modCompileOnly "dev.latvian.mods:kubejs-forge:${kubejs_version}"
 
     // The One Probe (optional)
-    modCompileOnly "curse.maven:the-one-probe-245211:7292875"
+    modCompileOnly "curse.maven:the-one-probe-245211:${theoneprobe_file_id}"
 
     // Jade (optional)
     modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"

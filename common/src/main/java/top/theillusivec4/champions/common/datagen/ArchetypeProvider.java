@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.datagen;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.mojang.serialization.JsonOps;
 import net.minecraft.data.CachedOutput;
@@ -52,7 +53,7 @@ public class ArchetypeProvider implements DataProvider {
 
     /** Start building an archetype with the given namespace and name. */
     public Builder archetype(String namespace, String name) {
-        return new Builder(this, ResourceLocation.fromNamespaceAndPath(namespace, name));
+        return new Builder(this, Utils.key(namespace, name));
     }
 
     /** Convenience — namespace defaults to {@code "champions"}. */
@@ -166,7 +167,7 @@ public class ArchetypeProvider implements DataProvider {
          */
         public PoolBuilder candidate(String affixId, int weight, int minStrength, int maxStrength) {
             candidates.add(new WeightedAffix(
-                    ResourceLocation.parse(affixId), weight, minStrength, maxStrength));
+                    new ResourceLocation(affixId), weight, minStrength, maxStrength));
             return this;
         }
 

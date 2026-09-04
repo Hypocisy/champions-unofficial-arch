@@ -25,9 +25,7 @@ public abstract class MixinLivingEntityHeal {
 
     @ModifyVariable(
             method = "heal",
-            at = @At("HEAD"),
-            argsOnly = true,
-            name = "f")
+            at = @At("HEAD"), argsOnly = true)
     private float champions$onHeal(float amount) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self.level().isClientSide()) return amount;

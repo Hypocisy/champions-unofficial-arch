@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.fabric.registry;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -14,9 +15,9 @@ public final class ModMobEffects {
 
     public static void register() {
         Registry.register(BuiltInRegistries.MOB_EFFECT,
-                ResourceLocation.fromNamespaceAndPath("champions", "wound"), WOUND);
+                Utils.key("wound"), WOUND);
         Registry.register(BuiltInRegistries.MOB_EFFECT,
-                ResourceLocation.fromNamespaceAndPath("champions", "paralysis"), PARALYSIS);
+                Utils.key("paralysis"), PARALYSIS);
         ChampionEffects.register(() -> WOUND, () -> PARALYSIS);
     }
 }

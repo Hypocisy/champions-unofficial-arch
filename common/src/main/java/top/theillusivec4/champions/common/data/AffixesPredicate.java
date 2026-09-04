@@ -6,6 +6,7 @@ import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.resources.ResourceLocation;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
+import top.theillusivec4.champions.common.utils.ChampionsCodecs;
 
 import java.util.List;
 import java.util.Set;
@@ -25,8 +26,8 @@ public record AffixesPredicate(Set<ResourceLocation> values, MinMaxBounds.Ints m
                     .xmap(Set::copyOf, List::copyOf)
                     .fieldOf("values")
                     .forGetter(AffixesPredicate::values),
-            MinMaxBounds.Ints.CODEC.fieldOf("matches").forGetter(AffixesPredicate::matches),
-            MinMaxBounds.Ints.CODEC.fieldOf("count").forGetter(AffixesPredicate::count)
+            ChampionsCodecs.INTS_BOUNDS.fieldOf("matches").forGetter(AffixesPredicate::matches),
+            ChampionsCodecs.INTS_BOUNDS.fieldOf("count").forGetter(AffixesPredicate::count)
     ).apply(instance, AffixesPredicate::new));
 
     /**

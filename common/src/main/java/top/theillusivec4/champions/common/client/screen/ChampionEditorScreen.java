@@ -516,7 +516,7 @@ public final class ChampionEditorScreen extends Screen {
      * widgets while our opaque fills also suppress the vanilla menu blur.
      */
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics g) {
         // backdrop
         g.fill(0, 0, width, height, C_BACKDROP);
 
@@ -667,24 +667,24 @@ public final class ChampionEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mx, double my, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mx, double my, double delta) {
         int ly = listTop() + 14;
         int lh = listH() - 15;
         if (mx >= PAD && mx < PAD + LIST_W && my >= ly && my < ly + lh) {
             int visCount = lh / ENTRY_H;
             int maxScroll = Math.max(0, session.currentMap().size() - visCount);
             session.listScroll = (int) Math.max(0,
-                    Math.min(maxScroll, session.listScroll - scrollY));
+                    Math.min(maxScroll, session.listScroll - delta));
             return true;
         }
         if (!session.rawMode && mx >= panelX() && my >= panelY() && my < formBottom()) {
             int maxScroll = Math.max(0, formContentH - panelH());
             session.formScrollY = (int) Math.max(0,
-                    Math.min(maxScroll, session.formScrollY - scrollY * ENTRY_H));
+                    Math.min(maxScroll, session.formScrollY - delta * ENTRY_H));
             layoutForm();
             return true;
         }
-        return super.mouseScrolled(mx, my, scrollX, scrollY);
+        return super.mouseScrolled(mx, my, delta);
     }
 
     // ── Utility ────────────────────────────────────────────────────────────────

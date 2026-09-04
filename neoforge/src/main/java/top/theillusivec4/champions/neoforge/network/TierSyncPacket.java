@@ -23,7 +23,7 @@ import java.util.List;
 public record TierSyncPacket(List<TierEntry> tiers) implements CustomPacketPayload {
 
     public static final Type<TierSyncPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(ChampionsNeoForge.MOD_ID, "tier_sync")
+            Utils.key(ChampionsNeoForge.MOD_ID, "tier_sync")
     );
 
     public static final StreamCodec<FriendlyByteBuf, TierEntry> ENTRY_CODEC =

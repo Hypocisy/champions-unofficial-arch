@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.fabric.registry;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -26,8 +27,8 @@ public class FabricAffixBootStrap {
     public static void registerAll() {
         Registry<AffixType<?>> reg =
                 FabricAffixTypeRegistry.REGISTRY;
-        ResourceLocation ns = ResourceLocation
-                .fromNamespaceAndPath("champions", "");
+        ResourceLocation ns = 
+                new ResourceLocation("champions", "");
 
         register(reg, "adaptable", new AdaptableAffix());
         register(reg, "arctic", new ArcticAffix());
@@ -53,7 +54,7 @@ public class FabricAffixBootStrap {
             AffixType<?> type
     ) {
         Registry.register(reg,
-                ResourceLocation.fromNamespaceAndPath("champions", name),
+                Utils.key(name),
                 type);
     }
 }

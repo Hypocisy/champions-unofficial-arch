@@ -25,12 +25,12 @@ public class JadePlugin implements IWailaPlugin {
         // Push Jade tooltip below our HUD health bar when hovering a champion.
         // Use an absolute floor rather than a relative offset to avoid accumulation
         // across multiple callback invocations per frame.
-        registration.addBeforeRenderCallback((box, rect, gui, accessor) -> {
+        registration.addBeforeRenderCallback((tooltip, rect, gui, accessor, colorSetting) -> {
             if (!ChampionsConfig.showHud) return false;
             if (!(accessor.getTarget() instanceof LivingEntity living)) return false;
             if (!ChampionsApi.get().isChampion(living)) return false;
-            if (rect.rect.getY() < HUD_BOTTOM_Y) {
-                rect.rect.setY(HUD_BOTTOM_Y);
+            if (rect.getY() < HUD_BOTTOM_Y) {
+                rect.setY(HUD_BOTTOM_Y);
             }
             return false;
         });

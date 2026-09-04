@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.affix.builtin.spawn_tick_affixes;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,6 +12,8 @@ import top.theillusivec4.champions.api.affix.handler.event.SpawnEvent;
 import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
 import top.theillusivec4.champions.common.config.ChampionsConfig;
 
+import java.util.UUID;
+
 // ── HastyAffix ────────────────────────────────────────────────────────────────
 
 /**
@@ -18,8 +21,10 @@ import top.theillusivec4.champions.common.config.ChampionsConfig;
  */
 public final class HastyAffix extends AffixType<EmptyAffixData> {
 
-    private static final ResourceLocation MODIFIER_ID =
-            ResourceLocation.fromNamespaceAndPath("champions", "hasty_speed");
+    /** 1.20.1 modifiers are keyed by UUID — derive a stable one from the logical id. */
+    private static final UUID MODIFIER_UUID =
+            UUID.nameUUIDFromBytes(Utils.key("hasty_speed").toString().getBytes());
+    private static final String MODIFIER_NAME = "champions:hasty_speed";
 
     @Override
     public void registerHandlers(HandlerRegistry<EmptyAffixData> registry) {
@@ -38,13 +43,14 @@ public final class HastyAffix extends AffixType<EmptyAffixData> {
     private static void applySpeed(LivingEntity entity, int strength) {
         var attr = entity.getAttribute(Attributes.MOVEMENT_SPEED);
         if (attr == null) return;
-        if (attr.getModifier(MODIFIER_ID) != null) return; // already applied
-        // ADD_VALUE matches original: flat bonus on top of base speed,
+        if (attr.getModifier(MODIFIER_UUID) != null) return; // already applied
+        // ADDITION matches original: flat bonus on top of base speed,
         // consistent across all mob types regardless of their base speed value.
         attr.addTransientModifier(new AttributeModifier(
-                MODIFIER_ID,
+                MODIFIER_UUID,
+                MODIFIER_NAME,
                 ChampionsConfig.hastySpeedBonus * strength,
-                AttributeModifier.Operation.ADD_VALUE
+                AttributeModifier.Operation.ADDITION
         ));
     }
 }

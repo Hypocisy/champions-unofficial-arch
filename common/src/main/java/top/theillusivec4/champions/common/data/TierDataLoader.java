@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.data;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -55,7 +56,7 @@ public final class TierDataLoader
                             .forGetter(ChampionTier.TierDisplay::color),
                     ResourceLocation.CODEC
                             .optionalFieldOf("icon",
-                                    ResourceLocation.withDefaultNamespace("textures/gui/icons.png"))
+                                    new ResourceLocation("minecraft", "textures/gui/icons.png"))
                             .forGetter(ChampionTier.TierDisplay::icon)
             ).apply(inst, ChampionTier.TierDisplay::new));
 
@@ -200,7 +201,7 @@ public final class TierDataLoader
         String name = path
                 .substring((FOLDER + "/").length())
                 .replace(".json", "");
-        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), name);
+        return Utils.key(fileKey.getNamespace(), name);
     }
 
     private static Map<Integer, ChampionTier> indexByLevel(Map<ResourceLocation, ChampionTier> src) {
@@ -224,7 +225,7 @@ public final class TierDataLoader
     private static Map<ResourceLocation, ChampionTier> buildFallbackTiers() {
         Map<ResourceLocation, ChampionTier> map = new HashMap<>();
         for (int level = 1; level <= 5; level++) {
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("champions",
+            ResourceLocation id = Utils.key("champions",
                     "tier_" + level);
             map.put(id, new ChampionTier(id, level, ChampionTier.TierDisplay.defaultFor(level)));
         }

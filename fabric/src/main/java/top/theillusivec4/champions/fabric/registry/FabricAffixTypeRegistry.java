@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.fabric.registry;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
@@ -22,7 +23,7 @@ import java.util.Optional;
  * <pre>{@code
  * Registry.register(
  *     FabricAffixTypeRegistry.REGISTRY,
- *     ResourceLocation.fromNamespaceAndPath("champions", "adaptable"),
+ *     Utils.key("adaptable"),
  *     new AdaptableAffix()
  * );
  * }</pre>
@@ -34,7 +35,7 @@ public final class FabricAffixTypeRegistry implements AffixTypeRegistry {
 
     public static final ResourceKey<Registry<AffixType<?>>> REGISTRY_KEY =
             ResourceKey.createRegistryKey(
-                    ResourceLocation.fromNamespaceAndPath("champions", "affix_type")
+                    Utils.key("affix_type")
             );
 
     /**

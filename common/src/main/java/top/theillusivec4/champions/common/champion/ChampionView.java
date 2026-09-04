@@ -201,7 +201,7 @@ public final class ChampionView {
                     .toList();
 
             var triggeredList = triggeredPhaseIds.stream()
-                    .map(ResourceLocation::parse)
+                    .map(ResourceLocation::new)
                     .toList();
 
             return new ChampionData(tier.id(), entries, triggeredList, this.archetypeId);

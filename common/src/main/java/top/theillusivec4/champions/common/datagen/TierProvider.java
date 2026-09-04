@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.datagen;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -40,7 +41,7 @@ public class TierProvider implements DataProvider {
                             .forGetter(ChampionTier.TierDisplay::color),
                     ResourceLocation.CODEC
                             .optionalFieldOf("icon",
-                                    ResourceLocation.withDefaultNamespace("textures/gui/icons.png"))
+                                    new ResourceLocation("minecraft", "textures/gui/icons.png"))
                             .forGetter(ChampionTier.TierDisplay::icon)
             ).apply(inst, ChampionTier.TierDisplay::new));
 
@@ -79,10 +80,10 @@ public class TierProvider implements DataProvider {
      * @return {@code this} for chaining
      */
     public TierProvider tier(String namespace, String name, int level, int color) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, name);
+        ResourceLocation id = Utils.key(namespace, name);
         ChampionTier.TierDisplay display = new ChampionTier.TierDisplay(
                 color,
-                ResourceLocation.withDefaultNamespace("textures/gui/icons.png")
+                new ResourceLocation("minecraft", "textures/gui/icons.png")
         );
         tiers.add(new TierEntry(id, new TierSpec(level, display)));
         return this;

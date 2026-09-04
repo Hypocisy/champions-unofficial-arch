@@ -33,7 +33,8 @@ public final class MouseHelper {
 
 		mc.getProfiler().push("mouse_champion");
 
-		double range = ((LivingEntity) camera).getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
+		// 1.20.1 has no entity_interaction_range attribute — vanilla entity reach is 3.0
+		double range = 3.0D;
 		// if set, use hudRange instead entity_interaction_range
 		if (ChampionsClientConfig.hudRange > 0) {
 			range = ChampionsClientConfig.hudRange;

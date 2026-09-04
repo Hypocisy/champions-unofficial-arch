@@ -93,7 +93,7 @@ public final class ArchetypeStrategy implements ChampionBuildStrategy {
             cumulative += Math.max(candidate.weight(), 0);
             if (roll < cumulative) return candidate;
         }
-        return candidates.getLast(); // fallback (floating-point safety)
+        return candidates.get(candidates.size() - 1); // fallback (floating-point safety)
     }
 
     // ── Pool drawing ──────────────────────────────────────────────────────────
@@ -161,6 +161,6 @@ public final class ArchetypeStrategy implements ChampionBuildStrategy {
             cumulative += Math.max(candidate.weight(), 0);
             if (roll < cumulative) return candidate;
         }
-        return candidates.getLast();
+        return candidates.get(candidates.size() - 1);
     }
 }

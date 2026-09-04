@@ -3,14 +3,12 @@ package top.theillusivec4.champions.common.entity;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 
@@ -44,7 +42,7 @@ public final class ArcticBulletEntity extends BaseBulletEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
+    protected void defineSynchedData() {
         // no extra synced data
     }
 }

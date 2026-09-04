@@ -155,6 +155,6 @@ public final class ChampionSpawnHandler {
       if (roll < cumulative) return tiers.get(i);
     }
 
-    return tiers.getLast();
+    return tiers.get(tiers.size() - 1);
   }
 }

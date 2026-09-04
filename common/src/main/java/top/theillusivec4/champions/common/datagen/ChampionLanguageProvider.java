@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.datagen;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.google.gson.JsonObject;
 import net.minecraft.data.CachedOutput;
@@ -83,7 +84,7 @@ public class ChampionLanguageProvider implements DataProvider {
 
     /** Convenience — namespace defaults to {@code "champions"}. */
     public void addAffix(String path, String name) {
-        addAffix(ResourceLocation.fromNamespaceAndPath("champions", path), name);
+        addAffix(Utils.key(path), name);
     }
 
     /** Rank title: {@code rank.champions.title.<level>} */
@@ -122,7 +123,7 @@ public class ChampionLanguageProvider implements DataProvider {
      * without translations.
      */
     private void addBuiltinDeathMessages() {
-        ResourceLocation reflection = ResourceLocation.fromNamespaceAndPath("champions", "reflection");
+        ResourceLocation reflection = Utils.key("reflection");
         switch (locale) {
             case "zh_cn" -> addDamageType(reflection,
                     "%1$s自食其果",

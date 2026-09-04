@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.datagen;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
@@ -104,7 +105,7 @@ class CodecDispatchTest {
                 PhaseCondition.CODEC);
         assertInstanceOf(PhaseCondition.AffixTriggered.class, c);
         var at = (PhaseCondition.AffixTriggered) c;
-        assertEquals(ResourceLocation.fromNamespaceAndPath("champions", "adaptable"), at.affixId());
+        assertEquals(Utils.key("adaptable"), at.affixId());
         assertEquals(3, at.count());
     }
 
@@ -115,7 +116,7 @@ class CodecDispatchTest {
         PhaseEffect e = decode("{\"type\":\"add_affix\",\"affix\":\"champions:enkindling\"}", PhaseEffect.CODEC);
         assertInstanceOf(PhaseEffect.AddAffix.class, e);
         var add = (PhaseEffect.AddAffix) e;
-        assertEquals(ResourceLocation.fromNamespaceAndPath("champions", "enkindling"), add.affixId());
+        assertEquals(Utils.key("enkindling"), add.affixId());
         assertEquals(1, add.strength());
     }
 
@@ -127,7 +128,7 @@ class CodecDispatchTest {
                 PhaseEffect.CODEC);
         assertInstanceOf(PhaseEffect.AddAttribute.class, e);
         var add = (PhaseEffect.AddAttribute) e;
-        assertEquals(ResourceLocation.fromNamespaceAndPath("minecraft", "generic.attack_damage"), add.attribute());
+        assertEquals(ResourceLocation.tryParse("generic.attack_damage"), add.attribute());
         assertEquals(1.0, add.amount(), 0.0001);
         assertEquals("add_multiplied_total", add.operation());
     }
@@ -148,7 +149,7 @@ class CodecDispatchTest {
                 PhaseEffect.CODEC);
         assertInstanceOf(PhaseEffect.AddMobEffect.class, e);
         var add = (PhaseEffect.AddMobEffect) e;
-        assertEquals(ResourceLocation.fromNamespaceAndPath("minecraft", "strength"), add.effectId());
+        assertEquals(ResourceLocation.tryParse("strength"), add.effectId());
         assertEquals(1, add.amplifier());
         assertTrue(add.infinite());
     }
@@ -181,7 +182,7 @@ class CodecDispatchTest {
         ChampionPhase phase = ChampionPhase.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(json))
                 .resultOrPartial(err -> fail("phase did not decode: " + err))
                 .orElseThrow();
-        assertEquals(ResourceLocation.fromNamespaceAndPath("champions", "zombie_line_second_wind"), phase.id());
+        assertEquals(Utils.key("zombie_line_second_wind"), phase.id());
         assertInstanceOf(PhaseCondition.HealthPercent.class, phase.condition());
         assertEquals(1, phase.effects().size());
         assertInstanceOf(PhaseEffect.AddMobEffect.class, phase.effects().get(0));

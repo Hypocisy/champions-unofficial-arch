@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
 import top.theillusivec4.champions.common.archetype.ChampionArchetype;
@@ -44,77 +43,69 @@ public record EditorPayload(
     public static EditorPayload empty() {
         return new EditorPayload(Map.of(), Map.of(), Map.of(), Map.of(), Set.of(), List.of());
     }
-    // ── StreamCodec ───────────────────────────────────────────────────────────
 
-    private static final StreamCodec<FriendlyByteBuf, Map<String, String>> STRING_MAP_CODEC =
-            StreamCodec.of(
-                    (buf, map) -> {
-                        buf.writeVarInt(map.size());
-                        map.forEach((k, v) -> { buf.writeUtf(k); buf.writeUtf(v); });
-                    },
-                    buf -> {
-                        int size = buf.readVarInt();
-                        Map<String, String> map = new LinkedHashMap<>();
-                        for (int i = 0; i < size; i++) map.put(buf.readUtf(), buf.readUtf());
-                        return map;
-                    }
-            );
+    // ── Serialization ─────────────────────────────────────────────────────────
 
-    private static final StreamCodec<FriendlyByteBuf, Set<String>> STRING_SET_CODEC =
-            StreamCodec.of(
-                    (buf, set) -> {
-                        buf.writeVarInt(set.size());
-                        set.forEach(buf::writeUtf);
-                    },
-                    buf -> {
-                        int size = buf.readVarInt();
-                        Set<String> set = new LinkedHashSet<>();
-                        for (int i = 0; i < size; i++) set.add(buf.readUtf());
-                        return set;
-                    }
-            );
+    public void encode(FriendlyByteBuf buf) {
+        encodeStringMap(buf, tierJsons);
+        encodeStringMap(buf, archetypeJsons);
+        encodeStringMap(buf, configValues);
+        encodeStringMap(buf, modifierJsons);
+        encodeStringSet(buf, builtinIds);
+        buf.writeVarInt(packs.size());
+        for (PackInfo p : packs) {
+            buf.writeUtf(p.id());
+            buf.writeUtf(p.title());
+            buf.writeUtf(p.source());
+            buf.writeBoolean(p.enabled());
+        }
+    }
 
-    private static final StreamCodec<FriendlyByteBuf, List<PackInfo>> PACK_LIST_CODEC =
-            StreamCodec.of(
-                    (buf, list) -> {
-                        buf.writeVarInt(list.size());
-                        for (PackInfo p : list) {
-                            buf.writeUtf(p.id());
-                            buf.writeUtf(p.title());
-                            buf.writeUtf(p.source());
-                            buf.writeBoolean(p.enabled());
-                        }
-                    },
-                    buf -> {
-                        int size = buf.readVarInt();
-                        List<PackInfo> list = new ArrayList<>();
-                        for (int i = 0; i < size; i++) {
-                            list.add(new PackInfo(buf.readUtf(), buf.readUtf(),
-                                    buf.readUtf(), buf.readBoolean()));
-                        }
-                        return list;
-                    }
-            );
+    public static EditorPayload decode(FriendlyByteBuf buf) {
+        Map<String, String> tierJsons = decodeStringMap(buf);
+        Map<String, String> archetypeJsons = decodeStringMap(buf);
+        Map<String, String> configValues = decodeStringMap(buf);
+        Map<String, String> modifierJsons = decodeStringMap(buf);
+        Set<String> builtinIds = decodeStringSet(buf);
+        int size = buf.readVarInt();
+        List<PackInfo> packs = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            packs.add(new PackInfo(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean()));
+        }
+        return new EditorPayload(tierJsons, archetypeJsons, configValues, modifierJsons,
+                builtinIds, packs);
+    }
 
-    public static final StreamCodec<FriendlyByteBuf, EditorPayload> STREAM_CODEC =
-            StreamCodec.of(
-                    (buf, p) -> {
-                        STRING_MAP_CODEC.encode(buf, p.tierJsons);
-                        STRING_MAP_CODEC.encode(buf, p.archetypeJsons);
-                        STRING_MAP_CODEC.encode(buf, p.configValues);
-                        STRING_MAP_CODEC.encode(buf, p.modifierJsons);
-                        STRING_SET_CODEC.encode(buf, p.builtinIds);
-                        PACK_LIST_CODEC.encode(buf, p.packs);
-                    },
-                    buf -> new EditorPayload(
-                            STRING_MAP_CODEC.decode(buf),
-                            STRING_MAP_CODEC.decode(buf),
-                            STRING_MAP_CODEC.decode(buf),
-                            STRING_MAP_CODEC.decode(buf),
-                            STRING_SET_CODEC.decode(buf),
-                            PACK_LIST_CODEC.decode(buf)
-                    )
-            );
+    private static void encodeStringMap(FriendlyByteBuf buf, Map<String, String> map) {
+        buf.writeVarInt(map.size());
+        map.forEach((k, v) -> {
+            buf.writeUtf(k);
+            buf.writeUtf(v);
+        });
+    }
+
+    private static Map<String, String> decodeStringMap(FriendlyByteBuf buf) {
+        int size = buf.readVarInt();
+        Map<String, String> map = new LinkedHashMap<>();
+        for (int i = 0; i < size; i++) {
+            map.put(buf.readUtf(), buf.readUtf());
+        }
+        return map;
+    }
+
+    private static void encodeStringSet(FriendlyByteBuf buf, Set<String> set) {
+        buf.writeVarInt(set.size());
+        set.forEach(buf::writeUtf);
+    }
+
+    private static Set<String> decodeStringSet(FriendlyByteBuf buf) {
+        int size = buf.readVarInt();
+        Set<String> set = new LinkedHashSet<>();
+        for (int i = 0; i < size; i++) {
+            set.add(buf.readUtf());
+        }
+        return set;
+    }
 
     // ── Factory: build from live server state ─────────────────────────────────
 

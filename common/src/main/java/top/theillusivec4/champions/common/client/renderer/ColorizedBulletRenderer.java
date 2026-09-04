@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.client.renderer;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -20,7 +21,7 @@ import javax.annotation.Nonnull;
 
 public class ColorizedBulletRenderer extends EntityRenderer<BaseBulletEntity> {
 
-  private static final ResourceLocation GENERIC_SPARK_TEXTURE = ResourceLocation.fromNamespaceAndPath("champions","textures/entity/generic_spark.png");
+  private static final ResourceLocation GENERIC_SPARK_TEXTURE = Utils.key("champions","textures/entity/generic_spark.png");
   private static final RenderType RENDER_TYPE = RenderType.entityTranslucent(GENERIC_SPARK_TEXTURE);
   private final ShulkerBulletModel<BaseBulletEntity> model;
 
@@ -55,12 +56,16 @@ public class ColorizedBulletRenderer extends EntityRenderer<BaseBulletEntity> {
     // argb range(0, 255)
     // 0 transparent 255 opaque.
     // so need calculate percent to argb range: 100% * 255 = 255, 15% * 255 = 38.25 ~= 38
+    // 1.20.1 renderToBuffer takes per-channel floats instead of a packed ARGB int
+    float cr = FastColor.ARGB32.red(this.color)   / 255.0F;
+    float cg = FastColor.ARGB32.green(this.color) / 255.0F;
+    float cb = FastColor.ARGB32.blue(this.color)  / 255.0F;
     this.model.renderToBuffer(matrixStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY,
-      FastColor.ARGB32.opaque(this.color));
+      cr, cg, cb, 1.0F);
     matrixStack.scale(1.5F, 1.5F, 1.5F);
     VertexConsumer vertexconsumer1 = buffer.getBuffer(RENDER_TYPE);
     this.model.renderToBuffer(matrixStack, vertexconsumer1, packedLight, OverlayTexture.NO_OVERLAY,
-      FastColor.ARGB32.color(FastColor.ARGB32.alpha(15 * 255), this.color));
+      cr, cg, cb, 0.15F);
     matrixStack.popPose();
     super.render(entity, entityYaw, partialTicks, matrixStack, buffer, packedLight);
   }

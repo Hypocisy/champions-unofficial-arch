@@ -1,8 +1,7 @@
 package top.theillusivec4.champions.common.champion;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -41,9 +40,8 @@ public final class ChampionLootHandler {
 
     private ChampionLootHandler() {}
 
-    public static final ResourceKey<LootTable> CHAMPION_LOOT_TABLE =
-            ResourceKey.create(Registries.LOOT_TABLE,
-                    ResourceLocation.fromNamespaceAndPath("champions", "champion_loot"));
+    public static final ResourceLocation CHAMPION_LOOT_TABLE_ID =
+            Utils.key("champion_loot");
 
     // Re-entrancy guard: loot table rolling itself triggers entity loot contexts —
     // without this guard we'd recursively enter dropLoot for the same entity.
@@ -83,16 +81,16 @@ public final class ChampionLootHandler {
 
     private static void rollLootTable(LivingEntity entity, Champion champion,
                                       ServerLevel level, DamageSource source) {
-        LootTable table = level.getServer().reloadableRegistries()
-                .getLootTable(CHAMPION_LOOT_TABLE);
+        LootTable table = level.getServer().getLootData()
+                .getLootTable(CHAMPION_LOOT_TABLE_ID);
         if (table == LootTable.EMPTY) return;
 
         LootParams.Builder params = new LootParams.Builder(level)
                 .withParameter(LootContextParams.THIS_ENTITY, entity)
                 .withParameter(LootContextParams.ORIGIN, entity.position())
                 .withParameter(LootContextParams.DAMAGE_SOURCE, source)
-                .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, source.getEntity())
-                .withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, source.getDirectEntity());
+                .withOptionalParameter(LootContextParams.KILLER_ENTITY, source.getEntity())
+                .withOptionalParameter(LootContextParams.DIRECT_KILLER_ENTITY, source.getDirectEntity());
 
         LivingEntity killCredit = entity.getKillCredit();
         if (killCredit instanceof Player player) {
@@ -120,9 +118,7 @@ public final class ChampionLootHandler {
 
             ItemStack stack = new ItemStack(pick.item, pick.amount);
             if (pick.enchanted) {
-                EnchantmentHelper.enchantItem(
-                        level.random, stack, 30,
-                        level.registryAccess(), Optional.empty());
+                EnchantmentHelper.enchantItem(level.random, stack, 30, true);
             }
             spawnDrop(entity, level, stack);
         }
@@ -157,7 +153,7 @@ public final class ChampionLootHandler {
             cumulative += e.weight;
             if (target < cumulative) return e;
         }
-        return entries.getLast();
+        return entries.get(entries.size() - 1);
     }
 
     private static LootEntry parse(String raw) {
@@ -165,7 +161,7 @@ public final class ChampionLootHandler {
         if (parts.length != 5) return null;
         try {
             int tier     = Integer.parseInt(parts[0].trim());
-            var item     = BuiltInRegistries.ITEM.get(ResourceLocation.parse(parts[1].trim()));
+            var item     = BuiltInRegistries.ITEM.get(new ResourceLocation(parts[1].trim()));
             int amount   = Integer.parseInt(parts[2].trim());
             boolean ench = Boolean.parseBoolean(parts[3].trim());
             int weight   = Integer.parseInt(parts[4].trim());

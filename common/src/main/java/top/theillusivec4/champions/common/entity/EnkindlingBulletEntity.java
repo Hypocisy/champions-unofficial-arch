@@ -42,7 +42,7 @@ public final class EnkindlingBulletEntity extends BaseBulletEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
+    protected void defineSynchedData() {
         // no extra synced data
     }
 }

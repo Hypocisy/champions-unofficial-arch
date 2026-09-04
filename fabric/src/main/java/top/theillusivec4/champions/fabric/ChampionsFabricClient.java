@@ -1,13 +1,9 @@
 package top.theillusivec4.champions.fabric;
 
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.neoforged.fml.config.ModConfig;
 import top.theillusivec4.champions.common.client.renderer.ColorizedBulletRenderer;
-import top.theillusivec4.champions.common.config.ChampionConfigSpecClient;
 import top.theillusivec4.champions.common.particle.RankParticle;
 import top.theillusivec4.champions.fabric.event.FabricClientRenderer;
 import top.theillusivec4.champions.fabric.network.FabricPacketHandler;

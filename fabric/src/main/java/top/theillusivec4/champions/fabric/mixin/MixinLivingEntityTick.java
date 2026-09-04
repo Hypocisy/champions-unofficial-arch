@@ -31,8 +31,7 @@ public abstract class MixinLivingEntityTick {
 	private void champions$onDoHurtTarget(
 			CallbackInfo ci
 	) {
-		LivingEntity self = (LivingEntity) (Object) this;
-		if (!(self instanceof LivingEntity living)) return;
+		LivingEntity living = (LivingEntity) (Object) this;
 		ChampionsApi.get().getChampion(living).ifPresent(champion -> {
 			// Dispatch tick to all affixes every tick
 			GlobalDispatcher.dispatch(TickEvent.class, champion,

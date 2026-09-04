@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.FleeSunGoal;
 import net.minecraft.world.entity.ai.goal.RestrictSunGoal;
-import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.affix.EmptyAffixData;
 import top.theillusivec4.champions.api.affix.handler.HandlerRegistry;
@@ -43,10 +43,10 @@ public final class MoltenAffix extends AffixType<EmptyAffixData> {
                     MobEffects.FIRE_RESISTANCE, MobEffectInstance.INFINITE_DURATION, 0, true, false));
 
             if (entity instanceof Mob mob) {
-                mob.setPathfindingMalus(PathType.WATER, -1f);
-                mob.setPathfindingMalus(PathType.LAVA, 8f);
-                mob.setPathfindingMalus(PathType.DANGER_FIRE, 0f);
-                mob.setPathfindingMalus(PathType.DAMAGE_FIRE, 0f);
+                mob.setPathfindingMalus(BlockPathTypes.WATER, -1f);
+                mob.setPathfindingMalus(BlockPathTypes.LAVA, 8f);
+                mob.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0f);
+                mob.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0f);
                 mob.goalSelector.getAvailableGoals().removeIf(g ->
                         g.getGoal() instanceof RestrictSunGoal || g.getGoal() instanceof FleeSunGoal);
             }

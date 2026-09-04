@@ -31,7 +31,7 @@ configurations {
 }
 
 loom {
-    accessWidenerPath = file("../common/src/main/resources/champions.accesswidener")
+    accessWidenerPath = project(":common").file("src/main/resources/champions.accesswidener")
 }
 
 // ── Mod publishing — run `./gradlew publishModPlatforms` from the root ───────
@@ -116,13 +116,13 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
     // Replace modImplementation with modApi if you expose components in your own API
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
     // Copy the following only if you want to bundle Cardinal Components API as a Jar-in-Jar dependency
     // (otherwise, you should configure the dependency on Modrinth/Curseforge)
-    include "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-    modRuntimeOnly "curse.maven:modmenu-308702:7808443"
+    include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
+    include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
+    modRuntimeOnly "curse.maven:modmenu-308702:5162837"
     modImplementation ("curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}")
 
     // night-config: FCAP bundles these as JiJ which Fabric Loader extracts at production runtime.
@@ -132,10 +132,12 @@ dependencies {
     implementation("com.electronwill.night-config:toml:3.8.3")
 
     // KubeJS Fabric (optional)
-//    modCompileOnly "dev.latvian.mods:kubejs-fabric:${kubejs_version}"
+    modCompileOnly "dev.latvian.mods:kubejs-fabric:${kubejs_version}"
 
-    // Jade (optional)
-    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    // Jade (optional) — compile-only. The pinned Jade fabric build declares
+    // intermediary-namespace classTweakers that crash the fabric dev loader.
+    // Verify the integration with the release jar in a production instance.
+    compileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid_fabric}"
 
 }
 

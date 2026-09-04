@@ -87,7 +87,7 @@ public final class ChampionTier {
                 case 4 -> 0xFFFF5555; // red
                 default -> 0xFFFF55FF; // purple (tier 5+)
             };
-            return new TierDisplay(color, ResourceLocation.withDefaultNamespace("textures/gui/icons.png"));
+            return new TierDisplay(color, new ResourceLocation("minecraft", "textures/gui/icons.png"));
         }
     }
 }

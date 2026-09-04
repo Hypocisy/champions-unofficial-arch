@@ -1,23 +1,26 @@
 package top.theillusivec4.champions.common.integration.jade;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IEntityComponentProvider;
 import snownee.jade.api.ITooltip;
-import snownee.jade.api.JadeIds;
 import snownee.jade.api.config.IPluginConfig;
+import snownee.jade.api.ui.IElement;
+import snownee.jade.impl.ui.TextElement;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 import top.theillusivec4.champions.common.config.ChampionsClientConfig;
+import top.theillusivec4.champions.common.utils.Utils;
 
 public enum ChampionComponentProvider implements IEntityComponentProvider {
     INSTANCE;
 
     public static final ResourceLocation ID =
-            ResourceLocation.fromNamespaceAndPath("champions", "enable_affix_compact");
+            Utils.key("enable_affix_compact");
 
     private static final int STAR_SPACING = 1;
 
@@ -27,13 +30,13 @@ public enum ChampionComponentProvider implements IEntityComponentProvider {
             ChampionTier tier = champion.tier();
             int color = tier.display().color();
 
-            // Replace entity name with colored champion title
+            // Replace entity name with colored champion title (old-style: line 0, left-aligned)
             Component name = Component
                     .translatableWithFallback("rank.champions.title." + tier.level(), "Tier " + tier.level())
                     .append(" ")
                     .append(accessor.getEntity().getName())
-                    .withColor(color);
-            tooltip.replace(JadeIds.CORE_OBJECT_NAME, name);
+                    .withStyle(style -> style.withColor(TextColor.fromRgb(color & 0xFFFFFF)));
+            tooltip.get(0, IElement.Align.LEFT).set(0, new TextElement(name));
 
             // Star row below the name
             tooltip.add(1, StarElement.of(tier.level(), color, ChampionsClientConfig.jadeStarSpacing));

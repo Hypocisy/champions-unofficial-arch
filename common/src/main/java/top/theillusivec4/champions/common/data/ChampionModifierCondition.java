@@ -6,6 +6,7 @@ import net.minecraft.advancements.critereon.MinMaxBounds;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.common.filter.EntityFilter;
+import top.theillusivec4.champions.common.utils.ChampionsCodecs;
 
 import java.util.Optional;
 
@@ -42,7 +43,7 @@ public record ChampionModifierCondition(
                     EntityFilter.CODEC
                             .optionalFieldOf("entity_filter", EntityFilter.ANY)
                             .forGetter(ChampionModifierCondition::entityFilter),
-                    MinMaxBounds.Ints.CODEC
+                    ChampionsCodecs.INTS_BOUNDS
                             .optionalFieldOf("tier")
                             .forGetter(ChampionModifierCondition::tier),
                     AffixesPredicate.CODEC

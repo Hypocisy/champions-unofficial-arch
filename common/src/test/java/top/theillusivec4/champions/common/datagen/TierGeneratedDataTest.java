@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 import top.theillusivec4.champions.common.data.TierDataLoader;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -54,8 +55,7 @@ class TierGeneratedDataTest {
     void tierIdsFollowTheChampionsNamespaceConvention() throws Exception {
         for (String platform : List.of("neoforge", "fabric")) {
             for (TierFile t : loadTiers(platform)) {
-                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                        "champions", t.file().getFileName().toString().replace(".json", ""));
+                ResourceLocation id = Utils.key( t.file().getFileName().toString().replace(".json", ""));
                 assertEquals("champions", id.getNamespace(),
                         platform + " tier file " + t.file + " must be in champions namespace");
                 assertTrue(id.getPath().matches("tier_\\d+"),
@@ -68,8 +68,7 @@ class TierGeneratedDataTest {
     void eachTierBuildsIntoAValidChampionTier() throws Exception {
         for (String platform : List.of("neoforge", "fabric")) {
             for (TierFile t : loadTiers(platform)) {
-                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                        "champions", t.file().getFileName().toString().replace(".json", ""));
+                ResourceLocation id = Utils.key(t.file().getFileName().toString().replace(".json", ""));
                 // Rebuild the ChampionTier the loader would produce and sanity-check invariants.
                 ChampionTier.TierDisplay display = t.display() != null
                         ? parseDisplay(t.display())
@@ -109,6 +108,6 @@ class TierGeneratedDataTest {
                 ? display.getAsJsonObject().get("color").getAsInt()
                 : 0xFFFFFFFF;
         return new ChampionTier.TierDisplay(color,
-                ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/icons.png"));
+                ResourceLocation.tryParse("textures/gui/icons.png"));
     }
 }

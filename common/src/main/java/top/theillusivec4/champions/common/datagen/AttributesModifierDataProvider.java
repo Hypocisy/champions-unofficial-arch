@@ -52,7 +52,7 @@ public class AttributesModifierDataProvider implements DataProvider {
     private static final ChampionModifierCondition CREEPER_BLACKLIST =
             new ChampionModifierCondition(
                     new EntityFilter.EntityTypeFilter(
-                            Set.of(ResourceLocation.parse("minecraft:creeper")),
+                            Set.of(new ResourceLocation("minecraft:creeper")),
                             false  // whitelist=false → blacklist
                     ),
                     Optional.empty(),
@@ -82,15 +82,21 @@ public class AttributesModifierDataProvider implements DataProvider {
                     .resolve(attrId.getPath() + ".json");
 
             futures.add(lookupProvider.thenCompose(provider ->
-                    DataProvider.saveStable(
-                            cache, provider,
-                            ModifierSetting.MAP_CODEC.codec(),
-                            setting,
-                            outputPath)
-            ));
+                    encodeAndSave(cache, setting, outputPath)));
         });
 
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
+    }
+
+    /** 1.20.1 DataProvider has no codec-aware saveStable — encode with JsonOps first. */
+    private static CompletableFuture<?> encodeAndSave(
+            CachedOutput cache, ModifierSetting setting, Path path) {
+        return CompletableFuture.supplyAsync(
+                        () -> ModifierSetting.MAP_CODEC.codec()
+                                .encodeStart(com.mojang.serialization.JsonOps.INSTANCE, setting)
+                                .getOrThrow(false, s -> {}),
+                        net.minecraft.Util.backgroundExecutor())
+                .thenCompose(json -> DataProvider.saveStable(cache, json, path));
     }
 
     @Override
@@ -104,19 +110,19 @@ public class AttributesModifierDataProvider implements DataProvider {
             Attribute attribute,
             ResourceLocation attrId
     ) {
-        if (attribute == Attributes.MAX_HEALTH.value()) {
-            return enabled(attrId, 0.35, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        } else if (attribute == Attributes.ATTACK_DAMAGE.value()) {
-            return enabled(attrId, 0.50, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        } else if (attribute == Attributes.ARMOR.value()) {
-            return enabled(attrId, 2.0, AttributeModifier.Operation.ADD_VALUE);
-        } else if (attribute == Attributes.ARMOR_TOUGHNESS.value()) {
-            return enabled(attrId, 1.0, AttributeModifier.Operation.ADD_VALUE);
-        } else if (attribute == Attributes.KNOCKBACK_RESISTANCE.value()) {
-            return enabled(attrId, 0.05, AttributeModifier.Operation.ADD_VALUE);
+        if (attribute == Attributes.MAX_HEALTH) {
+            return enabled(attrId, 0.35, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        } else if (attribute == Attributes.ATTACK_DAMAGE) {
+            return enabled(attrId, 0.50, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        } else if (attribute == Attributes.ARMOR) {
+            return enabled(attrId, 2.0, AttributeModifier.Operation.ADDITION);
+        } else if (attribute == Attributes.ARMOR_TOUGHNESS) {
+            return enabled(attrId, 1.0, AttributeModifier.Operation.ADDITION);
+        } else if (attribute == Attributes.KNOCKBACK_RESISTANCE) {
+            return enabled(attrId, 0.05, AttributeModifier.Operation.ADDITION);
         } else {
             return new ModifierSetting(attrId, false,
-                    Pair.of(0.0, AttributeModifier.Operation.ADD_VALUE),
+                    Pair.of(0.0, AttributeModifier.Operation.ADDITION),
                     Optional.empty());
         }
     }

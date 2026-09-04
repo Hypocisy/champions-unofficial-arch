@@ -1,16 +1,19 @@
 package top.theillusivec4.champions.common.loot;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Serializer;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.ChampionsApi;
 
 import java.util.Optional;
@@ -37,21 +40,10 @@ public record ChampionPropertyCondition(
         Optional<MinMaxBounds.Ints> tier
 ) implements LootItemCondition {
 
-    /** Codec shared by both platforms — registered once per platform registry call. */
-    public static final MapCodec<ChampionPropertyCondition> CODEC =
-            RecordCodecBuilder.mapCodec(inst -> inst.group(
-                    LootContext.EntityTarget.CODEC
-                            .fieldOf("entity")
-                            .forGetter(ChampionPropertyCondition::target),
-                    MinMaxBounds.Ints.CODEC
-                            .optionalFieldOf("tier")
-                            .forGetter(ChampionPropertyCondition::tier)
-            ).apply(inst, ChampionPropertyCondition::new));
-
     // ── LootItemCondition ──────────────────────────────────────────────────────
 
     @Override
-    public @NotNull Set<LootContextParam<?>> getReferencedContextParams() {
+    public Set<LootContextParam<?>> getReferencedContextParams() {
         return ImmutableSet.of(target.getParam());
     }
 
@@ -63,7 +55,7 @@ public record ChampionPropertyCondition(
     }
 
     @Override
-    public @NotNull LootItemConditionType getType() {
+    public LootItemConditionType getType() {
         return ChampionLootConditions.CHAMPION_PROPERTIES;
     }
 
@@ -75,5 +67,26 @@ public record ChampionPropertyCondition(
             if (tier.isEmpty()) return true; // no tier filter — any champion passes
             return tier.get().matches(champion.tier().level());
         }).orElse(false);
+    }
+
+    /** 1.20.1-style JSON serializer handed to {@link LootItemConditionType} by both platforms. */
+    public static class ChampionConditionSerializer implements Serializer<ChampionPropertyCondition> {
+
+        @Override
+        public void serialize(JsonObject json, ChampionPropertyCondition value, JsonSerializationContext context) {
+            json.add("entity", context.serialize(value.target()));
+            value.tier().ifPresent(tier -> json.add("tier", tier.serializeToJson()));
+        }
+
+        @Override
+        public ChampionPropertyCondition deserialize(JsonObject json, JsonDeserializationContext context) {
+            JsonElement tierElement = json.get("tier");
+            Optional<MinMaxBounds.Ints> tier = tierElement == null || tierElement.isJsonNull()
+                    ? Optional.empty()
+                    : Optional.of(MinMaxBounds.Ints.fromJson(tierElement));
+            return new ChampionPropertyCondition(
+                    GsonHelper.getAsObject(json, "entity", context, LootContext.EntityTarget.class),
+                    tier);
+        }
     }
 }

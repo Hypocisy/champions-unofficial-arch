@@ -29,7 +29,9 @@ public class ModEntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
 		tag(ChampionEntityTypes.Tags.IS_ENDER).add(lookup(provider, "enderman"));
 		tag(ChampionEntityTypes.Tags.IS_ENDER).add(lookup(provider, "shulker"));
 		// add champion allow list
-		lookUpMonster(provider).listElements().forEach(this::addEntity);
+		lookUpMonster(provider).listElements()
+				.filter(entityType -> entityType.value().getCategory() == MobCategory.MONSTER)
+				.forEach(this::addEntity);
 	}
 
 	void addEntity(Holder.Reference<EntityType<?>> entityType) {
@@ -37,11 +39,11 @@ public class ModEntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
 	}
 
 	private HolderLookup.RegistryLookup<EntityType<?>> lookUpMonster(@NotNull HolderLookup.Provider provider) {
-		return provider.lookupOrThrow(Registries.ENTITY_TYPE).filterElements(entityType -> entityType.getCategory() == MobCategory.MONSTER);
+		return provider.lookupOrThrow(Registries.ENTITY_TYPE);
 	}
 
 	private ResourceKey<EntityType<?>> create(String name) {
-		return ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(name));
+		return ResourceKey.create(Registries.ENTITY_TYPE, new ResourceLocation(name));
 	}
 
 	private ResourceKey<EntityType<?>> lookup(HolderLookup.Provider provider, String name) {

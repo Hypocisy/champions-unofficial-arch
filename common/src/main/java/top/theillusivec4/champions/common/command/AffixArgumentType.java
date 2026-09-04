@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.affix.AffixType;
@@ -52,8 +53,8 @@ public final class AffixArgumentType implements ArgumentType<List<AffixArgumentT
 
         public AffixInstance toInstance(int defaultStrength) {
             int s = strength.isPresent()
-                    ? Math.clamp(strength.getAsInt(), 1, 5)
-                    : Math.clamp(defaultStrength, 1, 5);
+                    ? Mth.clamp(strength.getAsInt(), 1, 5)
+                    : Mth.clamp(defaultStrength, 1, 5);
             return new AffixInstance(type, s);
         }
     }
@@ -111,7 +112,7 @@ public final class AffixArgumentType implements ArgumentType<List<AffixArgumentT
 
             ResourceLocation id;
             try {
-                id = ResourceLocation.parse(idPart);
+                id = new ResourceLocation(idPart);
             } catch (Exception e) {
                 reader.setCursor(start);
                 throw UNKNOWN_AFFIX.create(idPart);

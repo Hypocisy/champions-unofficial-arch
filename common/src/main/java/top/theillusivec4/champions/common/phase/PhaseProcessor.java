@@ -137,7 +137,7 @@ public final class PhaseProcessor {
 
         List<ResourceLocation> toResourceLocations() {
             return set.stream()
-                    .map(ResourceLocation::parse)
+                    .map(ResourceLocation::new)
                     .toList();
         }
     }

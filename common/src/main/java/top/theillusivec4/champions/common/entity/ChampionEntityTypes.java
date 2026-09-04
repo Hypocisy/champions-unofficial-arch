@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.entity;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -56,7 +57,7 @@ public final class ChampionEntityTypes {
 		public static final TagKey<EntityType<?>> ALLOW_CHAMPIONS = create("allow_champions");
 
 		private static TagKey<EntityType<?>> create(String name) {
-			return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("champions", name));
+			return TagKey.create(Registries.ENTITY_TYPE, Utils.key(name));
 		}
 	}
 }

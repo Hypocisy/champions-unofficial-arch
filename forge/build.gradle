@@ -1,0 +1,204 @@
+plugins {
+    id 'com.gradleup.shadow'
+    id "com.modrinth.minotaur"
+    id "net.darkhax.curseforgegradle"
+}
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+loom {
+    forge {
+        mixinConfig "${mod_id}-common.mixins.json"
+    }
+}
+base {
+    archivesName = "${mod_id}-forge"
+}
+
+// Pull in the common module's compiled classes before remapping.
+// Architectury Loom merges common + neoforge into a single jar at remapJar time.
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    // NeoForge itself
+//    neoForge "net.neoforged:neoforge:${neoforge_version}"
+    forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // Architectury API NeoForge module
+    modApi "dev.architectury:architectury-forge:${architectury_api_version}"
+
+    // Common module (merged at remapJar time, not a runtime dep)
+    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
+    shadowBundle(project(path: ":common", configuration: "transformProductionNeoForge")) {
+        transitive = false
+    }
+
+    // KubeJS NeoForge (optional)
+    modCompileOnly "dev.latvian.mods:kubejs-forge:${kubejs_version}"
+
+    // The One Probe (optional)
+    modCompileOnly "curse.maven:the-one-probe-245211:${theoneprobe_file_id}"
+
+    // Jade (optional) — compile-only. Jade's production jar ships SRG-named mixin
+    // classes (jade.mixins.json @Shadow f_*/this$0) that cannot apply against the
+    // mojmap-named dev runtime — old project worked only because ForgeGradle's
+    // fg.deobf deobfuscated jade's mixins. Verify the integration with the
+    // remapped release jar in a production instance instead.
+    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+}
+
+// ── Jar assembly ─────────────────────────────────────────────────────────────
+
+processResources {
+    // Inject version and dependency ranges into neoforge.mods.toml
+    def props = [
+            mod_id                       : mod_id,
+            mod_name                     : mod_name,
+            mod_version                  : mod_version,
+            mod_license                  : mod_license,
+            mod_authors                  : mod_authors,
+            mod_description              : mod_description,
+            minecraft_version_range      : minecraft_version_range,
+            forge_version_range          : forge_version_range,
+            forge_loader_version_range   : forge_loader_version_range,
+            kubejs_version_range         : kubejs_version_range
+    ]
+    inputs.properties(props)
+    filesMatching("META-INF/mods.toml") { expand(props) }
+}
+
+shadowJar {
+    // Merge common classes into this jar
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+}
+
+jar {
+    archiveClassifier = "dev"
+}
+
+// ── Data generation ───────────────────────────────────────────────────────────
+
+loom {
+    forge {
+        accessTransformers.from(file("src/main/resources/META-INF/accesstransformer.cfg"))
+    }
+
+    runs {
+        data {
+            data()
+
+            programArgs.addAll '--mod', project.mod_id, '--all',
+                '--output', file('src/generated/resources/').getAbsolutePath(),
+                '--existing', file('src/main/resources/').getAbsolutePath(),
+                '--existing', project(':common').file('src/main/resources/').getAbsolutePath()
+        }
+    }
+
+}
+
+// Make the main source set pick up generated resources at runtime
+sourceSets.main.resources.srcDirs += ["src/generated/resources"]
+
+// ── Mod publishing — run `./gradlew publishModPlatforms` from the root ───────
+
+def modrinthToken = System.getenv("MODRINTH_TOKEN") ?: (findProperty("modrinth_token") ?: "")
+def curseforgeToken = System.getenv("CURSEFORGE_TOKEN") ?: (findProperty("curseforge_token") ?: "")
+
+def hasModrinth = !modrinthToken.toString().blank && !("${findProperty("modrinth_project_id") ?: ""}").blank
+def hasCurseforge = !curseforgeToken.toString().blank && !("${findProperty("curseforge_id") ?: ""}").blank
+
+modrinth {
+    token = modrinthToken
+    projectId = "${findProperty("modrinth_project_id") ?: ""}"
+    versionNumber = "${project.version}-forge"
+    versionName = "${mod_name} ${project.version} (Forge)"
+    versionType = "release"
+    changelog = rootProject.ext.releaseChangelog()
+    uploadFile = remapJar
+    gameVersions = ["${minecraft_version}"]
+    loaders = ["forge"]
+    dependencies {
+        required.project "architectury-api"
+        optional.project "kubejs"
+        optional.project "jade"
+        optional.project "the-one-probe"
+    }
+}
+
+tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    group = "publishing"
+    onlyIf {
+        boolean tokenOk = !curseforgeToken.toString().blank
+        boolean idOk = !("${findProperty("curseforge_id") ?: ""}").trim().blank
+        if (tokenOk && idOk) return true
+        def why = []
+        if (!tokenOk) why << "token missing (env CURSEFORGE_TOKEN / gradle prop curseforge_token)"
+        if (!idOk) why << "curseforge_id missing in gradle.properties"
+        logger.lifecycle("SKIPPED :neoforge:curseforge — ${why.join('; ')}. " +
+                "If you just set the env var, RESTART the terminal first, or put tokens in ~/.gradle/gradle.properties.")
+        return false
+    }
+    dependsOn remapJar
+    apiToken = curseforgeToken
+    debugMode = Boolean.parseBoolean(System.getenv("CF_DEBUG") ?: "false")
+    def cfProjectId = "${findProperty("curseforge_id") ?: ""}".trim()
+    if (cfProjectId) upload(cfProjectId, remapJar.archiveFile.get().asFile) {
+        displayName = "${mod_name} ${project.version}"
+        releaseType = "release"
+        changelog = rootProject.ext.releaseChangelog()
+        changelogType = "markdown"
+        addGameVersion("${minecraft_version}")
+        addEnvironment("Client", "Server")
+        addModLoader("Forge")
+        addRequirement("architectury-api")
+        addOptional("kubejs", "jade", "the-one-probe")
+    }
+}
+
+tasks.named("modrinth") {
+    onlyIf {
+        boolean tokenOk = !modrinthToken.toString().blank
+        boolean idOk = !("${findProperty("modrinth_project_id") ?: ""}").blank
+        if (tokenOk && idOk) return true
+        def why = []
+        if (!tokenOk) why << "token missing (env MODRINTH_TOKEN / gradle prop modrinth_token)"
+        if (!idOk) why << "modrinth_project_id missing in gradle.properties"
+        logger.lifecycle("SKIPPED :neoforge:modrinth — ${why.join('; ')}. " +
+                "If you just set the env var, RESTART the terminal first, or put tokens in ~/.gradle/gradle.properties.")
+        return false
+    }
+}
+
+// ── Publishing ────────────────────────────────────────────────────────────────
+
+publishing {
+    publications {
+        mavenNeoForge(MavenPublication) {
+            artifactId = "${mod_id}-forge"
+            artifact(remapJar) { builtBy remapJar }
+            artifact(sourcesJar) { builtBy remapSourcesJar }
+        }
+    }
+}

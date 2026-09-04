@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.datagen;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -62,7 +63,7 @@ final class GeneratedDataTestSupport {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        ResourceLocation fileId = ResourceLocation.fromNamespaceAndPath(
+        ResourceLocation fileId = Utils.key(
                 "champions", file.getFileName().toString().replace(".json", ""));
         StringBuilder errors = new StringBuilder();
         DataResult<ChampionArchetype> result = ChampionArchetype.CODEC.parse(JsonOps.INSTANCE, json);

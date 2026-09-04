@@ -20,18 +20,17 @@ public final class ParalysisEffect extends MobEffect {
     }
 
     @Override
-    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+    public boolean isDurationEffectTick(int duration, int amplifier) {
         return true; // apply every tick
     }
 
     @Override
-    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
         // Force velocity to 0 so the entity cannot move while paralysed.
         // Slowness level 6 (255) effectively locks movement.
         entity.setDeltaMovement(
                 entity.getDeltaMovement().multiply(0.0, 0.0, 0.0)
         );
-        return true;
     }
 
     @Override

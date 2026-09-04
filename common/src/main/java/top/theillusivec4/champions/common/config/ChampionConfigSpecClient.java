@@ -1,15 +1,15 @@
 package top.theillusivec4.champions.common.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ChampionConfigSpecClient {
 
-	public static final ModConfigSpec SPEC;
+	public static final ForgeConfigSpec SPEC;
 	private static final ChampionConfigSpecClient.Entries ENTRIES;
 
 	static {
-		Pair<ChampionConfigSpecClient.Entries, ModConfigSpec> pair = new ModConfigSpec.Builder().configure(ChampionConfigSpecClient.Entries::new);
+		Pair<ChampionConfigSpecClient.Entries, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ChampionConfigSpecClient.Entries::new);
 		ENTRIES = pair.getLeft();
 		SPEC = pair.getRight();
 	}
@@ -31,15 +31,15 @@ public class ChampionConfigSpecClient {
 	}
 
 	static final class Entries {
-		final ModConfigSpec.IntValue hudXOffset;
-		final ModConfigSpec.IntValue hudYOffset;
-		final ModConfigSpec.IntValue hudRange;
-		final ModConfigSpec.BooleanValue enableWailIntegration;
-		final ModConfigSpec.IntValue jadeStarSpacing;
-		final ModConfigSpec.IntValue jadeStarBottomPadding;
+		final ForgeConfigSpec.IntValue hudXOffset;
+		final ForgeConfigSpec.IntValue hudYOffset;
+		final ForgeConfigSpec.IntValue hudRange;
+		final ForgeConfigSpec.BooleanValue enableWailIntegration;
+		final ForgeConfigSpec.IntValue jadeStarSpacing;
+		final ForgeConfigSpec.IntValue jadeStarBottomPadding;
 		final String CONFIG_PREFIX = "gui.champions.config.";
 
-		public Entries(ModConfigSpec.Builder b) {
+		public Entries(ForgeConfigSpec.Builder b) {
 			b.push("hud");
 
 			hudXOffset = b.comment("The x-offset for the champion HUD")

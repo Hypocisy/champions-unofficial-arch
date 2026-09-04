@@ -1,12 +1,12 @@
 package top.theillusivec4.champions.common.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
 /**
- * Builds the {@link ModConfigSpec} for Champions.
+ * Builds the {@link ForgeConfigSpec} for Champions.
  *
  * <p>Compiled against forge-config-api-port in {@code common} (modCompileOnly).
  * At runtime, NeoForge provides the same class natively; Fabric gets it via the
@@ -22,11 +22,11 @@ import java.util.List;
  */
 public final class ChampionConfigSpec {
 
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec SPEC;
     private static final Entries ENTRIES;
 
     static {
-        Pair<Entries, ModConfigSpec> pair = new ModConfigSpec.Builder().configure(Entries::new);
+        Pair<Entries, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(Entries::new);
         ENTRIES = pair.getLeft();
         SPEC    = pair.getRight();
     }
@@ -98,61 +98,61 @@ public final class ChampionConfigSpec {
 
     static final class Entries {
 
-        final ModConfigSpec.DoubleValue  spawnChance;
-        final ModConfigSpec.IntValue     beaconProtectionRange;
-        final ModConfigSpec.BooleanValue championSpawners;
-        final ModConfigSpec.BooleanValue championTrialSpawners;
+        final ForgeConfigSpec.DoubleValue  spawnChance;
+        final ForgeConfigSpec.IntValue     beaconProtectionRange;
+        final ForgeConfigSpec.BooleanValue championSpawners;
+        final ForgeConfigSpec.BooleanValue championTrialSpawners;
 
-        final ModConfigSpec.BooleanValue showHud;
-        final ModConfigSpec.BooleanValue showParticles;
-        final ModConfigSpec.ConfigValue<List<? extends String>> bossBarBlacklist;
+        final ForgeConfigSpec.BooleanValue showHud;
+        final ForgeConfigSpec.BooleanValue showParticles;
+        final ForgeConfigSpec.ConfigValue<List<? extends String>> bossBarBlacklist;
 
-        final ModConfigSpec.IntValue experienceGrowth;
-        final ModConfigSpec.IntValue explosionGrowth;
+        final ForgeConfigSpec.IntValue experienceGrowth;
+        final ForgeConfigSpec.IntValue explosionGrowth;
 
-        final ModConfigSpec.ConfigValue<List<? extends String>> lootDrops;
-        final ModConfigSpec.BooleanValue lootScaling;
-        final ModConfigSpec.EnumValue<LootSource> lootSource;
+        final ForgeConfigSpec.ConfigValue<List<? extends String>> lootDrops;
+        final ForgeConfigSpec.BooleanValue lootScaling;
+        final ForgeConfigSpec.EnumValue<LootSource> lootSource;
 
-        final ModConfigSpec.BooleanValue mobInherit;
-        final ModConfigSpec.IntValue     rankReduce;
-        final ModConfigSpec.BooleanValue canHaveInfestedAffix;
+        final ForgeConfigSpec.BooleanValue mobInherit;
+        final ForgeConfigSpec.IntValue     rankReduce;
+        final ForgeConfigSpec.BooleanValue canHaveInfestedAffix;
 
-        final ModConfigSpec.DoubleValue  adaptableReductionIncrement;
-        final ModConfigSpec.DoubleValue  adaptableMaxReduction;
-        final ModConfigSpec.IntValue     arcticAttackInterval;
-        final ModConfigSpec.IntValue     enkindlingAttackInterval;
-        final ModConfigSpec.DoubleValue  dampeningReduction;
-        final ModConfigSpec.IntValue     desecratingInterval;
-        final ModConfigSpec.IntValue     desecratingActivationTime;
-        final ModConfigSpec.DoubleValue  desecratingRadius;
-        final ModConfigSpec.IntValue     desecratingDuration;
-        final ModConfigSpec.DoubleValue  hastySpeedBonus;
-        final ModConfigSpec.IntValue     infestedAmount;
-        final ModConfigSpec.IntValue     infestedInterval;
-        final ModConfigSpec.ConfigValue<String> infestedParasite;
-        final ModConfigSpec.ConfigValue<String> infestedEnderParasite;
-        final ModConfigSpec.DoubleValue  knockingKnockback;
-        final ModConfigSpec.DoubleValue  livelyHealAmount;
-        final ModConfigSpec.DoubleValue  livelyPassiveMultiplier;
-        final ModConfigSpec.IntValue     livelyCooldown;
-        final ModConfigSpec.DoubleValue  magneticStrength;
-        final ModConfigSpec.DoubleValue  magneticPullRange;
-        final ModConfigSpec.IntValue     moltenFireTicks;
-        final ModConfigSpec.DoubleValue  moltenAuraDamage;
-        final ModConfigSpec.DoubleValue  moltenAuraRange;
-        final ModConfigSpec.DoubleValue  paralyzingChance;
-        final ModConfigSpec.IntValue     paralyzingDuration;
-        final ModConfigSpec.DoubleValue  plaguedRange;
-        final ModConfigSpec.DoubleValue  reflectiveMinPercent;
-        final ModConfigSpec.DoubleValue  reflectiveMaxPercent;
-        final ModConfigSpec.DoubleValue  reflectiveMax;
-        final ModConfigSpec.BooleanValue reflectiveLethal;
-        final ModConfigSpec.DoubleValue  shieldingChance;
-        final ModConfigSpec.DoubleValue  woundingChance;
-        final ModConfigSpec.IntValue     woundingDuration;
+        final ForgeConfigSpec.DoubleValue  adaptableReductionIncrement;
+        final ForgeConfigSpec.DoubleValue  adaptableMaxReduction;
+        final ForgeConfigSpec.IntValue     arcticAttackInterval;
+        final ForgeConfigSpec.IntValue     enkindlingAttackInterval;
+        final ForgeConfigSpec.DoubleValue  dampeningReduction;
+        final ForgeConfigSpec.IntValue     desecratingInterval;
+        final ForgeConfigSpec.IntValue     desecratingActivationTime;
+        final ForgeConfigSpec.DoubleValue  desecratingRadius;
+        final ForgeConfigSpec.IntValue     desecratingDuration;
+        final ForgeConfigSpec.DoubleValue  hastySpeedBonus;
+        final ForgeConfigSpec.IntValue     infestedAmount;
+        final ForgeConfigSpec.IntValue     infestedInterval;
+        final ForgeConfigSpec.ConfigValue<String> infestedParasite;
+        final ForgeConfigSpec.ConfigValue<String> infestedEnderParasite;
+        final ForgeConfigSpec.DoubleValue  knockingKnockback;
+        final ForgeConfigSpec.DoubleValue  livelyHealAmount;
+        final ForgeConfigSpec.DoubleValue  livelyPassiveMultiplier;
+        final ForgeConfigSpec.IntValue     livelyCooldown;
+        final ForgeConfigSpec.DoubleValue  magneticStrength;
+        final ForgeConfigSpec.DoubleValue  magneticPullRange;
+        final ForgeConfigSpec.IntValue     moltenFireTicks;
+        final ForgeConfigSpec.DoubleValue  moltenAuraDamage;
+        final ForgeConfigSpec.DoubleValue  moltenAuraRange;
+        final ForgeConfigSpec.DoubleValue  paralyzingChance;
+        final ForgeConfigSpec.IntValue     paralyzingDuration;
+        final ForgeConfigSpec.DoubleValue  plaguedRange;
+        final ForgeConfigSpec.DoubleValue  reflectiveMinPercent;
+        final ForgeConfigSpec.DoubleValue  reflectiveMaxPercent;
+        final ForgeConfigSpec.DoubleValue  reflectiveMax;
+        final ForgeConfigSpec.BooleanValue reflectiveLethal;
+        final ForgeConfigSpec.DoubleValue  shieldingChance;
+        final ForgeConfigSpec.DoubleValue  woundingChance;
+        final ForgeConfigSpec.IntValue     woundingDuration;
 
-        Entries(ModConfigSpec.Builder b) {
+        Entries(ForgeConfigSpec.Builder b) {
             b.push("spawning");
             spawnChance           = b.comment("Probability (0–1) that an eligible mob becomes a champion on spawn")
                     .defineInRange("spawnChance", 0.1, 0.0, 1.0);
@@ -170,9 +170,9 @@ public final class ChampionConfigSpec {
             showParticles    = b.comment("Show coloured rank particles around champions")
                     .define("showParticles", true);
             bossBarBlacklist = b.comment("Entity IDs whose HUD overlay is suppressed")
-                    .defineListAllowEmpty("bossBarBlacklist",
-                            List.of("minecraft:ender_dragon", "minecraft:wither"),
-                            () -> "minecraft:ender_dragon", s -> s instanceof String);
+                    .defineList("bossBarBlacklist",
+                            List.<String>of("minecraft:ender_dragon", "minecraft:wither"),
+                            s -> s instanceof String);
             b.pop();
 
             b.push("growth");
@@ -184,7 +184,7 @@ public final class ChampionConfigSpec {
 
             b.push("loot");
             lootDrops  = b.comment("Loot drop entries: tier;modid:item;amount;enchanted;weight")
-                    .defineListAllowEmpty("lootDrops",
+                    .defineList("lootDrops",
                             List.of(
                                     "1;minecraft:iron_ingot;1;false;10",
                                     "2;minecraft:gold_ingot;1;false;8",
@@ -193,7 +193,7 @@ public final class ChampionConfigSpec {
                                     "4;minecraft:diamond;2;true;4",
                                     "5;minecraft:netherite_scrap;1;false;2",
                                     "5;minecraft:diamond;3;true;3"),
-                            () -> "1;minecraft:iron_ingot;1;false;10", s -> s instanceof String);
+                            s -> s instanceof String);
             lootScaling = b.comment("Scale number of loot draws to tier level")
                     .define("lootScaling", true);
             lootSource = b.comment("Which loot sources are rolled on champion death:",

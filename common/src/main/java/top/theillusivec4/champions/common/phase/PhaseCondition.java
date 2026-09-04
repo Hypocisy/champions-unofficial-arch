@@ -21,7 +21,7 @@ public interface PhaseCondition {
 
     Codec<PhaseCondition> CODEC = Codec.STRING.dispatch(
             PhaseCondition::typeKey,
-            PhaseCondition::codecFor
+            type -> PhaseCondition.codecFor(type).codec()
     );
 
     private static String typeKey(PhaseCondition condition) {

@@ -24,7 +24,7 @@ import java.util.Optional;
  * });
  *
  * // Look up an affix type by id
- * ChampionsApi.get().getAffixType(ResourceLocation.parse("champions:adaptable"))
+ * ChampionsApi.get().getAffixType(new ResourceLocation("champions:adaptable"))
  *     .ifPresent(type -> { ... });
  * }</pre>
  */
@@ -52,7 +52,7 @@ public interface ChampionsApi {
      * Look up a registered affix type by its registry id.
      *
      * <pre>{@code
-     * ChampionsApi.get().getAffixType(ResourceLocation.parse("champions:lively"))
+     * ChampionsApi.get().getAffixType(new ResourceLocation("champions:lively"))
      *     .ifPresent(type -> champion.hasAffix(type));
      * }</pre>
      */

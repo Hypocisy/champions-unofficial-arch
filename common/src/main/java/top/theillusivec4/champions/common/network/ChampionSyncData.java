@@ -2,8 +2,6 @@ package top.theillusivec4.champions.common.network;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.champions.api.ChampionsApi;
@@ -11,8 +9,8 @@ import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.affix.IAffixClientSync;
 import top.theillusivec4.champions.api.champion.Champion;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Wire format for champion state sent from server to client.
@@ -21,22 +19,33 @@ import java.util.Optional;
  * the live affix list (type id + strength + optional extra data).
  * Per-champion runtime state ({@code IAffixData}) is never sent.</p>
  *
- * <p>Both the full packet and the entry list are stream-codec friendly
- * so they work identically on NeoForge and Fabric networking APIs.</p>
+ * <p>Encoding uses plain {@link FriendlyByteBuf} read/write so it works
+ * identically on Forge and Fabric 1.20.1 networking.</p>
  */
 public record ChampionSyncData(
         ResourceLocation tierId,
         List<AffixSyncEntry> affixes
 ) {
 
-    // ── Stream codec ──────────────────────────────────────────────────────────
+    // ── Serialization ─────────────────────────────────────────────────────────
 
-    public static final StreamCodec<FriendlyByteBuf, ChampionSyncData> STREAM_CODEC =
-            StreamCodec.composite(
-                    ResourceLocation.STREAM_CODEC, ChampionSyncData::tierId,
-                    AffixSyncEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), ChampionSyncData::affixes,
-                    ChampionSyncData::new
-            );
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(tierId);
+        buf.writeVarInt(affixes.size());
+        for (AffixSyncEntry entry : affixes) {
+            entry.encode(buf);
+        }
+    }
+
+    public static ChampionSyncData decode(FriendlyByteBuf buf) {
+        ResourceLocation tierId = buf.readResourceLocation();
+        int size = buf.readVarInt();
+        List<AffixSyncEntry> affixes = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            affixes.add(AffixSyncEntry.decode(buf));
+        }
+        return new ChampionSyncData(tierId, affixes);
+    }
 
     // ── Factory ───────────────────────────────────────────────────────────────
 
@@ -78,14 +87,19 @@ public record ChampionSyncData(
             @Nullable CompoundTag clientData
     ) {
 
-        public static final StreamCodec<FriendlyByteBuf, AffixSyncEntry> STREAM_CODEC =
-                StreamCodec.composite(
-                        ResourceLocation.STREAM_CODEC, AffixSyncEntry::typeId,
-                        ByteBufCodecs.VAR_INT, AffixSyncEntry::strength,
-                        ByteBufCodecs.optional(ByteBufCodecs.COMPOUND_TAG)
-                                .map(opt -> opt.orElse(new CompoundTag()), Optional::ofNullable), // Optional<CompoundTag> ↔ @Nullable
-                        AffixSyncEntry::clientData,
-                        AffixSyncEntry::new
-                );
+        public void encode(FriendlyByteBuf buf) {
+            buf.writeResourceLocation(typeId);
+            buf.writeVarInt(strength);
+            // writeNbt(null) writes a TAG_END byte that readNbt() reads back as null
+            buf.writeNbt(clientData);
+        }
+
+        public static AffixSyncEntry decode(FriendlyByteBuf buf) {
+            return new AffixSyncEntry(
+                    buf.readResourceLocation(),
+                    buf.readVarInt(),
+                    buf.readNbt()
+            );
+        }
     }
 }

@@ -1,8 +1,0 @@
-{
-  "attributeType": "minecraft:generic.explosion_knockback_resistance",
-  "enable": false,
-  "modifier": {
-    "operation": "add_value",
-    "value": 0.0
-  }
-}

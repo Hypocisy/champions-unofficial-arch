@@ -1,4 +1,5 @@
 package top.theillusivec4.champions.common.client;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -20,9 +21,9 @@ import java.util.stream.Collectors;
 public final class HUDHelper {
 
     private static final ResourceLocation GUI_BARS =
-            ResourceLocation.fromNamespaceAndPath("champions", "textures/gui/bars.png");
+            Utils.key("textures/gui/bars.png");
     private static final ResourceLocation GUI_STAR =
-            ResourceLocation.fromNamespaceAndPath("champions", "textures/gui/staricon.png");
+            Utils.key("textures/gui/staricon.png");
 
     private HUDHelper() {
     }

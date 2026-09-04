@@ -4,6 +4,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
+import top.theillusivec4.champions.common.utils.Utils;
 
 /**
  * Entity-type tag keys used by the Champions mod.
@@ -41,6 +42,6 @@ public final class ChampionsTags {
 
     private static TagKey<EntityType<?>> entityTag(String path) {
         return TagKey.create(Registries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath("champions", path));
+                Utils.key(path));
     }
 }
