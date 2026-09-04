@@ -1,5 +1,14 @@
 # Changelog
 
+## [21.1.1.7] — 2026-09-05
+> This version is small fix of mixin
+
+
+### Fixed
+- **Fabric can not load mixin correctly**: cause in wrong project config
+- **access widener cannot load**
+- **add right depend on fabric.mod.json**
+
 ## [21.1.1.5] — 2026-09-02
 
 > This release is the **complete editor refactor**, consolidating all changes since the last CurseForge release (several unreleased versions merged into one).
