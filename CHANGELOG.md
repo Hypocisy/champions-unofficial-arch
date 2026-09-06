@@ -1,5 +1,11 @@
 # Changelog
 
+## [20.1.1.6] — 2026-09-07
+
+### Fixed
+- Forge: **Crashed when start up**: the mixin refmap is not load correctly
+- Fix project config that can write refmap right.
+
 ## [20.1.1.5] — 2026-09-05
 
 > This release is the **complete editor refactor**, consolidating all changes since the last CurseForge release (several unreleased versions merged into one).
