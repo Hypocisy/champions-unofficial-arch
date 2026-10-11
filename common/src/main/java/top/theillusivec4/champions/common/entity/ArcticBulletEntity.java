@@ -34,8 +34,8 @@ public final class ArcticBulletEntity extends BaseBulletEntity {
 
     @Override
     protected void bulletEffect(LivingEntity target) {
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
-        target.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN,      100, 2));
+        target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 2));
+        target.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE,      100, 2));
     }
 
     @Override

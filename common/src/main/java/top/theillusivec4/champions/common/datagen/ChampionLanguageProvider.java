@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.common.datagen.lang.BrazilianPortugueseTranslations;
 import top.theillusivec4.champions.common.datagen.lang.ChineseTranslations;
@@ -77,13 +77,13 @@ public class ChampionLanguageProvider implements DataProvider {
     }
 
     /** Affix display name: {@code affix.<ns>.<path>.name} */
-    public void addAffix(ResourceLocation id, String name) {
+    public void addAffix(Identifier id, String name) {
         add("affix." + id.getNamespace() + "." + id.getPath() + ".name", name);
     }
 
     /** Convenience — namespace defaults to {@code "champions"}. */
     public void addAffix(String path, String name) {
-        addAffix(ResourceLocation.fromNamespaceAndPath("champions", path), name);
+        addAffix(Identifier.fromNamespaceAndPath("champions", path), name);
     }
 
     /** Rank title: {@code rank.champions.title.<level>} */
@@ -92,7 +92,7 @@ public class ChampionLanguageProvider implements DataProvider {
     }
 
     /** Damage type death messages. */
-    public void addDamageType(ResourceLocation damageTypeId, String death, String deathByPlayer) {
+    public void addDamageType(Identifier damageTypeId, String death, String deathByPlayer) {
         add("death.attack." + damageTypeId.getPath(), death);
         if (!deathByPlayer.isEmpty()) {
             add("death.attack." + damageTypeId.getPath() + ".player", deathByPlayer);
@@ -122,7 +122,7 @@ public class ChampionLanguageProvider implements DataProvider {
      * without translations.
      */
     private void addBuiltinDeathMessages() {
-        ResourceLocation reflection = ResourceLocation.fromNamespaceAndPath("champions", "reflection");
+        Identifier reflection = Identifier.fromNamespaceAndPath("champions", "reflection");
         switch (locale) {
             case "zh_cn" -> addDamageType(reflection,
                     "%1$s自食其果",

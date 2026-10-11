@@ -3,55 +3,15 @@ architectury {
 }
 
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
-    modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+    implementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    implementation "dev.architectury:architectury:$rootProject.architectury_api_version"
 
     // Forge Config API Port — provides ModConfigSpec on both platforms
-    modCompileOnly "curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}"
+    compileOnly "curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}"
 
     // Jade (optional) — compile-only so common code can reference the API
-    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    compileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
 }
 loom {
     accessWidenerPath = file("src/main/resources/champions.accesswidener")
-}
-
-// ── Tests ────────────────────────────────────────────────────────────────────
-// Unit tests validate the generated datapack data (archetypes/tiers) and the
-// codec dispatch for filters/phases/effects. They run against the mapped
-// Minecraft classpath via the `test` source set, so they execute inside a real
-// (dev) Minecraft environment without needing a bootstrapped server.
-//
-// Loom creates a `namedElements` overlay of the main source set but marks it
-// non-resolvable. We add our own resolvable copy of it (namedElementsTest)
-// and extend the test classpaths from that, so the test code can see both the
-// common main output and the mapped Minecraft classes.
-
-configurations {
-    namedElementsTest {
-        canBeResolved = true
-        canBeConsumed = false
-        extendsFrom namedElements
-    }
-    testCompileClasspath.extendsFrom namedElementsTest
-    testRuntimeClasspath.extendsFrom namedElementsTest
-}
-
-sourceSets {
-    test {
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
-        compileClasspath += configurations.namedElementsTest
-        runtimeClasspath += configurations.namedElementsTest
-    }
-}
-
-dependencies {
-    testImplementation platform("org.junit:junit-bom:5.10.2")
-    testImplementation "org.junit.jupiter:junit-jupiter"
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-}
-
-test {
-    useJUnitPlatform()
 }

@@ -7,11 +7,12 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 import top.theillusivec4.champions.common.client.screen.editor.EditorSession;
@@ -292,15 +293,17 @@ public final class ChampionEditorScreen extends Screen {
         int w = panelW();
         int h = Math.max(20, panelH() - VALIDATOR_H);
         if (rawEditor == null) {
-            rawEditor = new MultiLineEditBox(font, panelX(), panelY(), w, h,
-                    Component.empty(), Component.literal("{}"));
+            rawEditor = new MultiLineEditBox.Builder()
+                    .setX(panelX()).setY(panelY())
+                    .build(font,  w, h, Component.empty());
             rawEditor.setValueListener(this::updateValidation);
             addRenderableWidget(rawEditor);
         } else if (rawEditor.getWidth() != w || rawEditor.getHeight() != h) {
             String text = rawEditor.getValue();
             removeWidget(rawEditor);
-            rawEditor = new MultiLineEditBox(font, panelX(), panelY(), w, h,
-                    Component.empty(), Component.literal("{}"));
+            rawEditor = new MultiLineEditBox.Builder()
+                    .setX(panelX()).setY(panelY())
+                    .build(font,  w, h, Component.empty());
             rawEditor.setValueListener(this::updateValidation);
             addRenderableWidget(rawEditor);
             rawEditor.setValue(text); // fires the listener → validation refresh
@@ -516,7 +519,7 @@ public final class ChampionEditorScreen extends Screen {
      * widgets while our opaque fills also suppress the vanilla menu blur.
      */
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         // backdrop
         g.fill(0, 0, width, height, C_BACKDROP);
 
@@ -529,7 +532,7 @@ public final class ChampionEditorScreen extends Screen {
         // list panel + header
         frame(g, PAD, listTop(), LIST_W, listH());
         g.fill(PAD + 1, listTop() + 1, PAD + LIST_W - 1, listTop() + 13, C_HEADBG);
-        g.drawString(font, tr("gui.champions.editor.entries", session.currentMap().size()),
+        g.text(font, tr("gui.champions.editor.entries", session.currentMap().size()),
                 PAD + 6, listTop() + 3, C_HINT, false);
 
         // form panel
@@ -538,13 +541,13 @@ public final class ChampionEditorScreen extends Screen {
 
     /**
      * Widget + text layers: {@code super.render} first paints the chrome via
-     * {@link #renderBackground} and then all widgets; afterwards we add the
+     * {@link #extractBackground(GuiGraphicsExtractor, int, int, float)} and then all widgets; afterwards we add the
      * scissored text layers and status strips.
      */
     @Override
-    public void render(GuiGraphics g, int mx, int my, float pt) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float pt) {
         // 1. chrome (renderBackground) + widgets
-        super.render(g, mx, my, pt);
+        super.extractRenderState(g, mx, my, pt);
 
         // 2. scissored text layers — scrolled content clips at panel borders
         g.enableScissor(PAD + 1, listTop() + 14, PAD + LIST_W - 1, listTop() + listH() - 1);
@@ -563,27 +566,27 @@ public final class ChampionEditorScreen extends Screen {
             g.fill(panelX() + 1, vy - 4, width - PAD - 1, formBottom() - 1, 0xE60C0F14);
             g.fill(panelX() + 1, vy - 4, width - PAD - 1, vy - 3, C_BORDER);
             for (int i = 0; i < Math.min(3, validationLines.size()); i++) {
-                g.drawString(font, clip(font, validationLines.get(i), panelW() - 14),
+                g.text(font, clip(font, validationLines.get(i), panelW() - 14),
                         panelX() + 8, vy + i * 10, 0xFFD5D9E0, false);
             }
         }
 
         // 4. bottom bar status
         if (saveError != null) {
-            g.drawString(font, clip(font, "§c" + saveError, width / 2),
+            g.text(font, clip(font, "§c" + saveError, width / 2),
                     PAD + 112, barY() + 8, 0xFFFF6B6B, false);
         } else if (!session.dirtyIds.isEmpty()) {
-            g.drawString(font, tr("gui.champions.editor.unsaved", session.dirtyIds.size()),
+            g.text(font, tr("gui.champions.editor.unsaved", session.dirtyIds.size()),
                     PAD + 112, barY() + 8, C_ACCENT, false);
         }
     }
 
-    private void frame(GuiGraphics g, int x, int y, int w, int h) {
+    private void frame(GuiGraphicsExtractor g, int x, int y, int w, int h) {
         g.fill(x - 1, y - 1, x + w + 1, y + h + 1, C_BORDER);
         g.fill(x, y, x + w, y + h, C_PANEL);
     }
 
-    private void renderEntryList(GuiGraphics g, int mx, int my) {
+    private void renderEntryList(GuiGraphicsExtractor g, int mx, int my) {
         int lx = PAD, ly = listTop() + 14;
         int lh = listH() - 15;
         int visCount = lh / ENTRY_H;
@@ -613,7 +616,7 @@ public final class ChampionEditorScreen extends Screen {
 
             String lbl = (session.dirtyIds.contains(key) ? "* " : "") + shortId(key);
             if (disabled) lbl = "§m" + lbl;
-            g.drawString(font, clip(font, lbl, LIST_W - 10), lx + 6,
+            g.text(font, clip(font, lbl, LIST_W - 10), lx + 6,
                     iy + (ENTRY_H - 8) / 2, color, false);
         }
 
@@ -624,7 +627,7 @@ public final class ChampionEditorScreen extends Screen {
         }
     }
 
-    private void renderForm(GuiGraphics g) {
+    private void renderForm(GuiGraphicsExtractor g) {
         int ex = panelX();
         int right = width - PAD - 1;
         for (Row r : rows) {
@@ -633,17 +636,17 @@ public final class ChampionEditorScreen extends Screen {
                 if (r.label == null) continue;
                 boolean hint = r.label.startsWith("§7") || r.label.startsWith("§8");
                 if (hint) {
-                    g.drawString(font, clip(font, r.label, right - x), x, r.y + 3,
+                    g.text(font, clip(font, r.label, right - x), x, r.y + 3,
                             C_HINT, false);
                 } else {
                     // section header: dark strip + gold accent bar + title
                     g.fill(x - 4, r.y - 2, right, r.y + Row.HEADER_H - 3, C_HEADBG);
                     g.fill(x - 4, r.y - 2, x - 2, r.y + Row.HEADER_H - 3, C_ACCENT_BAR);
-                    g.drawString(font, clip(font, r.label, right - x - 4), x + 2, r.y + 2,
+                    g.text(font, clip(font, r.label, right - x - 4), x + 2, r.y + 2,
                             C_ACCENT, false);
                 }
             } else if (r.label != null) {
-                g.drawString(font, clip(font, r.label, labelW), x, r.y + 5,
+                g.text(font, clip(font, r.label, labelW), x, r.y + 5,
                         C_LABEL, false);
             }
         }
@@ -651,10 +654,15 @@ public final class ChampionEditorScreen extends Screen {
 
     // ── Mouse ──────────────────────────────────────────────────────────────────
 
+
     @Override
-    public boolean mouseClicked(double mx, double my, int btn) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+
         int ly = listTop() + 14;
         int lh = listH() - 15;
+        double mx = event.x();
+        double my = event.y();
+
         if (mx >= PAD && mx < PAD + LIST_W && my >= ly && my < ly + lh) {
             int idx = ((int) my - ly) / ENTRY_H + session.listScroll;
             List<String> keys = new ArrayList<>(session.currentMap().keySet());
@@ -663,7 +671,7 @@ public final class ChampionEditorScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(mx, my, btn);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override

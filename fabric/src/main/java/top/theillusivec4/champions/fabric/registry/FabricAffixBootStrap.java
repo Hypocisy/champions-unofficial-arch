@@ -1,7 +1,7 @@
 package top.theillusivec4.champions.fabric.registry;
 
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.common.affix.builtin.AdaptableAffix;
 import top.theillusivec4.champions.common.affix.builtin.LivelyAffix;
@@ -26,7 +26,7 @@ public class FabricAffixBootStrap {
     public static void registerAll() {
         Registry<AffixType<?>> reg =
                 FabricAffixTypeRegistry.REGISTRY;
-        ResourceLocation ns = ResourceLocation
+        Identifier ns = Identifier
                 .fromNamespaceAndPath("champions", "");
 
         register(reg, "adaptable", new AdaptableAffix());
@@ -53,7 +53,7 @@ public class FabricAffixBootStrap {
             AffixType<?> type
     ) {
         Registry.register(reg,
-                ResourceLocation.fromNamespaceAndPath("champions", name),
+                Identifier.fromNamespaceAndPath("champions", name),
                 type);
     }
 }

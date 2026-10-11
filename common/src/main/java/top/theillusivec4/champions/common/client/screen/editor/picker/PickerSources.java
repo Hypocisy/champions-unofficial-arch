@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import top.theillusivec4.champions.api.ChampionsApi;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -24,9 +25,9 @@ public final class PickerSources {
         BuiltInRegistries.ENTITY_TYPE.keySet().forEach(id -> {
             var type = BuiltInRegistries.ENTITY_TYPE.get(id);
             out.add(new PickerEntry(id.toString(),
-                    Component.translatable(type.getDescriptionId())));
+                    Component.translatable(id.toLanguageKey())));
         });
-        out.sort((a, b) -> a.id().compareTo(b.id()));
+        out.sort(Comparator.comparing(PickerEntry::id));
         return out;
     }
 
@@ -35,11 +36,10 @@ public final class PickerSources {
     public static List<PickerEntry> attributes() {
         List<PickerEntry> out = new ArrayList<>();
         BuiltInRegistries.ATTRIBUTE.keySet().forEach(id -> {
-            var attr = BuiltInRegistries.ATTRIBUTE.get(id);
             out.add(new PickerEntry(id.toString(),
-                    Component.translatable(attr.getDescriptionId())));
+                    Component.translatable(id.toLanguageKey())));
         });
-        out.sort((a, b) -> a.id().compareTo(b.id()));
+        out.sort(Comparator.comparing(PickerEntry::id));
         return out;
     }
 
@@ -48,11 +48,10 @@ public final class PickerSources {
     public static List<PickerEntry> mobEffects() {
         List<PickerEntry> out = new ArrayList<>();
         BuiltInRegistries.MOB_EFFECT.keySet().forEach(id -> {
-            var effect = BuiltInRegistries.MOB_EFFECT.get(id);
             out.add(new PickerEntry(id.toString(),
-                    Component.translatable(effect.getDescriptionId())));
+                    Component.translatable(id.toLanguageKey())));
         });
-        out.sort((a, b) -> a.id().compareTo(b.id()));
+        out.sort(Comparator.comparing(PickerEntry::id));
         return out;
     }
 
@@ -88,7 +87,7 @@ public final class PickerSources {
         } catch (IllegalStateException ignored) {
             // API not injected yet — return empty, editor still works
         }
-        out.sort((a, b) -> a.id().compareTo(b.id()));
+        out.sort(Comparator.comparing(PickerEntry::id));
         return out;
     }
 

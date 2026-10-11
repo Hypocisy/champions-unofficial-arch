@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.common.affix.builtin.spawn_tick_affixes;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -18,8 +18,8 @@ import top.theillusivec4.champions.common.config.ChampionsConfig;
  */
 public final class HastyAffix extends AffixType<EmptyAffixData> {
 
-    private static final ResourceLocation MODIFIER_ID =
-            ResourceLocation.fromNamespaceAndPath("champions", "hasty_speed");
+    private static final Identifier MODIFIER_ID =
+            Identifier.fromNamespaceAndPath("champions", "hasty_speed");
 
     @Override
     public void registerHandlers(HandlerRegistry<EmptyAffixData> registry) {

@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.common.registry.AffixTypeRegistry;
 
@@ -22,7 +22,7 @@ import java.util.Optional;
  * <pre>{@code
  * Registry.register(
  *     FabricAffixTypeRegistry.REGISTRY,
- *     ResourceLocation.fromNamespaceAndPath("champions", "adaptable"),
+ *     Identifier.fromNamespaceAndPath("champions", "adaptable"),
  *     new AdaptableAffix()
  * );
  * }</pre>
@@ -34,7 +34,7 @@ public final class FabricAffixTypeRegistry implements AffixTypeRegistry {
 
     public static final ResourceKey<Registry<AffixType<?>>> REGISTRY_KEY =
             ResourceKey.createRegistryKey(
-                    ResourceLocation.fromNamespaceAndPath("champions", "affix_type")
+                    Identifier.fromNamespaceAndPath("champions", "affix_type")
             );
 
     /**
@@ -49,7 +49,7 @@ public final class FabricAffixTypeRegistry implements AffixTypeRegistry {
      */
     public static void bootstrap() {
         REGISTRY = FabricRegistryBuilder
-                .createSimple(REGISTRY_KEY)
+                .create(REGISTRY_KEY)
                 .buildAndRegister();
 
         // Fire initHandlers for each affix type as it is registered
@@ -62,12 +62,12 @@ public final class FabricAffixTypeRegistry implements AffixTypeRegistry {
     // ── AffixTypeRegistry ─────────────────────────────────────────────────────
 
     @Override
-    public Optional<AffixType<?>> get(ResourceLocation id) {
+    public Optional<AffixType<?>> get(Identifier id) {
         return REGISTRY.getOptional(id);
     }
 
     @Override
-    public Optional<ResourceLocation> getId(AffixType<?> type) {
+    public Optional<Identifier> getId(AffixType<?> type) {
         return Optional.ofNullable(REGISTRY.getKey(type));
     }
 

@@ -3,10 +3,13 @@ package top.theillusivec4.champions.common.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 
-public class RankParticle extends TextureSheetParticle {
+
+public class RankParticle extends SingleQuadParticle  {
 
     private final SpriteSet spriteSet;
 
@@ -14,9 +17,10 @@ public class RankParticle extends TextureSheetParticle {
                         double xSpeed, double ySpeed, double zSpeed,
                         SpriteSet spriteSet) {
         super(level, x, y, z,
-                0.5D - level.random.nextDouble(),
+                0.5D - level.getRandom().nextDouble(),
                 ySpeed,
-                0.5D - level.random.nextDouble());
+                0.5D - level.getRandom().nextDouble(),
+                spriteSet.first());
         this.spriteSet = spriteSet;
         this.yd *= 0.2F;
         if (xSpeed == 0.0D && zSpeed == 0.0D) {
@@ -54,25 +58,23 @@ public class RankParticle extends TextureSheetParticle {
         }
     }
 
-    @NotNull
     @Override
-    public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+    public @NotNull SingleQuadParticle.Layer getLayer() {
+        return SingleQuadParticle.Layer.TRANSLUCENT;
     }
 
     public record RankFactory(SpriteSet spriteSet)
             implements ParticleProvider<SimpleParticleType> {
 
         @Override
-        public Particle createParticle(@NotNull SimpleParticleType type,
-                                       @NotNull ClientLevel level,
-                                       double x, double y, double z,
-                                       double xSpeed, double ySpeed, double zSpeed) {
-            RankParticle p = new RankParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, spriteSet);
-            float f = level.random.nextFloat() * 0.5F + 0.35F;
-            // color passed as velocity (r,g,b convention)
-            p.setColor((float) xSpeed * f, (float) ySpeed * f, (float) zSpeed * f);
-            return p;
+        public Particle createParticle(
+		        @Nonnull SimpleParticleType typeIn, @Nonnull ClientLevel worldIn,
+		        double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @Nonnull RandomSource randomSource) {
+            RankParticle rankParticle =
+                    new RankParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
+            float f = worldIn.getRandom().nextFloat() * 0.5F + 0.35F;
+            rankParticle.setColor((float) xSpeed * f, (float) ySpeed * f, (float) zSpeed * f);
+            return rankParticle;
         }
     }
 }

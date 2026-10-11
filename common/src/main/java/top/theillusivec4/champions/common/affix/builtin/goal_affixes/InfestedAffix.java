@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.affix.builtin.goal_affixes;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -68,16 +69,19 @@ public final class InfestedAffix extends AffixType<EmptyAffixData> {
                                @Nullable LivingEntity target, ServerLevel level) {
         if (target == null) return;
         // Resolve configurable parasite entity type; fall back to silverfish on bad id
-        boolean isEnder = target.getType().is(ChampionEntityTypes.Tags.IS_ENDER);
+        boolean isEnder = target.is(ChampionEntityTypes.Tags.IS_ENDER);
         EntityType<?> parasiteType =
                 EntityType.byString(isEnder ? ChampionsConfig.infestedEnderParasite : ChampionsConfig.infestedParasite).orElse(EntityType.SILVERFISH);
 
         for (int i = 0; i < count; i++) {
-            var entity = parasiteType.create(level);
+            var entity = parasiteType
+                    .create(level, null, host.blockPosition(), EntitySpawnReason.MOB_SUMMONED,
+                            false, false);
+
             if (!(entity instanceof Mob parasite)) continue;
-            double dx = (level.random.nextDouble() - 0.5) * 2.0;
-            double dz = (level.random.nextDouble() - 0.5) * 2.0;
-            parasite.moveTo(host.getX() + dx, host.getY(), host.getZ() + dz,
+            double dx = (level.getRandom().nextDouble() - 0.5) * 2.0;
+            double dz = (level.getRandom().nextDouble() - 0.5) * 2.0;
+            parasite.snapTo(host.getX() + dx, host.getY(), host.getZ() + dz,
                     host.getYRot(), 0);
             level.addFreshEntityWithPassengers(parasite);
 	        parasite.setTarget(target);

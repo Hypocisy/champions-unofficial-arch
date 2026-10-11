@@ -3,21 +3,19 @@ package top.theillusivec4.champions.common.client;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.common.config.ChampionsConfig;
 
 import java.util.Optional;
 
-public final class ChampionsOverlay implements LayeredDraw.Layer {
+public abstract class ChampionsOverlay {
 
   /** Set to true while the overlay is rendering — lets other systems check state. */
   public static boolean isRendering = false;
 
-  @Override
-  public void render(@NotNull GuiGraphics gui, @NotNull DeltaTracker delta) {
+  public static void render(@NotNull GuiGraphicsExtractor gui, @NotNull DeltaTracker delta) {
     if (!ChampionsConfig.showHud) {
       isRendering = false;
       return;
@@ -38,7 +36,7 @@ public final class ChampionsOverlay implements LayeredDraw.Layer {
    * Those entities have their own vanilla boss bar — our HUD would overlap.
    */
   private static boolean isOnBossBarBlacklist(LivingEntity entity) {
-    String id = entity.getType().builtInRegistryHolder().key().location().toString();
+    String id = entity.getType().builtInRegistryHolder().key().identifier().toString();
     return ChampionsConfig.bossBarBlacklist.contains(id);
   }
 }

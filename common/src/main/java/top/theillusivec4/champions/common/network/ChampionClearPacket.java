@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * S2C packet telling the client to clear champion data for a specific entity.
@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 public record ChampionClearPacket(int entityId) implements CustomPacketPayload {
 
     public static final Type<ChampionClearPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath("champions", "champion_clear"));
+            Identifier.fromNamespaceAndPath("champions", "champion_clear"));
 
     public static final StreamCodec<ByteBuf, ChampionClearPacket> STREAM_CODEC =
             ByteBufCodecs.VAR_INT.map(ChampionClearPacket::new, ChampionClearPacket::entityId);

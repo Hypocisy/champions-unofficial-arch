@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -31,7 +32,7 @@ public final class MouseHelper {
 		if (!(camera instanceof LivingEntity)) return Optional.empty();
 		if (mc.level == null) return Optional.empty();
 
-		mc.getProfiler().push("mouse_champion");
+		Profiler.get().push("mouse_champion");
 
 		double range = ((LivingEntity) camera).getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
 		// if set, use hudRange instead entity_interaction_range
@@ -55,7 +56,7 @@ public final class MouseHelper {
 				e -> !e.isSpectator() && e.isPickable(),
 				blockDist);
 
-		mc.getProfiler().pop();
+		Profiler.get().pop();
 
 		if (entityHit == null || !(entityHit.getEntity() instanceof LivingEntity living) || !ChampionsApi.get().isChampion(living)) {
 			return Optional.empty();

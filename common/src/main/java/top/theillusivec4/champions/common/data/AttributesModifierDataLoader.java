@@ -3,7 +3,7 @@ package top.theillusivec4.champions.common.data;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -29,16 +29,16 @@ import java.util.Set;
  * <em>replaces</em> the loaded data rather than accumulating into it.</p>
  */
 public final class AttributesModifierDataLoader
-        extends SimplePreparableReloadListener<Map<ResourceLocation, ModifierSetting>> {
+        extends SimplePreparableReloadListener<Map<Identifier, ModifierSetting>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AttributesModifierDataLoader.class);
     private static final String FOLDER = "modifier_setting";
 
-    private volatile Map<ResourceLocation, ModifierSetting> loadedData = new HashMap<>();
+    private volatile Map<Identifier, ModifierSetting> loadedData = new HashMap<>();
 
     /** ids backed by a jar (built-in) pack — used by the editor. */
-    private volatile Set<ResourceLocation> builtinIds = Set.of();
-    private Set<ResourceLocation> pendingBuiltinIds = new HashSet<>();
+    private volatile Set<Identifier> builtinIds = Set.of();
+    private Set<Identifier> pendingBuiltinIds = new HashSet<>();
 
     public static String getFolder() {
         return FOLDER;
@@ -46,17 +46,17 @@ public final class AttributesModifierDataLoader
 
     @Override
     @NotNull
-    public Map<ResourceLocation, ModifierSetting> prepare(
+    public Map<Identifier, ModifierSetting> prepare(
             @NotNull ResourceManager manager, @NotNull ProfilerFiller profiler
     ) {
         profiler.startTick();
-        Map<ResourceLocation, ModifierSetting> result = new HashMap<>();
-        Set<ResourceLocation> builtins = new HashSet<>();
+        Map<Identifier, ModifierSetting> result = new HashMap<>();
+        Set<Identifier> builtins = new HashSet<>();
 
-        for (Map.Entry<ResourceLocation, Resource> entry :
+        for (Map.Entry<Identifier, Resource> entry :
                 manager.listResources(FOLDER, p -> p.getPath().endsWith(".json")).entrySet()) {
-            ResourceLocation fileKey = entry.getKey();
-            ResourceLocation modifierId = fileKeyToId(fileKey);
+            Identifier fileKey = entry.getKey();
+            Identifier modifierId = fileKeyToId(fileKey);
             try (Reader reader = entry.getValue().openAsReader()) {
                 JsonElement element = JsonParser.parseReader(reader);
                 if (DataLoaders.isDisabled(element)) {
@@ -86,7 +86,7 @@ public final class AttributesModifierDataLoader
 
     @Override
     public void apply(
-            @NotNull Map<ResourceLocation, ModifierSetting> prepared,
+            @NotNull Map<Identifier, ModifierSetting> prepared,
             @NotNull ResourceManager manager, @NotNull ProfilerFiller profiler
     ) {
         loadedData = prepared;
@@ -95,12 +95,12 @@ public final class AttributesModifierDataLoader
         LOGGER.info("[Champions] Loaded {} modifier_setting entrie(s) from datapacks.", prepared.size());
     }
 
-    public Map<ResourceLocation, ModifierSetting> getLoadedData() {
+    public Map<Identifier, ModifierSetting> getLoadedData() {
         return loadedData;
     }
 
     /** ids backed by a jar (built-in) pack — used by the editor to distinguish overridable entries. */
-    public Set<ResourceLocation> getBuiltinIds() {
+    public Set<Identifier> getBuiltinIds() {
         return builtinIds;
     }
 
@@ -110,7 +110,7 @@ public final class AttributesModifierDataLoader
      * saves (e.g. {@code modifier_setting/modifier_setting/x.json.json}) heal
      * back to the canonical id.
      */
-    private static ResourceLocation fileKeyToId(ResourceLocation fileKey) {
+    private static Identifier fileKeyToId(Identifier fileKey) {
         String path = fileKey.getPath();
         while (path.startsWith(FOLDER + "/")) {
             path = path.substring(FOLDER.length() + 1);
@@ -119,6 +119,6 @@ public final class AttributesModifierDataLoader
             path = path.substring(0, path.length() - 5);
         }
         if (path.isEmpty()) return fileKey;
-        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), path);
+        return Identifier.fromNamespaceAndPath(fileKey.getNamespace(), path);
     }
 }

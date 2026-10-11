@@ -61,7 +61,7 @@ public final class ShieldingAffix extends AffixType<ShieldingAffix.Data>
 
     @Override
     public void readClientData(AffixInstance instance, CompoundTag tag) {
-        getData(instance).shielding = tag.getBoolean("shielding");
+        getData(instance).shielding = tag.getBooleanOr("shielding", false);
     }
 
     // ── Data ──────────────────────────────────────────────────────────────────
@@ -72,13 +72,11 @@ public final class ShieldingAffix extends AffixType<ShieldingAffix.Data>
         @Override
         public void write(CompoundTag tag) {
             tag.putBoolean("shielding", shielding);
-//            System.out.println(shielding);
         }
 
         @Override
         public void read(CompoundTag tag) {
-            shielding = tag.getBoolean("shielding");
-//            System.out.println(shielding);
+            shielding = tag.getBooleanOr("shielding", false);
         }
     }
 }

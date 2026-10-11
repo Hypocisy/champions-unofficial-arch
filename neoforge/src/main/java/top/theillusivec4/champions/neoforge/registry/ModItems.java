@@ -3,7 +3,7 @@ package top.theillusivec4.champions.neoforge.registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -23,11 +23,11 @@ public final class ModItems {
     public static final DeferredHolder<Item, ChampionEggItem> CHAMPION_EGG =
             ITEMS.register("egg", ChampionEggItem::new);
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ResourceLocation>> ENTITY_TYPE_COMPONENT =
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Identifier>> ENTITY_TYPE_COMPONENT =
             DATA_COMPONENTS.register("egg_entity_type", () ->
-                    DataComponentType.<ResourceLocation>builder()
-                            .persistent(ResourceLocation.CODEC)
-                            .networkSynchronized(ResourceLocation.STREAM_CODEC)
+                    DataComponentType.<Identifier>builder()
+                            .persistent(Identifier.CODEC)
+                            .networkSynchronized(Identifier.STREAM_CODEC)
                             .build());
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ChampionData>> PRESET_COMPONENT =
@@ -45,9 +45,9 @@ public final class ModItems {
     @SuppressWarnings("unchecked")
     public static void wireCommon() {
         ChampionItems.register(
-                CHAMPION_EGG::get,
-                ENTITY_TYPE_COMPONENT::get,
-                PRESET_COMPONENT::get
+                CHAMPION_EGG,
+                ENTITY_TYPE_COMPONENT,
+                PRESET_COMPONENT
         );
     }
 }

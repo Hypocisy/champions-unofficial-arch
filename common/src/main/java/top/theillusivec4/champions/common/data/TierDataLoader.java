@@ -5,7 +5,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -41,7 +41,7 @@ import java.util.*;
  * mod remains functional without a datapack.</p>
  */
 public final class TierDataLoader
-        extends SimplePreparableReloadListener<Map<ResourceLocation, ChampionTier>>
+        extends SimplePreparableReloadListener<Map<Identifier, ChampionTier>>
         implements TierRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TierDataLoader.class);
@@ -53,9 +53,9 @@ public final class TierDataLoader
             RecordCodecBuilder.create(inst -> inst.group(
                     Codec.INT.optionalFieldOf("color", 0xFFFFFFFF)
                             .forGetter(ChampionTier.TierDisplay::color),
-                    ResourceLocation.CODEC
+                    Identifier.CODEC
                             .optionalFieldOf("icon",
-                                    ResourceLocation.withDefaultNamespace("textures/gui/icons.png"))
+                                    Identifier.withDefaultNamespace("textures/gui/icons.png"))
                             .forGetter(ChampionTier.TierDisplay::icon)
             ).apply(inst, ChampionTier.TierDisplay::new));
 
@@ -75,11 +75,11 @@ public final class TierDataLoader
     // ── Internal spec ─────────────────────────────────────────────────────────
 
     /**
-     * Intermediate parsed form before the ResourceLocation id is injected.
+     * Intermediate parsed form before the Identifier id is injected.
      */
     private record TierSpec(int level, ChampionTier.TierDisplay display) {
 
-        ChampionTier toTier(ResourceLocation id) {
+        ChampionTier toTier(Identifier id) {
             ChampionTier.TierDisplay resolved = display != null
                     ? display
                     : ChampionTier.TierDisplay.defaultFor(level);
@@ -92,7 +92,7 @@ public final class TierDataLoader
     /**
      * id → tier, rebuilt on every datapack reload.
      */
-    private volatile Map<ResourceLocation, ChampionTier> tiers = buildFallbackTiers();
+    private volatile Map<Identifier, ChampionTier> tiers = buildFallbackTiers();
 
     /**
      * level → tier, rebuilt alongside {@link #tiers}.
@@ -100,25 +100,25 @@ public final class TierDataLoader
     private volatile Map<Integer, ChampionTier> tiersByLevel = indexByLevel(tiers);
 
     /** ids whose backing file comes from a jar (built-in) pack, not a {@code file/} pack. */
-    private volatile Set<ResourceLocation> builtinIds = Set.of();
+    private volatile Set<Identifier> builtinIds = Set.of();
     /** staging area written during {@link #prepare}, promoted in {@link #apply}. */
-    private Set<ResourceLocation> pendingBuiltinIds = new HashSet<>();
+    private Set<Identifier> pendingBuiltinIds = new HashSet<>();
 
     // ── SimplePreparableReloadListener ────────────────────────────────────────
 
     @Override
-    public @NotNull Map<ResourceLocation, ChampionTier> prepare(
+    public @NotNull Map<Identifier, ChampionTier> prepare(
             ResourceManager manager, ProfilerFiller profiler
     ) {
         profiler.startTick();
-        Map<ResourceLocation, ChampionTier> result = new HashMap<>();
-        Set<ResourceLocation> builtins = new HashSet<>();
+        Map<Identifier, ChampionTier> result = new HashMap<>();
+        Set<Identifier> builtins = new HashSet<>();
 
-        for (Map.Entry<ResourceLocation, Resource> entry :
+        for (Map.Entry<Identifier, Resource> entry :
                 manager.listResources(FOLDER, path -> path.getPath().endsWith(".json")).entrySet()) {
 
-            ResourceLocation fileKey = entry.getKey();
-            ResourceLocation tierId = fileKeyToTierId(fileKey);
+            Identifier fileKey = entry.getKey();
+            Identifier tierId = fileKeyToTierId(fileKey);
 
             try (Reader reader = entry.getValue().openAsReader()) {
                 JsonElement json = JsonParser.parseReader(reader);
@@ -146,7 +146,7 @@ public final class TierDataLoader
 
     @Override
     public void apply(
-            Map<ResourceLocation, ChampionTier> prepared,
+            Map<Identifier, ChampionTier> prepared,
             @NotNull ResourceManager manager, @NotNull ProfilerFiller profiler
     ) {
         if (prepared.isEmpty()) {
@@ -163,14 +163,14 @@ public final class TierDataLoader
     }
 
     /** ids backed by a jar (built-in) pack — used by the editor to distinguish overridable entries. */
-    public Set<ResourceLocation> getBuiltinIds() {
+    public Set<Identifier> getBuiltinIds() {
         return builtinIds;
     }
 
     // ── TierRegistry ──────────────────────────────────────────────────────────
 
     @Override
-    public Optional<ChampionTier> get(ResourceLocation id) {
+    public Optional<ChampionTier> get(Identifier id) {
         return Optional.ofNullable(tiers.get(id));
     }
 
@@ -194,16 +194,16 @@ public final class TierDataLoader
      * <p>{@code data/champions/champions/tier/elite.json}
      * → {@code champions:elite}</p>
      */
-    private static ResourceLocation fileKeyToTierId(ResourceLocation fileKey) {
+    private static Identifier fileKeyToTierId(Identifier fileKey) {
         String path = fileKey.getPath();
         // strip "champions/tier/" prefix and ".json" suffix
         String name = path
                 .substring((FOLDER + "/").length())
                 .replace(".json", "");
-        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), name);
+        return Identifier.fromNamespaceAndPath(fileKey.getNamespace(), name);
     }
 
-    private static Map<Integer, ChampionTier> indexByLevel(Map<ResourceLocation, ChampionTier> src) {
+    private static Map<Integer, ChampionTier> indexByLevel(Map<Identifier, ChampionTier> src) {
         Map<Integer, ChampionTier> index = new HashMap<>();
         for (ChampionTier tier : src.values()) {
             ChampionTier existing = index.put(tier.level(), tier);
@@ -221,10 +221,10 @@ public final class TierDataLoader
      * Built-in fallback tiers used when no datapack defines any tiers.
      * Mirrors the legacy 1–5 tier system so the mod works out of the box.
      */
-    private static Map<ResourceLocation, ChampionTier> buildFallbackTiers() {
-        Map<ResourceLocation, ChampionTier> map = new HashMap<>();
+    private static Map<Identifier, ChampionTier> buildFallbackTiers() {
+        Map<Identifier, ChampionTier> map = new HashMap<>();
         for (int level = 1; level <= 5; level++) {
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("champions",
+            Identifier id = Identifier.fromNamespaceAndPath("champions",
                     "tier_" + level);
             map.put(id, new ChampionTier(id, level, ChampionTier.TierDisplay.defaultFor(level)));
         }

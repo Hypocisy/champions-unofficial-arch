@@ -60,11 +60,11 @@
   "entity_filter": {
     "type": "entity_type",
     "types": [
-      "minecraft:bogged",
       "minecraft:stray",
       "minecraft:wither_skeleton",
       "minecraft:skeleton",
-      "minecraft:skeleton_horse"
+      "minecraft:skeleton_horse",
+      "minecraft:bogged"
     ]
   },
   "id": "champions:skeleton_line",

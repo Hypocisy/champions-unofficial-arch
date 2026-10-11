@@ -41,7 +41,7 @@ public final class KnockingAffix extends AffixType<EmptyAffixData> {
 
     private static void applyKnockback(LivingEntity source, LivingEntity target, int strength) {
         float force = (float) ChampionsConfig.knockingKnockback * strength;
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
+        target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 2));
         target.knockback(
                 force,
                 Mth.sin(source.getYRot() * (float) (Math.PI / 180.0)),

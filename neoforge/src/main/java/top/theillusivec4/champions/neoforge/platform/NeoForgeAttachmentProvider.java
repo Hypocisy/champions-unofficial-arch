@@ -56,7 +56,7 @@ public final class NeoForgeAttachmentProvider implements ChampionAttachmentProvi
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<ChampionData>>
             CHAMPION_DATA = ATTACHMENT_TYPES.register("champion_data", () ->
             AttachmentType.builder(() -> ChampionData.EMPTY)
-                    .serialize(ChampionData.CODEC)
+                    .serialize(ChampionData.MAP_CODEC)
                     .build()
     );
 

@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.fabric.datagen;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.damagesource.DamageEffects;
@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 // register damage type
 public class FabricDamageTypeProvider extends FabricDynamicRegistryProvider {
 
-	public FabricDamageTypeProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+	public FabricDamageTypeProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
 		super(output, registriesFuture);
 	}
 

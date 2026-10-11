@@ -6,7 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -52,7 +52,7 @@ public class AttributesModifierDataProvider implements DataProvider {
     private static final ChampionModifierCondition CREEPER_BLACKLIST =
             new ChampionModifierCondition(
                     new EntityFilter.EntityTypeFilter(
-                            Set.of(ResourceLocation.parse("minecraft:creeper")),
+                            Set.of(Identifier.parse("minecraft:creeper")),
                             false  // whitelist=false → blacklist
                     ),
                     Optional.empty(),
@@ -71,8 +71,8 @@ public class AttributesModifierDataProvider implements DataProvider {
     public @NotNull CompletableFuture<?> run(@NotNull CachedOutput cache) {
         List<CompletableFuture<?>> futures = new ArrayList<>();
 
-        BuiltInRegistries.ATTRIBUTE.asLookup().listElements().forEach(attributeRef -> {
-            ResourceLocation attrId = attributeRef.key().location();
+        BuiltInRegistries.ATTRIBUTE.listElements().forEach(attributeRef -> {
+            Identifier attrId = attributeRef.key().identifier();
             ModifierSetting setting = buildSetting(attributeRef.value(), attrId);
 
             Path outputPath = packOutput.getOutputFolder()
@@ -102,7 +102,7 @@ public class AttributesModifierDataProvider implements DataProvider {
 
     private static ModifierSetting buildSetting(
             Attribute attribute,
-            ResourceLocation attrId
+            Identifier attrId
     ) {
         if (attribute == Attributes.MAX_HEALTH.value()) {
             return enabled(attrId, 0.35, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
@@ -123,7 +123,7 @@ public class AttributesModifierDataProvider implements DataProvider {
 
     /** Create an enabled setting with the creeper blacklist condition. */
     private static ModifierSetting enabled(
-            ResourceLocation attrId,
+            Identifier attrId,
             double value,
             AttributeModifier.Operation operation
     ) {

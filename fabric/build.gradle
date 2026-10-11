@@ -6,6 +6,7 @@ plugins {
 }
 
 architectury {
+    platformSetupLoomIde()
     fabric()
 }
 
@@ -49,7 +50,7 @@ modrinth {
     versionName = "${mod_name} ${project.version} (Fabric)"
     versionType = "release"
     changelog = rootProject.ext.releaseChangelog()
-    uploadFile = remapJar
+    uploadFile = shadowJar
     gameVersions = ["${minecraft_version}"]
     loaders = ["fabric"]
     dependencies {
@@ -73,18 +74,18 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
                 "If you just set the env var, RESTART the terminal first, or put tokens in ~/.gradle/gradle.properties.")
         return false
     }
-    dependsOn remapJar
+    dependsOn shadowJar
     apiToken = curseforgeToken
     debugMode = Boolean.parseBoolean(System.getenv("CF_DEBUG") ?: "false")
     def cfProjectId = "${findProperty("curseforge_id") ?: ""}".trim()
-    if (cfProjectId) upload(cfProjectId, remapJar.archiveFile.get().asFile) {
+    if (cfProjectId) upload(cfProjectId, shadowJar.archiveFile.get().asFile) {
         displayName = "${mod_name} ${project.version}"
         releaseType = "release"
         changelog = rootProject.ext.releaseChangelog()
         changelogType = "markdown"
         addGameVersion("${minecraft_version}")
         addEnvironment("Client", "Server")
-        addJavaVersion("Java 21")
+        addJavaVersion("Java " + java_version)
         addModLoader("Fabric")
         addRequirement("fabric-api", "forge-config-api-port")
         addOptional("jade", "modmenu")
@@ -105,25 +106,25 @@ tasks.named("modrinth") {
     }
 }
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    implementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 
     // Architectury API. This is optional, and you can comment it out if you don't need it.
-    modImplementation "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
+    implementation "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
 
-    common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
+    common(project(path: ':common')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
-    // Replace modImplementation with modApi if you expose components in your own API
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
+    // Replace implementation with modApi if you expose components in your own API
+    implementation "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
+    implementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
     // Copy the following only if you want to bundle Cardinal Components API as a Jar-in-Jar dependency
     // (otherwise, you should configure the dependency on Modrinth/Curseforge)
     include "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
     include "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-    modRuntimeOnly "curse.maven:modmenu-308702:7808443"
-    modImplementation ("curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}")
+    runtimeOnly "curse.maven:modmenu-308702:8397574"
+    implementation ("curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}")
 
     // night-config: FCAP bundles these as JiJ which Fabric Loader extracts at production runtime.
     // In dev, Loom never extracts JiJ from classpath mods, so declare them directly here.
@@ -132,10 +133,10 @@ dependencies {
     implementation("com.electronwill.night-config:toml:3.8.3")
 
     // KubeJS Fabric (optional)
-//    modCompileOnly "dev.latvian.mods:kubejs-fabric:${kubejs_version}"
+//    compileOnly "dev.latvian.mods:kubejs-fabric:${kubejs_version}"
 
     // Jade (optional)
-    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    compileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
 
 }
 
@@ -158,19 +159,13 @@ processResources {
 
 shadowJar {
     configurations = [project.configurations.shadowBundle]
-    archiveClassifier = "dev-shadow"
-}
-
-remapJar {
-    input.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier = ""
+    archiveClassifier = null
 }
 
 jar {
     archiveClassifier = "dev"
 }
-
+assemble.dependsOn shadowJar
 // ── Data generation ───────────────────────────────────────────────────────────
 
 loom {
@@ -188,14 +183,25 @@ loom {
 
 sourceSets.main.resources.srcDirs += ["src/generated/resources"]
 
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+}
+
 // ── Publishing ────────────────────────────────────────────────────────────────
 
 publishing {
     publications {
         mavenFabric(MavenPublication) {
             artifactId = "${mod_id}-fabric"
-            artifact(remapJar) { builtBy remapJar }
-            artifact(sourcesJar) { builtBy remapSourcesJar }
+//            artifact(shadowJar) { builtBy shadowJar }
+//            artifact(sourcesJar) { builtBy sourcesJar }
         }
     }
 }

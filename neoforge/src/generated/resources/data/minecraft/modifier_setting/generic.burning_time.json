@@ -1,8 +1,0 @@
-{
-  "attributeType": "minecraft:generic.burning_time",
-  "enable": false,
-  "modifier": {
-    "operation": "add_value",
-    "value": 0.0
-  }
-}

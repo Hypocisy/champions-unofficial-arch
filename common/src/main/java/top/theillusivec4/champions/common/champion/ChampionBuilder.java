@@ -2,7 +2,7 @@ package top.theillusivec4.champions.common.champion;
 
 import dev.architectury.event.EventResult;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -76,7 +76,7 @@ public final class ChampionBuilder {
             ChampionTier tier,
             List<AffixInstance> explicitAffixes,
             RandomSource random,
-            ResourceLocation archetypeId
+            Identifier archetypeId
     ) {
         if (entity.level().isClientSide()) {
             throw new IllegalStateException("ChampionBuilder must only be called server-side.");
@@ -154,7 +154,7 @@ public final class ChampionBuilder {
         ChampionBuildStrategy strategy = selectStrategy();
         ChampionBuildStrategy.BuildResult buildResult = strategy.build(entity, tier, random);
         List<AffixInstance> affixes = buildResult.affixes();
-        ResourceLocation archetypeId = buildResult.archetypeId();
+        Identifier archetypeId = buildResult.archetypeId();
 
         // 2. Fire SPAWN event — third-party mods can modify or cancel
         ChampionEvents.SpawnContext ctx = new ChampionEvents.SpawnContext(affixes);
@@ -222,7 +222,7 @@ public final class ChampionBuilder {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    public static ChampionData toChampionData(ChampionTier tier, List<AffixInstance> affixes, ResourceLocation archetypeId) {
+    public static ChampionData toChampionData(ChampionTier tier, List<AffixInstance> affixes, Identifier archetypeId) {
         return toChampionData(tier, affixes, archetypeId, List.of());
     }
 
@@ -236,8 +236,8 @@ public final class ChampionBuilder {
     public static ChampionData toChampionData(
             ChampionTier tier,
             List<AffixInstance> affixes,
-            ResourceLocation archetypeId,
-            List<ResourceLocation> triggeredPhases
+            Identifier archetypeId,
+            List<Identifier> triggeredPhases
     ) {
         List<ChampionData.AffixEntry> entries = affixes.stream()
                 .flatMap(inst -> ChampionsApi.get().getAffixTypeId(inst.type())
@@ -279,15 +279,15 @@ public final class ChampionBuilder {
                     .orElse(true);
             if (!matches) return;
 
-            var attrHolder = BuiltInRegistries.ATTRIBUTE.getHolder(setting.attributeType());
+            var attrHolder = BuiltInRegistries.ATTRIBUTE.get(setting.attributeType());
             attrHolder.ifPresent(attr -> {
                 var attrInstance = entity.getAttributes().getInstance(attr);
                 if (attrInstance == null) return;
 
                 // Modifier id: champions:<namespace>_<path>_modifier
                 // (same derivation as the old project's Utils.getLocation call)
-                ResourceLocation settingPath = setting.attributeType();
-                ResourceLocation modId = ResourceLocation.fromNamespaceAndPath(
+                Identifier settingPath = setting.attributeType();
+                Identifier modId = Identifier.fromNamespaceAndPath(
                         "champions",
                         settingPath.getNamespace() + "_" + settingPath.getPath().replace('/', '_') + "_modifier"
                 );
@@ -321,7 +321,7 @@ public final class ChampionBuilder {
         LivingEntity entity = champion.entity();
         ChampionsRegistries.modifiers().getLoadedData().forEach((fileKey, setting) -> {
             if (!setting.enable()) return;
-            var attrHolder = BuiltInRegistries.ATTRIBUTE.getHolder(setting.attributeType());
+            var attrHolder = BuiltInRegistries.ATTRIBUTE.get(setting.attributeType());
             attrHolder.ifPresent(attr -> {
                 var attrInstance = entity.getAttributes().getInstance(attr);
                 if (attrInstance == null) return;

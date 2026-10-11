@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 import java.util.Optional;
@@ -37,7 +37,7 @@ import java.util.Optional;
  * {@code tier} and {@code affixes} are optional sub-conditions.</p>
  */
 public record ModifierSetting(
-        ResourceLocation attributeType,
+        Identifier attributeType,
         boolean enable,
         Pair<Double, AttributeModifier.Operation> setting,
         Optional<ChampionModifierCondition> modifierCondition
@@ -45,7 +45,7 @@ public record ModifierSetting(
 
     public static final MapCodec<ModifierSetting> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
-                    ResourceLocation.CODEC
+                    Identifier.CODEC
                             .fieldOf("attributeType")
                             .forGetter(ModifierSetting::attributeType),
                     Codec.BOOL

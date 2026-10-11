@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ModParticles {
 
@@ -14,7 +14,7 @@ public class ModParticles {
     public static void register() {
         Registry.register(
                 BuiltInRegistries.PARTICLE_TYPE,
-                ResourceLocation.fromNamespaceAndPath("champions", "rank"),
+                Identifier.fromNamespaceAndPath("champions", "rank"),
                 MAGIC
         );
     }

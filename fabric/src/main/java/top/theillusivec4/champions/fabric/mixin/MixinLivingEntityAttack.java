@@ -1,5 +1,6 @@
 package top.theillusivec4.champions.fabric.mixin;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,14 +31,12 @@ public abstract class MixinLivingEntityAttack {
             at = @At("RETURN")
     )
     private void champions$onDoHurtTarget(
-            Entity target,
-            CallbackInfoReturnable<Boolean> cir
+            ServerLevel level, Entity target, CallbackInfoReturnable<Boolean> cir
     ) {
         // Only dispatch when the attack actually connected
         if (!cir.getReturnValue()) return;
 
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self.level().isClientSide()) return;
 
         // Build a synthetic DamageSource — the actual source is not easily
         // accessible here, so we use the generic "mob" source.

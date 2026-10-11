@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.common.registry;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.affix.AffixType;
 
 import java.util.Collection;
@@ -15,9 +15,9 @@ import java.util.Optional;
  */
 public interface AffixTypeRegistry {
 
-    Optional<AffixType<?>> get(ResourceLocation id);
+    Optional<AffixType<?>> get(Identifier id);
 
-    Optional<ResourceLocation> getId(AffixType<?> type);
+    Optional<Identifier> getId(AffixType<?> type);
 
     /**
      * All registered affix types. Unmodifiable.

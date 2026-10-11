@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 
@@ -38,9 +38,9 @@ public class TierProvider implements DataProvider {
             RecordCodecBuilder.create(inst -> inst.group(
                     Codec.INT.optionalFieldOf("color", 0xFFFFFFFF)
                             .forGetter(ChampionTier.TierDisplay::color),
-                    ResourceLocation.CODEC
+                    Identifier.CODEC
                             .optionalFieldOf("icon",
-                                    ResourceLocation.withDefaultNamespace("textures/gui/icons.png"))
+                                    Identifier.withDefaultNamespace("textures/gui/icons.png"))
                             .forGetter(ChampionTier.TierDisplay::icon)
             ).apply(inst, ChampionTier.TierDisplay::new));
 
@@ -60,7 +60,7 @@ public class TierProvider implements DataProvider {
 
     // ── Builder ───────────────────────────────────────────────────────────────
 
-    private record TierEntry(ResourceLocation id, TierSpec spec) {}
+    private record TierEntry(Identifier id, TierSpec spec) {}
 
     private final PackOutput output;
     private final List<TierEntry> tiers = new ArrayList<>();
@@ -79,10 +79,10 @@ public class TierProvider implements DataProvider {
      * @return {@code this} for chaining
      */
     public TierProvider tier(String namespace, String name, int level, int color) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, name);
+        Identifier id = Identifier.fromNamespaceAndPath(namespace, name);
         ChampionTier.TierDisplay display = new ChampionTier.TierDisplay(
                 color,
-                ResourceLocation.withDefaultNamespace("textures/gui/icons.png")
+                Identifier.withDefaultNamespace("textures/gui/icons.png")
         );
         tiers.add(new TierEntry(id, new TierSpec(level, display)));
         return this;

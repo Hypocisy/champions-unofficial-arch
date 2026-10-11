@@ -3,7 +3,7 @@ package top.theillusivec4.champions.common.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public record OpenEditorPacket(EditorPayload payload) implements CustomPacketPayload {
 
     public static final Type<OpenEditorPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath("champions", "open_editor"));
+            Identifier.fromNamespaceAndPath("champions", "open_editor"));
 
     public static final StreamCodec<FriendlyByteBuf, OpenEditorPacket> STREAM_CODEC =
             EditorPayload.STREAM_CODEC.map(OpenEditorPacket::new, OpenEditorPacket::payload);

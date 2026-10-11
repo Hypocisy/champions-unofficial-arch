@@ -71,7 +71,7 @@ Archetypes live at `data/<namespace>/champions/archetype/*.json`. Each defines:
 
 `ChampionsApi.get()` provides:
 - `getChampion(LivingEntity)` / `isChampion(LivingEntity)`
-- Affix type registry lookups (`getAffixType(ResourceLocation)`, `getAffixTypes()`)
+- Affix type registry lookups (`getAffixType(Identifier)`, `getAffixTypes()`)
 - Tier registry lookups (`getTier`, `getTierByLevel`, `getTiers()`)
 
 The implementation is injected at startup. Calling `ChampionsApi.get()` before mod load throws `IllegalStateException`.

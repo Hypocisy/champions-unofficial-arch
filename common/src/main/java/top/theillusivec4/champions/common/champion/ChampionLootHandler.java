@@ -3,7 +3,7 @@ package top.theillusivec4.champions.common.champion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -43,7 +43,7 @@ public final class ChampionLootHandler {
 
     public static final ResourceKey<LootTable> CHAMPION_LOOT_TABLE =
             ResourceKey.create(Registries.LOOT_TABLE,
-                    ResourceLocation.fromNamespaceAndPath("champions", "champion_loot"));
+                    Identifier.fromNamespaceAndPath("champions", "champion_loot"));
 
     // Re-entrancy guard: loot table rolling itself triggers entity loot contexts —
     // without this guard we'd recursively enter dropLoot for the same entity.
@@ -61,7 +61,7 @@ public final class ChampionLootHandler {
     public static void dropLoot(LivingEntity entity, Champion champion,
                                 ServerLevel level, DamageSource source) {
         if (IS_PROCESSING.get()) return;
-        if (!level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) return;
+        if (!level.getGameRules().get(GameRules.ENTITY_DROPS)) return;
 
         IS_PROCESSING.set(true);
         try {
@@ -115,13 +115,13 @@ public final class ChampionLootHandler {
 
         int draws = ChampionsConfig.lootScaling ? tierLevel : 1;
         for (int i = 0; i < draws; i++) {
-            LootEntry pick = weightedPick(eligible, level.random.nextFloat());
+            LootEntry pick = weightedPick(eligible, level.getRandom().nextFloat());
             if (pick == null) continue;
 
             ItemStack stack = new ItemStack(pick.item, pick.amount);
             if (pick.enchanted) {
                 EnchantmentHelper.enchantItem(
-                        level.random, stack, 30,
+		                level.getRandom(), stack, 30,
                         level.registryAccess(), Optional.empty());
             }
             spawnDrop(entity, level, stack);
@@ -165,7 +165,7 @@ public final class ChampionLootHandler {
         if (parts.length != 5) return null;
         try {
             int tier     = Integer.parseInt(parts[0].trim());
-            var item     = BuiltInRegistries.ITEM.get(ResourceLocation.parse(parts[1].trim()));
+            var item     = BuiltInRegistries.ITEM.getValue(Identifier.parse(parts[1].trim()));
             int amount   = Integer.parseInt(parts[2].trim());
             boolean ench = Boolean.parseBoolean(parts[3].trim());
             int weight   = Integer.parseInt(parts[4].trim());

@@ -5,7 +5,7 @@ import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.event.KubeEvent;
 import dev.latvian.mods.kubejs.script.ScriptType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.champion.Champion;
@@ -108,7 +108,7 @@ public final class ChampionsJsEvents {
          */
         public void addAffix(String affixId, int strength) {
             ChampionsApi.get()
-                    .getAffixType(ResourceLocation.parse(affixId))
+                    .getAffixType(Identifier.parse(affixId))
                     .ifPresent(type -> ctx.addAffix(new AffixInstance(type, strength))
                     );
         }
@@ -118,7 +118,7 @@ public final class ChampionsJsEvents {
          */
         public void removeAffix(String affixId) {
             ChampionsApi.get()
-                    .getAffixType(ResourceLocation.parse(affixId))
+                    .getAffixType(Identifier.parse(affixId))
                     .ifPresent(type -> ctx.removeAffixByType(type.getClass()));
         }
 
@@ -139,10 +139,10 @@ public final class ChampionsJsEvents {
 
 
         private final Champion champion;
-        private final ResourceLocation phaseId;
+        private final Identifier phaseId;
         private boolean cancelled = false;
 
-        public ChampionPhaseEventJs(Champion champion, ResourceLocation phaseId) {
+        public ChampionPhaseEventJs(Champion champion, Identifier phaseId) {
             this.champion = champion;
             this.phaseId = phaseId;
         }
@@ -151,7 +151,7 @@ public final class ChampionsJsEvents {
             return champion;
         }
 
-        public ResourceLocation phaseId() {
+        public Identifier phaseId() {
             return phaseId;
         }
 

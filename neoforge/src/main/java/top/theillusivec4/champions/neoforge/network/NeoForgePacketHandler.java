@@ -87,9 +87,9 @@ public final class NeoForgePacketHandler implements PacketHandler {
             ChampionEditorScreen
                     .setSaveCallback(payload ->
                             PacketDistributor
-                                    .sendToServer(new SaveEditorPacket(payload)));
+                                    .sendToAllPlayers(new SaveEditorPacket(payload)));
             ChampionEditorScreen
-                    .setPackActionCallback(PacketDistributor::sendToServer);
+                    .setPackActionCallback(PacketDistributor::sendToAllPlayers);
             ChampionEditorScreen.receivePayload(packet.payload());
         });
     }
@@ -118,7 +118,7 @@ public final class NeoForgePacketHandler implements PacketHandler {
     /** Called from the /champions editor command to push data to the requesting player. */
     public void sendEditorToPlayer(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player,
-                new OpenEditorPacket(EditorPayload.fromServerState(player.getServer())));
+                new OpenEditorPacket(EditorPayload.fromServerState(player.level().getServer())));
     }
 
     // ── Client handlers ───────────────────────────────────────────────────────
@@ -206,7 +206,7 @@ public final class NeoForgePacketHandler implements PacketHandler {
 
     @Override
     public void syncAllChampionsToPlayer(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         level.getAllEntities().forEach(entity -> {
             if (!(entity instanceof LivingEntity living)) return;
             ChampionsApi.get().getChampion(living).ifPresent(champion -> {

@@ -1,7 +1,7 @@
 package top.theillusivec4.champions.common.phase;
 
 import dev.architectury.event.EventResult;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.api.event.ChampionEvents;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
@@ -37,12 +37,12 @@ public final class PhaseProcessor {
     public static void process(Champion.Server champion, Set<String> triggeredPhases) {
         if (champion.entity().level().isClientSide()) return;
 
-        ResourceLocationSet triggered = new ResourceLocationSet(triggeredPhases);
+        IdentifierSet triggered = new IdentifierSet(triggeredPhases);
 
         // O(1) archetype lookup straight from the view — no serialization needed.
         // (The old path called champion.toData() here, which serialised every base
         // affix's NBT just to read back the archetype id.)
-        Optional<ResourceLocation> archetypeId = champion.archetypeId();
+        Optional<Identifier> archetypeId = champion.archetypeId();
         if (archetypeId.isEmpty()) return;
 
         ChampionArchetype archetype = ChampionsRegistries.archetypes()
@@ -71,7 +71,7 @@ public final class PhaseProcessor {
 
         // Persist updated triggeredPhases back into ChampionData
         if (triggered.modified()) {
-            persistTriggeredPhases(champion, triggered.toResourceLocations());
+            persistTriggeredPhases(champion, triggered.toIdentifiers());
         }
     }
 
@@ -84,7 +84,7 @@ public final class PhaseProcessor {
      */
     public static void restoreTriggeredPhases(Champion.Server champion) {
         if (!(champion instanceof ChampionView.Server s)) return;
-        Optional<ResourceLocation> archetypeId = s.archetypeId();
+        Optional<Identifier> archetypeId = s.archetypeId();
         if (archetypeId.isEmpty()) return;
 
         ChampionArchetype archetype = ChampionsRegistries.archetypes()
@@ -106,7 +106,7 @@ public final class PhaseProcessor {
 
     private static void persistTriggeredPhases(
             Champion.Server champion,
-            List<ResourceLocation> phases
+            List<Identifier> phases
     ) {
         if (champion instanceof ChampionView.Server s) {
             s.updateTriggeredPhases(phases);
@@ -115,11 +115,11 @@ public final class PhaseProcessor {
 
     // ── Internal helper ───────────────────────────────────────────────────────
 
-    private static final class ResourceLocationSet {
+    private static final class IdentifierSet {
         private final Set<String> set;
         private boolean modified = false;
 
-        ResourceLocationSet(Set<String> initial) {
+        IdentifierSet(Set<String> initial) {
             this.set = new HashSet<>(initial);
         }
 
@@ -135,9 +135,9 @@ public final class PhaseProcessor {
             return modified;
         }
 
-        List<ResourceLocation> toResourceLocations() {
+        List<Identifier> toIdentifiers() {
             return set.stream()
-                    .map(ResourceLocation::parse)
+                    .map(Identifier::parse)
                     .toList();
         }
     }

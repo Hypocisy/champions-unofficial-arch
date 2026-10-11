@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.api.champion;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Represents a champion tier level.
@@ -16,11 +16,11 @@ import net.minecraft.resources.ResourceLocation;
  */
 public final class ChampionTier {
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final int level;
     private final TierDisplay display;
 
-    public ChampionTier(ResourceLocation id, int level, TierDisplay display) {
+    public ChampionTier(Identifier id, int level, TierDisplay display) {
         this.id = id;
         this.level = level;
         this.display = display;
@@ -29,7 +29,7 @@ public final class ChampionTier {
     /**
      * Registry key for this tier.
      */
-    public ResourceLocation id() {
+    public Identifier id() {
         return id;
     }
 
@@ -73,7 +73,7 @@ public final class ChampionTier {
      */
     public record TierDisplay(
             int color,                    // ARGB packed int
-            ResourceLocation icon         // HUD icon texture path
+            Identifier icon         // HUD icon texture path
     ) {
 
         /**
@@ -87,7 +87,7 @@ public final class ChampionTier {
                 case 4 -> 0xFFFF5555; // red
                 default -> 0xFFFF55FF; // purple (tier 5+)
             };
-            return new TierDisplay(color, ResourceLocation.withDefaultNamespace("textures/gui/icons.png"));
+            return new TierDisplay(color, Identifier.withDefaultNamespace("textures/gui/icons.png"));
         }
     }
 }

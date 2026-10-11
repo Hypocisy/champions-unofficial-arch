@@ -14,8 +14,6 @@ base {
     archivesName = "${mod_id}-neoforge"
 }
 
-// Pull in the common module's compiled classes before remapping.
-// Architectury Loom merges common + neoforge into a single jar at remapJar time.
 configurations {
     common {
         canBeResolved = true
@@ -38,23 +36,22 @@ dependencies {
     neoForge "net.neoforged:neoforge:${neoforge_version}"
 
     // Architectury API NeoForge module
-    modApi "dev.architectury:architectury-neoforge:${architectury_api_version}"
+    implementation "dev.architectury:architectury-neoforge:${architectury_api_version}"
 
     // Common module (merged at remapJar time, not a runtime dep)
-    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
-    shadowBundle(project(path: ":common", configuration: "transformProductionNeoForge")) {
-        transitive = false
-    }
+    common(project(path: ':common')) { transitive = false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
+
 
     // KubeJS NeoForge (optional)
-    modCompileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
 
     // The One Probe (optional)
-    modCompileOnly "curse.maven:the-one-probe-245211:7292875"
+    compileOnly "curse.maven:the-one-probe-245211:8797594"
 
     // Jade (optional)
-    modCompileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
-    modImplementation "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    compileOnly "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
+    implementation "curse.maven:jade-324717:${rootProject.jade_cf_fileid}"
 }
 
 // ── Jar assembly ─────────────────────────────────────────────────────────────
@@ -80,11 +77,19 @@ processResources {
 shadowJar {
     // Merge common classes into this jar
     configurations = [project.configurations.shadowBundle]
-    archiveClassifier = "dev-shadow"
+    archiveClassifier = null
 }
+assemble.dependsOn shadowJar
 
-remapJar {
-    inputFile.set shadowJar.archiveFile
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
 }
 
 jar {
@@ -99,20 +104,32 @@ loom {
     }
 
     runs {
-        data {
-            data()
+        clientData {
+            clientData()
 
-            programArgs.addAll '--mod', project.mod_id, '--all',
-                '--output', file('src/generated/resources/').getAbsolutePath(),
-                '--existing', file('src/main/resources/').getAbsolutePath(),
-                '--existing', project(':common').file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/clientData').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath(),
+                    '--existing', project(':common').file('src/main/resources/').getAbsolutePath()
         }
+        serverData {
+
+            serverData()
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/serverData').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath(),
+                    '--existing', project(':common').file('src/main/resources/').getAbsolutePath()
+        }
+
     }
 
 }
 
 // Make the main source set pick up generated resources at runtime
-sourceSets.main.resources.srcDirs += ["src/generated/resources"]
+sourceSets.main.resources {
+    srcDir 'src/generated/resources/clientData'
+    srcDir 'src/generated/resources/serverData'
+}
 
 // ── Mod publishing — run `./gradlew publishModPlatforms` from the root ───────
 
@@ -129,7 +146,7 @@ modrinth {
     versionName = "${mod_name} ${project.version} (NeoForge)"
     versionType = "release"
     changelog = rootProject.ext.releaseChangelog()
-    uploadFile = remapJar
+    uploadFile = shadowJar
     gameVersions = ["${minecraft_version}"]
     loaders = ["neoforge"]
     dependencies {
@@ -153,11 +170,11 @@ tasks.register("curseforge", net.darkhax.curseforgegradle.TaskPublishCurseForge)
                 "If you just set the env var, RESTART the terminal first, or put tokens in ~/.gradle/gradle.properties.")
         return false
     }
-    dependsOn remapJar
+    dependsOn shadowJar
     apiToken = curseforgeToken
     debugMode = Boolean.parseBoolean(System.getenv("CF_DEBUG") ?: "false")
     def cfProjectId = "${findProperty("curseforge_id") ?: ""}".trim()
-    if (cfProjectId) upload(cfProjectId, remapJar.archiveFile.get().asFile) {
+    if (cfProjectId) upload(cfProjectId, shadowJar.archiveFile.get().asFile) {
         displayName = "${mod_name} ${project.version}"
         releaseType = "release"
         changelog = rootProject.ext.releaseChangelog()
@@ -190,8 +207,8 @@ publishing {
     publications {
         mavenNeoForge(MavenPublication) {
             artifactId = "${mod_id}-neoforge"
-            artifact(remapJar) { builtBy remapJar }
-            artifact(sourcesJar) { builtBy remapSourcesJar }
+//            artifact(shadowJar) { builtBy shadowJar }
+//            artifact(sourcesJar) { builtBy remapSourcesJar }
         }
     }
 }

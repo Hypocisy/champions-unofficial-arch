@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import top.theillusivec4.champions.api.ChampionsApi;
@@ -62,10 +62,10 @@ public interface PhaseEffect {
      *
      * <pre>{@code { "type": "add_affix", "affix": "champions:enkindling", "strength": 3 } }</pre>
      */
-    record AddAffix(ResourceLocation affixId, int strength) implements PhaseEffect {
+    record AddAffix(Identifier affixId, int strength) implements PhaseEffect {
 
         public static final MapCodec<AddAffix> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                ResourceLocation.CODEC.fieldOf("affix").forGetter(AddAffix::affixId),
+                Identifier.CODEC.fieldOf("affix").forGetter(AddAffix::affixId),
                 Codec.INT.optionalFieldOf("strength", 1).forGetter(AddAffix::strength)
         ).apply(inst, AddAffix::new));
 
@@ -115,16 +115,16 @@ public interface PhaseEffect {
      * }</pre>
      */
     record AddAttribute(
-            ResourceLocation attribute,
+            Identifier attribute,
             double amount,
             String operation
     ) implements PhaseEffect {
 
-        private static final ResourceLocation MODIFIER_ID =
-                ResourceLocation.fromNamespaceAndPath("champions", "phase_modifier");
+        private static final Identifier MODIFIER_ID =
+                Identifier.fromNamespaceAndPath("champions", "phase_modifier");
 
         public static final MapCodec<AddAttribute> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                ResourceLocation.CODEC.fieldOf("attribute").forGetter(AddAttribute::attribute),
+                Identifier.CODEC.fieldOf("attribute").forGetter(AddAttribute::attribute),
                 Codec.DOUBLE.fieldOf("amount").forGetter(AddAttribute::amount),
                 Codec.STRING.optionalFieldOf("operation", "add_value").forGetter(AddAttribute::operation)
         ).apply(inst, AddAttribute::new));
@@ -141,14 +141,14 @@ public interface PhaseEffect {
 
         @Override
         public void remove(Champion.Server champion) {
-            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(attribute);
+            var attr = BuiltInRegistries.ATTRIBUTE.get(attribute);
             if (attr.isEmpty()) return;
             var instance = champion.entity().getAttribute(attr.get());
             if (instance != null) instance.removeModifier(MODIFIER_ID);
         }
 
         private void applyModifier(Champion.Server champion) {
-            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(attribute);
+            var attr = BuiltInRegistries.ATTRIBUTE.get(attribute);
             if (attr.isEmpty()) return;
             var instance = champion.entity().getAttribute(attr.get());
             if (instance == null) return;
@@ -172,14 +172,14 @@ public interface PhaseEffect {
      * }</pre>
      */
     record AddMobEffect(
-            ResourceLocation effectId,
+            Identifier effectId,
             int amplifier,
             boolean infinite,
             int durationTicks
     ) implements PhaseEffect {
 
         public static final MapCodec<AddMobEffect> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                ResourceLocation.CODEC.fieldOf("effect").forGetter(AddMobEffect::effectId),
+                Identifier.CODEC.fieldOf("effect").forGetter(AddMobEffect::effectId),
                 Codec.INT.optionalFieldOf("amplifier", 0).forGetter(AddMobEffect::amplifier),
                 Codec.BOOL.optionalFieldOf("infinite", true).forGetter(AddMobEffect::infinite),
                 Codec.INT.optionalFieldOf("duration_ticks", 200).forGetter(AddMobEffect::durationTicks)
@@ -197,12 +197,12 @@ public interface PhaseEffect {
 
         @Override
         public void remove(Champion.Server champion) {
-            BuiltInRegistries.MOB_EFFECT.getHolder(effectId)
+            BuiltInRegistries.MOB_EFFECT.get(effectId)
                     .ifPresent(e -> champion.entity().removeEffect(e));
         }
 
         private void applyEffect(Champion.Server champion) {
-            var effectHolder = BuiltInRegistries.MOB_EFFECT.getHolder(effectId);
+            var effectHolder = BuiltInRegistries.MOB_EFFECT.get(effectId);
             if (effectHolder.isEmpty()) return;
             int duration = infinite ? MobEffectInstance.INFINITE_DURATION : durationTicks;
             champion.entity().addEffect(

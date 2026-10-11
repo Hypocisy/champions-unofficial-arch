@@ -1,9 +1,7 @@
 package top.theillusivec4.champions.fabric;
 
-
-import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -13,7 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
@@ -22,7 +20,6 @@ import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraftforge.fml.config.IConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.ChampionsApi;
@@ -62,14 +59,14 @@ public final class ChampionsFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         // 0. Register server config with Forge Config API Port and bake on server start/reload
-        NeoForgeConfigRegistry.INSTANCE.register(MOD_ID, ModConfig.Type.SERVER, ChampionConfigSpec.SPEC);
-        NeoForgeConfigRegistry.INSTANCE.register(ChampionsFabric.MOD_ID,
+        ConfigRegistry.INSTANCE.register(MOD_ID, ModConfig.Type.SERVER, ChampionConfigSpec.SPEC);
+        ConfigRegistry.INSTANCE.register(ChampionsFabric.MOD_ID,
                 ModConfig.Type.CLIENT,
                 ChampionConfigSpecClient.SPEC
         );
         // SERVER_STARTING fires before the world loads — ensures config is baked
         // before the first entity-join hook triggers ChampionSpawnHandler.
-        NeoForgeModConfigEvents.loading("champions").register(event -> {
+        ModConfigEvents.loading("champions").register(event -> {
             if (event.getType() == ModConfig.Type.SERVER) {
                 ChampionConfigSpec.bakeAndApply();
             }
@@ -77,7 +74,7 @@ public final class ChampionsFabric implements ModInitializer {
                 ChampionConfigSpecClient.bakeAndApply();
             }
         });
-        NeoForgeModConfigEvents.reloading("champions").register(event -> {
+        ModConfigEvents.reloading("champions").register(event -> {
             if (event.getType() == ModConfig.Type.SERVER) {
                 ChampionConfigSpec.bakeAndApply();
             }
@@ -134,7 +131,7 @@ public final class ChampionsFabric implements ModInitializer {
 
         // 4. Register custom argument types (must happen before CommandRegistrationCallback)
         ArgumentTypeRegistry.registerArgumentType(
-                ResourceLocation.fromNamespaceAndPath(MOD_ID, "affix"),
+                Identifier.fromNamespaceAndPath(MOD_ID, "affix"),
                 AffixArgumentType.class,
                 SingletonArgumentInfo.contextFree(AffixArgumentType::affixes)
         );
@@ -166,8 +163,8 @@ public final class ChampionsFabric implements ModInitializer {
         ResourceManagerHelper.get(PackType.SERVER_DATA)
                 .registerReloadListener(new SimpleSynchronousResourceReloadListener() {
                     @Override
-                    public ResourceLocation getFabricId() {
-                        return ResourceLocation.fromNamespaceAndPath(MOD_ID, "tiers");
+                    public Identifier getFabricId() {
+                        return Identifier.fromNamespaceAndPath(MOD_ID, "tiers");
                     }
                     @Override
                     public void onResourceManagerReload(@NotNull ResourceManager manager) {
@@ -187,8 +184,8 @@ public final class ChampionsFabric implements ModInitializer {
         ResourceManagerHelper.get(PackType.SERVER_DATA)
                 .registerReloadListener(new SimpleSynchronousResourceReloadListener() {
                     @Override
-                    public ResourceLocation getFabricId() {
-                        return ResourceLocation.fromNamespaceAndPath(MOD_ID, "archetypes");
+                    public Identifier getFabricId() {
+                        return Identifier.fromNamespaceAndPath(MOD_ID, "archetypes");
                     }
                     @Override
                     public void onResourceManagerReload(@NotNull ResourceManager manager) {
@@ -202,8 +199,8 @@ public final class ChampionsFabric implements ModInitializer {
         ResourceManagerHelper.get(PackType.SERVER_DATA)
                 .registerReloadListener(new SimpleSynchronousResourceReloadListener() {
                     @Override
-                    public ResourceLocation getFabricId() {
-                        return ResourceLocation.fromNamespaceAndPath(MOD_ID, "modifier_setting");
+                    public Identifier getFabricId() {
+                        return Identifier.fromNamespaceAndPath(MOD_ID, "modifier_setting");
                     }
                     @Override
                     public void onResourceManagerReload(@NotNull ResourceManager manager) {

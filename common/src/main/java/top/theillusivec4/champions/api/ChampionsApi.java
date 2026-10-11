@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.api;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import top.theillusivec4.champions.api.affix.AffixType;
 import top.theillusivec4.champions.api.champion.Champion;
@@ -24,7 +24,7 @@ import java.util.Optional;
  * });
  *
  * // Look up an affix type by id
- * ChampionsApi.get().getAffixType(ResourceLocation.parse("champions:adaptable"))
+ * ChampionsApi.get().getAffixType(McHelper("adaptable"))
  *     .ifPresent(type -> { ... });
  * }</pre>
  */
@@ -52,17 +52,17 @@ public interface ChampionsApi {
      * Look up a registered affix type by its registry id.
      *
      * <pre>{@code
-     * ChampionsApi.get().getAffixType(ResourceLocation.parse("champions:lively"))
+     * ChampionsApi.get().getAffixType(McHelper#("lively"))
      *     .ifPresent(type -> champion.hasAffix(type));
      * }</pre>
      */
-    Optional<AffixType<?>> getAffixType(ResourceLocation id);
+    Optional<AffixType<?>> getAffixType(Identifier id);
 
     /**
      * Returns the registry id for {@code type}, if it is registered.
      * Returns empty for affix types that were not registered through the registry.
      */
-    Optional<ResourceLocation> getAffixTypeId(AffixType<?> type);
+    Optional<Identifier> getAffixTypeId(AffixType<?> type);
 
     /**
      * Returns all registered affix types.
@@ -75,7 +75,7 @@ public interface ChampionsApi {
     /**
      * Look up a registered tier by its registry id.
      */
-    Optional<ChampionTier> getTier(ResourceLocation id);
+    Optional<ChampionTier> getTier(Identifier id);
 
     /**
      * Look up a registered tier by its numeric level.

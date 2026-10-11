@@ -4,7 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 import top.theillusivec4.champions.neoforge.ChampionsNeoForge;
@@ -23,12 +23,12 @@ import java.util.List;
 public record TierSyncPacket(List<TierEntry> tiers) implements CustomPacketPayload {
 
     public static final Type<TierSyncPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(ChampionsNeoForge.MOD_ID, "tier_sync")
+            Identifier.fromNamespaceAndPath(ChampionsNeoForge.MOD_ID, "tier_sync")
     );
 
     public static final StreamCodec<FriendlyByteBuf, TierEntry> ENTRY_CODEC =
             StreamCodec.composite(
-                    ResourceLocation.STREAM_CODEC, TierEntry::id,
+                    Identifier.STREAM_CODEC, TierEntry::id,
                     ByteBufCodecs.VAR_INT, TierEntry::level,
                     ByteBufCodecs.VAR_INT, TierEntry::color,
                     TierEntry::new
@@ -54,6 +54,6 @@ public record TierSyncPacket(List<TierEntry> tiers) implements CustomPacketPaylo
 
     // ── Entry ─────────────────────────────────────────────────────────────────
 
-    public record TierEntry(ResourceLocation id, int level, int color) {
+    public record TierEntry(Identifier id, int level, int color) {
     }
 }

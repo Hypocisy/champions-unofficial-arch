@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Builds the {@link ModConfigSpec} for Champions.
  *
- * <p>Compiled against forge-config-api-port in {@code common} (modCompileOnly).
+ * <p>Compiled against forge-config-api-port in {@code common} (compileOnly).
  * At runtime, NeoForge provides the same class natively; Fabric gets it via the
  * bundled Forge Config API Port jar.</p>
  *

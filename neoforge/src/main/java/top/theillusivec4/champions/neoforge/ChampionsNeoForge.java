@@ -16,7 +16,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -29,6 +29,7 @@ import top.theillusivec4.champions.common.config.ChampionConfigSpec;
 import top.theillusivec4.champions.common.config.ChampionConfigSpecClient;
 import top.theillusivec4.champions.common.item.ChampionItems;
 import top.theillusivec4.champions.common.network.PacketHandler;
+import top.theillusivec4.champions.common.utils.Utils;
 import top.theillusivec4.champions.neoforge.integration.dispenser.ChampionEggDispenseBehavior;
 import top.theillusivec4.champions.neoforge.integration.theoneprobe.TheOneProbePlugin.RegisterFunction;
 import top.theillusivec4.champions.neoforge.kubejs.ChampionsJsEvents;
@@ -102,11 +103,12 @@ public final class ChampionsNeoForge {
             ModMobEffects.wireCommon();
             ModEntityTypes.wireCommon();
             ModLootConditions.wireCommon();
-            ModItems.wireCommon();
+
             // Register dispenser behavior for champion egg
             e.enqueueWork(() -> DispenserBlock.registerBehavior(
                     ChampionItems.egg(),
                     ChampionEggDispenseBehavior.INSTANCE));
+            ModItems.wireCommon();
         });
     }
 
@@ -117,10 +119,10 @@ public final class ChampionsNeoForge {
      * Register the TierDataLoader as a server-side reload listener.
      * Fired whenever datapacks are (re)loaded.
      */
-    private void onAddReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(ChampionsRegistries.tiers());
-        event.addListener(ChampionsRegistries.archetypes());
-        event.addListener(ChampionsRegistries.modifiers());
+    private void onAddReloadListeners(AddServerReloadListenersEvent event) {
+        event.addListener(Utils.getLocation("tiers"), ChampionsRegistries.tiers());
+        event.addListener(Utils.getLocation("archetypes"), ChampionsRegistries.archetypes());
+        event.addListener(Utils.getLocation("modifiers"), ChampionsRegistries.modifiers());
     }
 
     /**

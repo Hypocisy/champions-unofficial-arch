@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.common.registry;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 
 import java.util.Collection;
@@ -16,7 +16,7 @@ import java.util.Optional;
  */
 public interface TierRegistry {
 
-    Optional<ChampionTier> get(ResourceLocation id);
+    Optional<ChampionTier> get(Identifier id);
 
     Optional<ChampionTier> getByLevel(int level);
 

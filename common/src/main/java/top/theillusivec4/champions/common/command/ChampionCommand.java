@@ -13,14 +13,15 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -89,7 +90,7 @@ public final class ChampionCommand {
         // ── OP-only subcommands ───────────────────────────────────────────────
         dispatcher.register(
             Commands.literal("champions")
-                .requires(src -> src.hasPermission(2))
+                .requires(src -> src.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
 
                 // ── /champions help ────────────────────────────────────────────
                 .then(Commands.literal("help")
@@ -101,7 +102,7 @@ public final class ChampionCommand {
 
                 // ── /champions summon <entity|@category:X|@archetype:X> <tier> [affixes...] [at <x> <y> <z>]
                 .then(Commands.literal("summon")
-                    .then(Commands.argument("entity", ResourceLocationArgument.id())
+                    .then(Commands.argument("entity", IdentifierArgument.id())
                         .suggests((ctx, b) -> suggestEntitiesAndSpecial(b))
                         .then(Commands.argument("tier", IntegerArgumentType.integer(1))
                             .suggests((ctx, b) -> suggestTiers(b))
@@ -151,7 +152,7 @@ public final class ChampionCommand {
                 // ── /champions egg <entity|@category:X|@archetype:X> <tier> [affixes...] ─────
                 // ── /champions egg <entity|@category:X|@archetype:X> random   ─────────────────
                 .then(Commands.literal("egg")
-                    .then(Commands.argument("entity", ResourceLocationArgument.id())
+                    .then(Commands.argument("entity", IdentifierArgument.id())
                         .suggests((ctx, b) -> suggestEntitiesAndSpecial(b))
                         // preset mode: tier + optional affixes
                         .then(Commands.argument("tier", IntegerArgumentType.integer(1))
@@ -296,11 +297,11 @@ public final class ChampionCommand {
                 ? explicitPos
                 : BlockPos.containing(src.x, src.y, src.z);
 
-        Entity raw = entityType.create(level, null, spawnPos, MobSpawnType.COMMAND, false, false);
+        Entity raw = entityType.create(level, null, spawnPos, EntitySpawnReason.COMMAND, false, false);
         if (!(raw instanceof LivingEntity living)) {
             source.sendFailure(Component.translatable(
                     "command.champions.not_living_entity",
-                    ResourceLocationArgument.getId(ctx, "entity")));
+                    IdentifierArgument.getId(ctx, "entity")));
             return 0;
         }
 
@@ -410,7 +411,7 @@ public final class ChampionCommand {
      */
     private static EntityType<?> resolveEntity(CommandContext<CommandSourceStack> ctx)
             throws CommandSyntaxException {
-        ResourceLocation id = ResourceLocationArgument.getId(ctx, "entity");
+        Identifier id = IdentifierArgument.getId(ctx, "entity");
 //        String path = id.getPath();
 
         /*// @category:monster → pick random entity from that category
@@ -427,7 +428,7 @@ public final class ChampionCommand {
 
         // @archetype:<id> → pick random entity from that archetype's entity filter
         if ("archetype".equals(id.getNamespace())) {
-            ResourceLocation archetypeId = ResourceLocation.parse(path);
+            Identifier archetypeId = Identifier.parse(path);
             var archetype = ChampionsRegistries.archetypes().get(archetypeId);
             if (archetype.isEmpty()) {
                 throw UNKNOWN_ENTITY.create(id);
@@ -477,7 +478,7 @@ public final class ChampionCommand {
         String affixList = affixes.isEmpty() ? "" : " [" +
                 affixes.stream()
                         .flatMap(i -> ChampionsApi.get().getAffixTypeId(i.type())
-                                .map(ResourceLocation::getPath).stream())
+                                .map(Identifier::getPath).stream())
                         .collect(Collectors.joining(", ")) + "]";
         return Component.literal(tierName + " " + entity.getName().getString() + affixList);
     }

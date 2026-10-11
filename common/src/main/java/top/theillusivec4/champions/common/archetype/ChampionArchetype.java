@@ -2,7 +2,7 @@ package top.theillusivec4.champions.common.archetype;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import top.theillusivec4.champions.common.filter.EntityFilter;
 import top.theillusivec4.champions.common.phase.ChampionPhase;
@@ -37,7 +37,7 @@ import java.util.List;
  * }</pre>
  */
 public record ChampionArchetype(
-        ResourceLocation id,
+        Identifier id,
         TierRange tierRange,
         int weight,
         EntityFilter entityFilter,
@@ -49,7 +49,7 @@ public record ChampionArchetype(
      * Codec for the file body. {@code id} is injected from the file path after parsing.
      */
     public static final Codec<ChampionArchetype> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            ResourceLocation.CODEC
+            Identifier.CODEC
                     .fieldOf("id").forGetter(ChampionArchetype::id),
             TierRange.CODEC
                     .optionalFieldOf("tier_range", TierRange.ANY).forGetter(ChampionArchetype::tierRange),

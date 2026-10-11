@@ -3,7 +3,7 @@ package top.theillusivec4.champions.neoforge.integration.theoneprobe;
 import mcjty.theoneprobe.api.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -27,9 +27,9 @@ public final class TheOneProbePlugin implements IProbeInfoEntityProvider {
         ChampionsApi.get().getChampion((LivingEntity) entity).ifPresent(champion -> {
             var tier = champion.tier();
             int color = tier.display().color();
-            int r = FastColor.ARGB32.red(color);
-            int g = FastColor.ARGB32.green(color);
-            int b = FastColor.ARGB32.blue(color);
+            int r = ARGB.red(color);
+            int g = ARGB.green(color);
+            int b = ARGB.blue(color);
 
             Color rankColor = new Color(r, g, b);
             IProbeInfo vertical = info.vertical(

@@ -2,7 +2,7 @@ package top.theillusivec4.champions.neoforge.datagen;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageType;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixType;
@@ -55,11 +55,11 @@ public class NeoForgeLanguageProvider extends ChampionLanguageProvider {
     /** Damage type helper that accepts a ResourceKey. */
     public void addDamageType(ResourceKey<DamageType> key,
                               String death, String deathByPlayer) {
-        addDamageType(key.location(), death, deathByPlayer);
+        addDamageType(key.identifier(), death, deathByPlayer);
     }
 
     /** Legacy 3-arg add used by old subclass code. */
-    public void add(String prefix, ResourceLocation id, String value) {
+    public void add(String prefix, Identifier id, String value) {
         add(id.toLanguageKey(prefix), value);
     }
 }

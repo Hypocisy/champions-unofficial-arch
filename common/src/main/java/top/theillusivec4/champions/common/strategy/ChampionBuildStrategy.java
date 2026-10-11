@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.common.strategy;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +46,7 @@ public interface ChampionBuildStrategy {
      */
     record BuildResult(
             List<AffixInstance> affixes,
-            @Nullable ResourceLocation archetypeId
+            @Nullable Identifier archetypeId
     ) {
         /** Convenience constructor for strategies that carry no archetype context. */
         public static BuildResult of(List<AffixInstance> affixes) {

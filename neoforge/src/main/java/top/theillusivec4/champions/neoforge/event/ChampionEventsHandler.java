@@ -3,8 +3,6 @@ package top.theillusivec4.champions.neoforge.event;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -212,7 +210,6 @@ public final class ChampionEventsHandler {
     // ── Boss-bar cancel when HUD is rendering ─────────────────────────────────
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    @OnlyIn(Dist.CLIENT)
     static void onBossBar(CustomizeGuiOverlayEvent.BossEventProgress event) {
         if (ChampionsOverlay.isRendering) {
             event.setCanceled(true);

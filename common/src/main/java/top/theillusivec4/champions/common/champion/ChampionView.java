@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.common.champion;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import top.theillusivec4.champions.api.ChampionsApi;
@@ -38,7 +38,7 @@ public final class ChampionView {
         private final List<AffixInstance> liveAffixes;
         private final Consumer<ChampionData> saveCallback;
         private final Runnable syncCallback;
-        private final Optional<ResourceLocation> archetypeId;
+        private final Optional<Identifier> archetypeId;
         private final Set<String> triggeredPhaseIds = new HashSet<>();
         /**
          * @param entity           the champion mob
@@ -55,8 +55,8 @@ public final class ChampionView {
                 List<AffixInstance> liveAffixes,
                 Consumer<ChampionData> saveCallback,
                 Runnable syncCallback,
-                List<ResourceLocation> triggeredPhases,
-                Optional<ResourceLocation> archetypeId) {
+                List<Identifier> triggeredPhases,
+                Optional<Identifier> archetypeId) {
             this.entity = entity;
             this.tier = tier;
             this.baseAffixes = new ArrayList<>(baseAffixes);
@@ -90,7 +90,7 @@ public final class ChampionView {
         }
 
         @Override
-        public Optional<ResourceLocation> archetypeId() {
+        public Optional<Identifier> archetypeId() {
             return archetypeId;
         }
 
@@ -178,7 +178,7 @@ public final class ChampionView {
          * Called by PhaseProcessor after new phases fire.
          */
         public void updateTriggeredPhases(
-                List<ResourceLocation> phases
+                List<Identifier> phases
         ) {
             triggeredPhaseIds.clear();
             phases.forEach(id -> triggeredPhaseIds.add(id.toString()));
@@ -194,14 +194,14 @@ public final class ChampionView {
                     .map(instance -> {
                         var idOpt = ChampionsApi.get()
                                 .getAffixTypeId(instance.type());
-	                    return idOpt.map(resourceLocation -> new ChampionData.AffixEntry(
-			                    resourceLocation, instance.strength(), instance.save())).orElse(null);
+	                    return idOpt.map(Identifier -> new ChampionData.AffixEntry(
+			                    Identifier, instance.strength(), instance.save())).orElse(null);
                     })
                     .filter(Objects::nonNull)
                     .toList();
 
             var triggeredList = triggeredPhaseIds.stream()
-                    .map(ResourceLocation::parse)
+                    .map(Identifier::parse)
                     .toList();
 
             return new ChampionData(tier.id(), entries, triggeredList, this.archetypeId);

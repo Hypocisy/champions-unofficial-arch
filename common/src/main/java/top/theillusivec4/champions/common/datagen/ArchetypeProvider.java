@@ -4,7 +4,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.common.archetype.AffixPool;
 import top.theillusivec4.champions.common.archetype.ChampionArchetype;
@@ -52,7 +52,7 @@ public class ArchetypeProvider implements DataProvider {
 
     /** Start building an archetype with the given namespace and name. */
     public Builder archetype(String namespace, String name) {
-        return new Builder(this, ResourceLocation.fromNamespaceAndPath(namespace, name));
+        return new Builder(this, Identifier.fromNamespaceAndPath(namespace, name));
     }
 
     /** Convenience — namespace defaults to {@code "champions"}. */
@@ -94,14 +94,14 @@ public class ArchetypeProvider implements DataProvider {
     public static final class Builder {
 
         private final ArchetypeProvider parent;
-        private final ResourceLocation id;
+        private final Identifier id;
         private int weight = 10;
         private TierRange tierRange = TierRange.ANY;
         private EntityFilter entityFilter = EntityFilter.ANY;
         private final List<AffixPool> pools = new ArrayList<>();
         private final List<ChampionPhase> phases = new ArrayList<>();
 
-        private Builder(ArchetypeProvider parent, ResourceLocation id) {
+        private Builder(ArchetypeProvider parent, Identifier id) {
             this.parent = parent;
             this.id = id;
         }
@@ -166,7 +166,7 @@ public class ArchetypeProvider implements DataProvider {
          */
         public PoolBuilder candidate(String affixId, int weight, int minStrength, int maxStrength) {
             candidates.add(new WeightedAffix(
-                    ResourceLocation.parse(affixId), weight, minStrength, maxStrength));
+                    Identifier.parse(affixId), weight, minStrength, maxStrength));
             return this;
         }
 

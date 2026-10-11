@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -96,10 +96,10 @@ public interface EntityFilter {
         }
     }
 
-    record EntityTypeFilter(Set<ResourceLocation> typeIds, boolean whitelist) implements EntityFilter {
+    record EntityTypeFilter(Set<Identifier> typeIds, boolean whitelist) implements EntityFilter {
         public static final MapCodec<EntityTypeFilter> CODEC =
                 RecordCodecBuilder.mapCodec(inst -> inst.group(
-                        ResourceLocation.CODEC.listOf()
+                        Identifier.CODEC.listOf()
                                 .xmap(Set::copyOf, List::copyOf)
                                 .fieldOf("types").forGetter(EntityTypeFilter::typeIds),
                         Codec.BOOL.optionalFieldOf("whitelist", true).forGetter(EntityTypeFilter::whitelist)
@@ -107,15 +107,15 @@ public interface EntityFilter {
 
         @Override
         public boolean matches(LivingEntity entity) {
-            ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+            Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
             return whitelist == typeIds.contains(id);
         }
     }
 
-    record EntityTagFilter(ResourceLocation tagId, boolean whitelist) implements EntityFilter {
+    record EntityTagFilter(Identifier tagId, boolean whitelist) implements EntityFilter {
         public static final MapCodec<EntityTagFilter> CODEC =
                 RecordCodecBuilder.mapCodec(inst -> inst.group(
-                        ResourceLocation.CODEC.fieldOf("tag").forGetter(EntityTagFilter::tagId),
+                        Identifier.CODEC.fieldOf("tag").forGetter(EntityTagFilter::tagId),
                         Codec.BOOL.optionalFieldOf("whitelist", true).forGetter(EntityTagFilter::whitelist)
                 ).apply(inst, EntityTagFilter::new));
 
@@ -123,7 +123,7 @@ public interface EntityFilter {
         public boolean matches(LivingEntity entity) {
             TagKey<EntityType<?>> tag = TagKey.create(
                     Registries.ENTITY_TYPE, tagId);
-            return whitelist == entity.getType().is(tag);
+            return whitelist == entity.is(tag);
         }
     }
 
@@ -156,17 +156,17 @@ public interface EntityFilter {
         }
     }
 
-    record AttributeFilter(ResourceLocation attribute, double min, double max) implements EntityFilter {
+    record AttributeFilter(Identifier attribute, double min, double max) implements EntityFilter {
         public static final MapCodec<AttributeFilter> CODEC =
                 RecordCodecBuilder.mapCodec(inst -> inst.group(
-                        ResourceLocation.CODEC.fieldOf("attribute").forGetter(AttributeFilter::attribute),
+                        Identifier.CODEC.fieldOf("attribute").forGetter(AttributeFilter::attribute),
                         Codec.DOUBLE.optionalFieldOf("min", 0.0).forGetter(AttributeFilter::min),
                         Codec.DOUBLE.optionalFieldOf("max", Double.MAX_VALUE).forGetter(AttributeFilter::max)
                 ).apply(inst, AttributeFilter::new));
 
         @Override
         public boolean matches(LivingEntity entity) {
-            var attr = BuiltInRegistries.ATTRIBUTE.getHolder(attribute);
+            var attr = BuiltInRegistries.ATTRIBUTE.get(attribute);
             if (attr.isEmpty()) return false;
             var inst = entity.getAttribute(attr.get());
             if (inst == null) return false;

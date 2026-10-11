@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.level.storage.LevelResource;
 import top.theillusivec4.champions.common.network.EditorPackActionPacket;
 import top.theillusivec4.champions.common.network.EditorPayload;
@@ -64,8 +65,8 @@ public final class DatapackEditorHandler {
      * Requires the player to have permission level 2.
      */
     public static void handleSave(SaveEditorRequest request, ServerPlayer player) {
-        if (!player.hasPermissions(2)) return;
-        MinecraftServer server = player.getServer();
+        if (!player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) return;
+        MinecraftServer server = player.level().getServer();
         if (server == null) return;
 
         try {
@@ -92,8 +93,8 @@ public final class DatapackEditorHandler {
 
     /** Called on the server for toggle / export / import actions. Permission level 2. */
     public static void handlePackAction(EditorPackActionPacket packet, ServerPlayer player) {
-        if (!player.hasPermissions(2)) return;
-        MinecraftServer server = player.getServer();
+        if (!player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) return;
+        MinecraftServer server = player.level().getServer();
         if (server == null) return;
 
         switch (packet.action()) {
@@ -285,7 +286,7 @@ public final class DatapackEditorHandler {
 
     /**
      * Writes each entry as {@code <dataRoot>/<path>/<idPath>.json}.
-     * The map key is a full ResourceLocation string (e.g. {@code "champions:tier_1"}).
+     * The map key is a full Identifier string (e.g. {@code "champions:tier_1"}).
      */
     private static void writeDirContents(Path dataRoot, String subfolder,
                                          Map<String, String> entries) throws IOException {

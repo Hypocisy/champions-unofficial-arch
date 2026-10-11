@@ -1,6 +1,5 @@
 package top.theillusivec4.champions.fabric.mixin;
 
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,11 +26,11 @@ public abstract class MixinLivingEntityWound {
             method = "actuallyHurt",
             at = @At("HEAD"),
             argsOnly = true,
-            ordinal = 0)
-    private float champions$amplifyWoundDamage(float amount, DamageSource source) {
+            name = "dmg", index = 3)
+    private float champions$amplifyWoundDamage(float dmg) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self.level().isClientSide()) return amount;
-        if (!ChampionEffects.hasWound(self)) return amount;
-        return amount * 1.5f;
+        if (self.level().isClientSide()) return dmg;
+        if (!ChampionEffects.hasWound(self)) return dmg;
+        return dmg * 1.5f;
     }
 }

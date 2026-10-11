@@ -69,9 +69,9 @@ public final class AdaptableAffix extends AffixType<AdaptableAffix.Data> {
 
         @Override
         public void read(CompoundTag tag) {
-            lastDamageType = tag.getString("last_type");
-            count = tag.getInt("count");
-            triggerCount = tag.getInt("triggers");
+            lastDamageType = tag.getStringOr("last_type", "");
+            count = tag.getIntOr("count", 0);
+            triggerCount = tag.getIntOr("triggers", 0);
         }
     }
 }

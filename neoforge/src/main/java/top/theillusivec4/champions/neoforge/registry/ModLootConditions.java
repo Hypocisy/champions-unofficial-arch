@@ -1,12 +1,12 @@
 package top.theillusivec4.champions.neoforge.registry;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import top.theillusivec4.champions.common.loot.ChampionLootConditions;
-import top.theillusivec4.champions.common.loot.ChampionPropertyCondition;
 
 /**
  * Registers custom loot condition types via NeoForge DeferredRegister.
@@ -14,19 +14,21 @@ import top.theillusivec4.champions.common.loot.ChampionPropertyCondition;
  */
 public final class ModLootConditions {
 
-    private static final DeferredRegister<LootItemConditionType> TYPES =
-            DeferredRegister.create(BuiltInRegistries.LOOT_CONDITION_TYPE, "champions");
+	private static final DeferredRegister<MapCodec<? extends LootItemCondition>> TYPES =
+			DeferredRegister.create(Registries.LOOT_CONDITION_TYPE, "champions");
 
-    public static final DeferredHolder<LootItemConditionType, LootItemConditionType> CHAMPION_PROPERTIES =
-            TYPES.register("champion_properties",
-                    () -> new LootItemConditionType(ChampionPropertyCondition.CODEC));
+	public static final DeferredHolder<MapCodec<? extends LootItemCondition>, MapCodec<? extends LootItemCondition>> CHAMPION_PROPERTIES =
+			TYPES.register("champion_properties",
+					()-> ChampionLootConditions.CHAMPION_PROPERTIES);
 
-    public static void register(IEventBus modBus) {
-        TYPES.register(modBus);
-    }
+	public static void register(IEventBus modBus) {
+		TYPES.register(modBus);
+	}
 
-    /** Wire the holder into the common static field after registry freeze. */
-    public static void wireCommon() {
-        ChampionLootConditions.CHAMPION_PROPERTIES = CHAMPION_PROPERTIES.get();
-    }
+	/**
+	 * Wire the holder into the common static field after registry freeze.
+	 */
+	public static void wireCommon() {
+		ChampionLootConditions.CHAMPION_PROPERTIES = CHAMPION_PROPERTIES.get();
+	}
 }

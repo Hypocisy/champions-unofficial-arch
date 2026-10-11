@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.fabric.network;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.champion.ChampionTier;
 
 import java.util.*;
@@ -10,23 +10,23 @@ import java.util.*;
  */
 public final class FabricClientTierCache {
 
-  private static volatile Map<ResourceLocation, ChampionTier> tiers = Map.of();
+  private static volatile Map<Identifier, ChampionTier> tiers = Map.of();
 
   private FabricClientTierCache() {}
 
   public static void rebuild(List<FabricTierSyncPacket.TierEntry> entries) {
-    Map<ResourceLocation, ChampionTier> map = new HashMap<>();
+    Map<Identifier, ChampionTier> map = new HashMap<>();
     for (var entry : entries) {
       ChampionTier.TierDisplay display = new ChampionTier.TierDisplay(
           entry.color(),
-          ResourceLocation.withDefaultNamespace("textures/gui/icons.png")
+          Identifier.withDefaultNamespace("textures/gui/icons.png")
       );
       map.put(entry.id(), new ChampionTier(entry.id(), entry.level(), display));
     }
     tiers = Collections.unmodifiableMap(map);
   }
 
-  public static Optional<ChampionTier> get(ResourceLocation id) {
+  public static Optional<ChampionTier> get(Identifier id) {
     return Optional.ofNullable(tiers.get(id));
   }
 

@@ -1,7 +1,7 @@
 package top.theillusivec4.champions.common.integration.jade;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IEntityComponentProvider;
@@ -16,8 +16,8 @@ import top.theillusivec4.champions.common.config.ChampionsClientConfig;
 public enum ChampionComponentProvider implements IEntityComponentProvider {
     INSTANCE;
 
-    public static final ResourceLocation ID =
-            ResourceLocation.fromNamespaceAndPath("champions", "enable_affix_compact");
+    public static final Identifier ID =
+            Identifier.fromNamespaceAndPath("champions", "enable_affix_compact");
 
     private static final int STAR_SPACING = 1;
 
@@ -55,7 +55,7 @@ public enum ChampionComponentProvider implements IEntityComponentProvider {
     }
 
     @Override
-    public ResourceLocation getUid() {
+    public Identifier getUid() {
         return ID;
     }
 

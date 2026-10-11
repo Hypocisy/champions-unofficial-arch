@@ -2,7 +2,7 @@ package top.theillusivec4.champions.common.archetype;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * A candidate affix entry in an {@link AffixPool}, with weight and strength range.
@@ -11,14 +11,14 @@ import net.minecraft.resources.ResourceLocation;
  * [{@code minStrength}, {@code maxStrength}].</p>
  */
 public record WeightedAffix(
-        ResourceLocation affixId,
+        Identifier affixId,
         int weight,
         int minStrength,
         int maxStrength
 ) {
 
     public static final Codec<WeightedAffix> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            ResourceLocation.CODEC
+            Identifier.CODEC
                     .fieldOf("affix").forGetter(WeightedAffix::affixId),
             Codec.INT
                     .optionalFieldOf("weight", 10).forGetter(WeightedAffix::weight),

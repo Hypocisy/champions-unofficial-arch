@@ -1,10 +1,13 @@
 package top.theillusivec4.champions.common.entity;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import top.theillusivec4.champions.common.utils.Utils;
 
 import java.util.function.Supplier;
 
@@ -23,6 +26,12 @@ public final class ChampionEntityTypes {
 			() -> arcticBulletSupplier.get();
 	public static Supplier<EntityType<EnkindlingBulletEntity>> ENKINDLING_BULLET =
 			() -> enkindlingBulletSupplier.get();
+
+	public static class Keys {
+		public static ResourceKey<EntityType<?>> ARCTIC_BULLET = ResourceKey.create(BuiltInRegistries.ENTITY_TYPE.key(), Utils.getLocation("arctic_bullet"));
+		public static ResourceKey<EntityType<?>> ENKINDLING_BULLET = ResourceKey.create(BuiltInRegistries.ENTITY_TYPE.key(),  Utils.getLocation("enkindling_bullet"));
+	}
+
 	private ChampionEntityTypes() {
 	}
 
@@ -38,7 +47,7 @@ public final class ChampionEntityTypes {
 						ArcticBulletEntity::new, MobCategory.MISC)
 				.sized(0.3125f, 0.3125f)
 				.clientTrackingRange(8)
-				.build("arctic_bullet");
+				.build(Keys.ARCTIC_BULLET);
 	}
 
 	// ── Default EntityType specs (shared by both platforms) ───────────────────
@@ -48,7 +57,7 @@ public final class ChampionEntityTypes {
 						EnkindlingBulletEntity::new, MobCategory.MISC)
 				.sized(0.3125f, 0.3125f)
 				.clientTrackingRange(8)
-				.build("enkindling_bullet");
+				.build(Keys.ENKINDLING_BULLET);
 	}
 
 	public static class Tags {
@@ -56,7 +65,7 @@ public final class ChampionEntityTypes {
 		public static final TagKey<EntityType<?>> ALLOW_CHAMPIONS = create("allow_champions");
 
 		private static TagKey<EntityType<?>> create(String name) {
-			return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("champions", name));
+			return TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("champions", name));
 		}
 	}
 }

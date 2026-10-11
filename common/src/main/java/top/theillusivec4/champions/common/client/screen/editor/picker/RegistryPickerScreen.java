@@ -1,10 +1,11 @@
 package top.theillusivec4.champions.common.client.screen.editor.picker;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
 
@@ -108,7 +109,7 @@ public final class RegistryPickerScreen extends Screen {
      * search box / buttons while our opaque fills suppress the vanilla menu blur.
      */
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         // opaque backdrop (no world/shader blur bleeding through)
         g.fill(0, 0, width, height, 0xFF0D1014);
         // window frame
@@ -117,7 +118,7 @@ public final class RegistryPickerScreen extends Screen {
         // title strip (title INSIDE the window)
         g.fill(x0, y0, x1, y0 + 22, 0xFF1A2029);
         g.fill(x0, y0, x0 + 2, y0 + 22, 0xFFB98A38);
-        g.drawString(font, getTitle(), x0 + 8, y0 + 7, 0xFFE3B557, false);
+        g.text(font, getTitle(), x0 + 8, y0 + 7, 0xFFE3B557, false);
         g.fill(x0, y0 + 22, x1, y0 + 23, 0xFF2B3442);
         // list area + footer backgrounds
         g.fill(x0 + 1, listY(), x1 - 1, listY() + listH(), 0xFF0C0F14);
@@ -131,9 +132,9 @@ public final class RegistryPickerScreen extends Screen {
      * afterwards the list rows go on top.
      */
     @Override
-    public void render(GuiGraphics g, int mx, int my, float pt) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float pt) {
         // 1. chrome (renderBackground) + widgets
-        super.render(g, mx, my, pt);
+        super.extractRenderState(g, mx, my, pt);
 
         // 2. list rows — scissored to the list area
         int ly = listY();
@@ -159,8 +160,8 @@ public final class RegistryPickerScreen extends Screen {
             int idW = Math.min(120, font.width(idTxt) + 4);
             String clippedName = font.plainSubstrByWidth(
                     box + name, (x1 - x0) - PAD * 2 - idW);
-            g.drawString(font, clippedName, x0 + PAD, iy + 2, nameColor, false);
-            g.drawString(font, "§8" + font.plainSubstrByWidth(idTxt, idW),
+            g.text(font, clippedName, x0 + PAD, iy + 2, nameColor, false);
+            g.text(font, "§8" + font.plainSubstrByWidth(idTxt, idW),
                     x1 - PAD - idW, iy + 2, 0xFF777777, false);
         }
         g.disableScissor();
@@ -176,7 +177,7 @@ public final class RegistryPickerScreen extends Screen {
             info = Component.translatable("gui.champions.picker.selected", selected.size())
                     .append(" ").append(info);
         }
-        g.drawString(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF79808B, false);
+        g.text(font, info, x0 + PAD, y1 - FOOT_H + 6, 0xFF79808B, false);
     }
 
     private int listY() { return y0 + 48; }
@@ -187,11 +188,11 @@ public final class RegistryPickerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mx, double my, int btn) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         int ly = listY();
         int lh = listH();
-        if (mx >= x0 && mx <= x1 && my >= ly && my < ly + lh) {
-            int idx = ((int) my - ly) / ENTRY_H + scroll;
+        if (event.x() >= x0 && event.x() <= x1 && event.y() >= ly && event.y() < ly + lh) {
+            int idx = ((int) event.y() - ly) / ENTRY_H + scroll;
             if (idx >= 0 && idx < filtered.size()) {
                 String id = filtered.get(idx).id();
                 if (multi) {
@@ -203,7 +204,7 @@ public final class RegistryPickerScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(mx, my, btn);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override

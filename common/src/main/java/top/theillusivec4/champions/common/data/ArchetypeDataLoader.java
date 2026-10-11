@@ -3,7 +3,7 @@ package top.theillusivec4.champions.common.data;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -25,33 +25,33 @@ import java.util.*;
  * a warning is logged and the file-path id takes precedence.</p>
  */
 public final class ArchetypeDataLoader
-        extends SimplePreparableReloadListener<Map<ResourceLocation, ChampionArchetype>> {
+        extends SimplePreparableReloadListener<Map<Identifier, ChampionArchetype>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ArchetypeDataLoader.class);
     private static final String FOLDER = "champions/archetype";
 
-    private volatile Map<ResourceLocation, ChampionArchetype> archetypes = Map.of();
+    private volatile Map<Identifier, ChampionArchetype> archetypes = Map.of();
 
     /** ids backed by a jar (built-in) pack — used by the editor. */
-    private volatile Set<ResourceLocation> builtinIds = Set.of();
-    private Set<ResourceLocation> pendingBuiltinIds = new HashSet<>();
+    private volatile Set<Identifier> builtinIds = Set.of();
+    private Set<Identifier> pendingBuiltinIds = new HashSet<>();
 
     // ── SimplePreparableReloadListener ────────────────────────────────────────
 
     @Override
     @NotNull
-    public Map<ResourceLocation, ChampionArchetype> prepare(
+    public Map<Identifier, ChampionArchetype> prepare(
             ResourceManager manager, ProfilerFiller profiler
     ) {
         profiler.startTick();
-        Map<ResourceLocation, ChampionArchetype> result = new HashMap<>();
-        Set<ResourceLocation> builtins = new HashSet<>();
+        Map<Identifier, ChampionArchetype> result = new HashMap<>();
+        Set<Identifier> builtins = new HashSet<>();
 
-        for (Map.Entry<ResourceLocation, Resource> entry :
+        for (Map.Entry<Identifier, Resource> entry :
                 manager.listResources(FOLDER, p -> p.getPath().endsWith(".json")).entrySet()) {
 
-            ResourceLocation fileKey = entry.getKey();
-            ResourceLocation archetypeId = fileKeyToId(fileKey);
+            Identifier fileKey = entry.getKey();
+            Identifier archetypeId = fileKeyToId(fileKey);
 
             try (Reader reader = entry.getValue().openAsReader()) {
                 JsonElement json = JsonParser.parseReader(reader);
@@ -88,7 +88,7 @@ public final class ArchetypeDataLoader
 
     @Override
     public void apply(
-            @NotNull Map<ResourceLocation, ChampionArchetype> prepared,
+            @NotNull Map<Identifier, ChampionArchetype> prepared,
             @NotNull ResourceManager manager, @NotNull ProfilerFiller profiler
     ) {
         archetypes = Collections.unmodifiableMap(prepared);
@@ -98,7 +98,7 @@ public final class ArchetypeDataLoader
     }
 
     /** ids backed by a jar (built-in) pack — used by the editor to distinguish overridable entries. */
-    public Set<ResourceLocation> getBuiltinIds() {
+    public Set<Identifier> getBuiltinIds() {
         return builtinIds;
     }
 
@@ -112,24 +112,24 @@ public final class ArchetypeDataLoader
         return !archetypes.isEmpty();
     }
 
-    public java.util.Optional<ChampionArchetype> get(ResourceLocation id) {
+    public java.util.Optional<ChampionArchetype> get(Identifier id) {
         return java.util.Optional.ofNullable(archetypes.get(id));
     }
 
-    public Set<ResourceLocation> getAllKeys() {
+    public Set<Identifier> getAllKeys() {
         return archetypes.keySet();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private static ResourceLocation fileKeyToId(ResourceLocation fileKey) {
+    private static Identifier fileKeyToId(Identifier fileKey) {
         String path = fileKey.getPath()
                 .substring((FOLDER + "/").length())
                 .replace(".json", "");
-        return ResourceLocation.fromNamespaceAndPath(fileKey.getNamespace(), path);
+        return Identifier.fromNamespaceAndPath(fileKey.getNamespace(), path);
     }
 
-    private static ChampionArchetype fixId(ChampionArchetype archetype, ResourceLocation id) {
+    private static ChampionArchetype fixId(ChampionArchetype archetype, Identifier id) {
         if (archetype.id().equals(id)) return archetype;
         return new ChampionArchetype(
                 id,

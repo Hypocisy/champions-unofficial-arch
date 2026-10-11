@@ -1,7 +1,7 @@
 package top.theillusivec4.champions.neoforge.datagen;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -35,37 +35,41 @@ public final class ChampionsDatagen {
 	}
 
 	@SubscribeEvent
-	public static void onGatherData(GatherDataEvent event) {
+	public static void onGatherData(GatherDataEvent.Server event) {
 		var generator = event.getGenerator();
 		var packOutput = generator.getPackOutput();
-		boolean includeServer = event.includeServer();
-		boolean includeClient = event.includeClient();
 		var provider = event.getLookupProvider();
 
 		// data
-		var datapackProvider = generator.addProvider(event.includeServer(), new ModDatapackProvider(packOutput, provider));
+		var datapackProvider = generator.addProvider(true, new ModDatapackProvider(packOutput, provider));
 		// ── Server data ───────────────────────────────────────────────────────
 
-		generator.addProvider(includeServer,
+		generator.addProvider(true,
 				new TierProvider(packOutput).addDefaultTiers());
-		generator.addProvider(includeServer,
+		generator.addProvider(true,
 				buildArchetypes(packOutput));
-		generator.addProvider(includeServer,
+		generator.addProvider(true,
 				new AttributesModifierDataProvider(packOutput, provider));
-		generator.addProvider(includeServer,
+		generator.addProvider(true,
 				new ModDamageTypeTagsProvider(packOutput, datapackProvider.getRegistryProvider()));
 
-		generator.addProvider(includeServer, new ModEntityTypeTagsProvider(packOutput, provider));
+		generator.addProvider(true, new ModEntityTypeTagsProvider(packOutput, provider));
+	}
+	@SubscribeEvent
+	public static void onGatherData(GatherDataEvent.Client event) {
+		var generator = event.getGenerator();
+		var packOutput = generator.getPackOutput();
+
 		// ── Client assets ─────────────────────────────────────────────────────
 
-		generator.addProvider(includeClient, buildLanguage(packOutput, "en_us"));
-		generator.addProvider(includeClient, buildLanguage(packOutput, "zh_cn"));
+		generator.addProvider(true, buildLanguage(packOutput, "en_us"));
+		generator.addProvider(true, buildLanguage(packOutput, "zh_cn"));
 		// add more translate to data generation
-		generator.addProvider(includeClient, buildLanguage(packOutput, "ko_kr"));
-		generator.addProvider(includeClient, buildLanguage(packOutput, "ru_ru"));
-		generator.addProvider(includeClient, buildLanguage(packOutput, "tr_tr"));
-		generator.addProvider(includeClient, buildLanguage(packOutput, "uk_ua"));
-		generator.addProvider(includeClient, buildLanguage(packOutput, "pt_br"));
+		generator.addProvider(true, buildLanguage(packOutput, "ko_kr"));
+		generator.addProvider(true, buildLanguage(packOutput, "ru_ru"));
+		generator.addProvider(true, buildLanguage(packOutput, "tr_tr"));
+		generator.addProvider(true, buildLanguage(packOutput, "uk_ua"));
+		generator.addProvider(true, buildLanguage(packOutput, "pt_br"));
 	}
 
 	// ── Archetypes ────────────────────────────────────────────────────────────
@@ -82,11 +86,11 @@ public final class ChampionsDatagen {
 				.weight(10)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(Set.of(
-						ResourceLocation.withDefaultNamespace("zombie"),
-						ResourceLocation.withDefaultNamespace("zombie_villager"),
-						ResourceLocation.withDefaultNamespace("husk"),
-						ResourceLocation.withDefaultNamespace("drowned"),
-						ResourceLocation.withDefaultNamespace("zombified_piglin")), true))
+						Identifier.withDefaultNamespace("zombie"),
+						Identifier.withDefaultNamespace("zombie_villager"),
+						Identifier.withDefaultNamespace("husk"),
+						Identifier.withDefaultNamespace("drowned"),
+						Identifier.withDefaultNamespace("zombified_piglin")), true))
 				.pool(pool -> pool
 						.tierRange(1, 3)
 						.candidate("champions:wounding", 15, 1, 2)
@@ -103,10 +107,10 @@ public final class ChampionsDatagen {
 						.candidate("champions:knocking", 12, 2, 3)
 						.count(1, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "zombie_line_second_wind"),
+						Identifier.fromNamespaceAndPath("champions", "zombie_line_second_wind"),
 						new PhaseCondition.HealthPercent(0.4f),
 						List.of(new PhaseEffect.AddMobEffect(
-								ResourceLocation.withDefaultNamespace("strength"), 1, true, 0)),
+								Identifier.withDefaultNamespace("strength"), 1, true, 0)),
 						false))
 				.build();
 
@@ -115,11 +119,11 @@ public final class ChampionsDatagen {
 				.weight(10)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(Set.of(
-						ResourceLocation.withDefaultNamespace("skeleton"),
-						ResourceLocation.withDefaultNamespace("stray"),
-						ResourceLocation.withDefaultNamespace("bogged"),
-						ResourceLocation.withDefaultNamespace("wither_skeleton"),
-						ResourceLocation.withDefaultNamespace("skeleton_horse")), true))
+						Identifier.withDefaultNamespace("skeleton"),
+						Identifier.withDefaultNamespace("stray"),
+						Identifier.withDefaultNamespace("bogged"),
+						Identifier.withDefaultNamespace("wither_skeleton"),
+						Identifier.withDefaultNamespace("skeleton_horse")), true))
 				.pool(pool -> pool
 						.tierRange(1, 3)
 						.candidate("champions:knocking", 12, 1, 2)
@@ -135,10 +139,10 @@ public final class ChampionsDatagen {
 						.candidate("champions:shielding", 8, 2, 3)
 						.count(1, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "skeleton_line_archer_rage"),
+						Identifier.fromNamespaceAndPath("champions", "skeleton_line_archer_rage"),
 						new PhaseCondition.TimeElapsed(45),
 						List.of(new PhaseEffect.AddAffix(
-								ResourceLocation.fromNamespaceAndPath("champions", "enkindling"), 2)),
+								Identifier.fromNamespaceAndPath("champions", "enkindling"), 2)),
 						false))
 				.build();
 
@@ -147,7 +151,7 @@ public final class ChampionsDatagen {
 				.weight(10)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(
-						Set.of(ResourceLocation.withDefaultNamespace("creeper")), true))
+						Set.of(Identifier.withDefaultNamespace("creeper")), true))
 				.pool(pool -> pool
 						.tierRange(1, 3)
 						.candidate("champions:shielding", 12, 1, 2)
@@ -161,14 +165,14 @@ public final class ChampionsDatagen {
 						.candidate("champions:plagued", 8, 2, 3)
 						.count(1, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "creeper_arch_detonate"),
+						Identifier.fromNamespaceAndPath("champions", "creeper_arch_detonate"),
 						new PhaseCondition.HealthPercent(0.35f),
 						List.of(
 								new PhaseEffect.AddAttribute(
-										ResourceLocation.withDefaultNamespace("generic.attack_damage"),
+										Identifier.withDefaultNamespace("generic.attack_damage"),
 										1.0, "add_multiplied_total"),
 								new PhaseEffect.AddMobEffect(
-										ResourceLocation.withDefaultNamespace("speed"), 1, true, 0)),
+										Identifier.withDefaultNamespace("speed"), 1, true, 0)),
 						false))
 				.build();
 
@@ -177,10 +181,10 @@ public final class ChampionsDatagen {
 				.weight(10)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(Set.of(
-						ResourceLocation.withDefaultNamespace("spider"),
-						ResourceLocation.withDefaultNamespace("cave_spider"),
-						ResourceLocation.withDefaultNamespace("silverfish"),
-						ResourceLocation.withDefaultNamespace("endermite")), true))
+						Identifier.withDefaultNamespace("spider"),
+						Identifier.withDefaultNamespace("cave_spider"),
+						Identifier.withDefaultNamespace("silverfish"),
+						Identifier.withDefaultNamespace("endermite")), true))
 				.pool(pool -> pool
 						.tierRange(1, 3)
 						.candidate("champions:hasty", 12, 1, 2)
@@ -194,10 +198,10 @@ public final class ChampionsDatagen {
 						.candidate("champions:reflective", 8, 2, 3)
 						.count(1, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "spider_arch_frenzy"),
+						Identifier.fromNamespaceAndPath("champions", "spider_arch_frenzy"),
 						new PhaseCondition.HealthPercent(0.35f),
 						List.of(new PhaseEffect.AddMobEffect(
-								ResourceLocation.withDefaultNamespace("speed"), 2, true, 0)),
+								Identifier.withDefaultNamespace("speed"), 2, true, 0)),
 						false))
 				.build();
 
@@ -206,7 +210,7 @@ public final class ChampionsDatagen {
 				.weight(10)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(
-						Set.of(ResourceLocation.withDefaultNamespace("witch")), true))
+						Set.of(Identifier.withDefaultNamespace("witch")), true))
 				.pool(pool -> pool
 						.tierRange(1, 5)
 						.candidate("champions:dampening", 14, 1, 2)
@@ -215,10 +219,10 @@ public final class ChampionsDatagen {
 						.candidate("champions:plagued", 8, 1, 2)
 						.count(1, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "witch_arch_swift_drink"),
+						Identifier.fromNamespaceAndPath("champions", "witch_arch_swift_drink"),
 						new PhaseCondition.HealthPercent(0.5f),
 						List.of(new PhaseEffect.AddAttribute(
-								ResourceLocation.withDefaultNamespace("generic.movement_speed"),
+								Identifier.withDefaultNamespace("generic.movement_speed"),
 								0.30, "add_value")),
 						false))
 				.build();
@@ -228,7 +232,7 @@ public final class ChampionsDatagen {
 				.weight(10)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(
-						Set.of(ResourceLocation.withDefaultNamespace("enderman")), true))
+						Set.of(Identifier.withDefaultNamespace("enderman")), true))
 				.pool(pool -> pool
 						.tierRange(1, 3)
 						.candidate("champions:knocking", 12, 1, 2)
@@ -242,10 +246,10 @@ public final class ChampionsDatagen {
 						.candidate("champions:knocking", 10, 2, 3)
 						.count(1, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "endermen_line_teleport_rage"),
+						Identifier.fromNamespaceAndPath("champions", "endermen_line_teleport_rage"),
 						new PhaseCondition.TimeElapsed(30),
 						List.of(new PhaseEffect.AddAttribute(
-								ResourceLocation.withDefaultNamespace("generic.attack_damage"),
+								Identifier.withDefaultNamespace("generic.attack_damage"),
 								0.30, "add_multiplied_total")),
 						false))
 				.build();
@@ -255,18 +259,18 @@ public final class ChampionsDatagen {
 				.weight(5)
 				.tierRange(1, 5)
 				.entityFilter(new EntityFilter.EntityTypeFilter(Set.of(
-						ResourceLocation.withDefaultNamespace("wither_skeleton"),
-						ResourceLocation.withDefaultNamespace("zoglin"),
-						ResourceLocation.withDefaultNamespace("hoglin"),
-						ResourceLocation.withDefaultNamespace("ravager"),
-						ResourceLocation.withDefaultNamespace("phantom"),
-						ResourceLocation.withDefaultNamespace("slime"),
-						ResourceLocation.withDefaultNamespace("magma_cube"),
-						ResourceLocation.withDefaultNamespace("ghast"),
-						ResourceLocation.withDefaultNamespace("blaze"),
-						ResourceLocation.withDefaultNamespace("warden"),
-						ResourceLocation.withDefaultNamespace("guardian"),
-						ResourceLocation.withDefaultNamespace("elder_guardian")), true))
+						Identifier.withDefaultNamespace("wither_skeleton"),
+						Identifier.withDefaultNamespace("zoglin"),
+						Identifier.withDefaultNamespace("hoglin"),
+						Identifier.withDefaultNamespace("ravager"),
+						Identifier.withDefaultNamespace("phantom"),
+						Identifier.withDefaultNamespace("slime"),
+						Identifier.withDefaultNamespace("magma_cube"),
+						Identifier.withDefaultNamespace("ghast"),
+						Identifier.withDefaultNamespace("blaze"),
+						Identifier.withDefaultNamespace("warden"),
+						Identifier.withDefaultNamespace("guardian"),
+						Identifier.withDefaultNamespace("elder_guardian")), true))
 				.pool(pool -> pool
 						.tierRange(1, 2)
 						.candidate("champions:shielding", 10, 1, 1)
@@ -290,10 +294,10 @@ public final class ChampionsDatagen {
 						.candidate("champions:shielding", 10, 2, 3)
 						.count(2, 2))
 				.phase(new ChampionPhase(
-						ResourceLocation.fromNamespaceAndPath("champions", "boss_line_enrage"),
+						Identifier.fromNamespaceAndPath("champions", "boss_line_enrage"),
 						new PhaseCondition.HealthPercent(0.5f),
 						List.of(new PhaseEffect.AddAttribute(
-								ResourceLocation.withDefaultNamespace("generic.attack_damage"),
+								Identifier.withDefaultNamespace("generic.attack_damage"),
 								0.25, "add_multiplied_total")),
 						false))
 				.build();

@@ -16,4 +16,6 @@ rootProject.name = "champions"
 
 // Three modules — common contains platform-agnostic code,
 // neoforge and fabric each depend on common and add their own platform code.
-include("common", "neoforge", "fabric")
+include 'common'
+include 'fabric'
+include 'neoforge'

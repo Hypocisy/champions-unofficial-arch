@@ -3,7 +3,7 @@ package top.theillusivec4.champions.api.event;
 import dev.architectury.event.Event;
 import dev.architectury.event.EventFactory;
 import dev.architectury.event.EventResult;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.api.champion.ChampionTier;
@@ -32,7 +32,7 @@ public final class ChampionEvents {
          * @param phaseId  The id of the phase being triggered (matches the id in the archetype datapack).
          * @return A result from an event, determines if the event should continue to other listeners, and determines the outcome of the event.
          */
-        EventResult onPhase(Champion champion, ResourceLocation phaseId);
+        EventResult onPhase(Champion champion, Identifier phaseId);
     }
 
     @FunctionalInterface

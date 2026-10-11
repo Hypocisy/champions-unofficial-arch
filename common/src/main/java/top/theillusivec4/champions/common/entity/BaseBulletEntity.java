@@ -3,9 +3,9 @@ package top.theillusivec4.champions.common.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,6 +18,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -65,7 +67,7 @@ public abstract class BaseBulletEntity extends Projectile {
         this(type, level);
         this.setOwner(shooter);
         BlockPos bp = shooter.blockPosition();
-        this.moveTo(bp.getX() + 0.5, bp.getY() + 0.5, bp.getZ() + 0.5,
+        this.snapTo(bp.getX() + 0.5, bp.getY() + 0.5, bp.getZ() + 0.5,
                 this.getYRot(), this.getXRot());
         this.finalTarget = target;
         this.currentMoveDirection = Direction.UP;
@@ -75,25 +77,25 @@ public abstract class BaseBulletEntity extends Projectile {
     // ── NBT ───────────────────────────────────────────────────────────────────
 
     @Override
-    protected void addAdditionalSaveData(@Nonnull CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
-        if (finalTarget != null) tag.putUUID("Target", finalTarget.getUUID());
-        if (currentMoveDirection != null) tag.putInt("Dir", currentMoveDirection.get3DDataValue());
-        tag.putInt("Steps", flightSteps);
-        tag.putDouble("TXD", targetDeltaX);
-        tag.putDouble("TYD", targetDeltaY);
-        tag.putDouble("TZD", targetDeltaZ);
+    protected void addAdditionalSaveData(@Nonnull ValueOutput valueOutput) {
+        super.addAdditionalSaveData(valueOutput);
+        if (finalTarget != null) valueOutput.store("Target", UUIDUtil.CODEC, finalTarget.getUUID());
+        if (currentMoveDirection != null) valueOutput.putInt("Dir", currentMoveDirection.get3DDataValue());
+        valueOutput.putInt("Steps", flightSteps);
+        valueOutput.putDouble("TXD", targetDeltaX);
+        valueOutput.putDouble("TYD", targetDeltaY);
+        valueOutput.putDouble("TZD", targetDeltaZ);
     }
 
     @Override
-    protected void readAdditionalSaveData(@Nonnull CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
-        flightSteps = tag.getInt("Steps");
-        targetDeltaX = tag.getDouble("TXD");
-        targetDeltaY = tag.getDouble("TYD");
-        targetDeltaZ = tag.getDouble("TZD");
-        if (tag.contains("Dir", 99)) currentMoveDirection = Direction.from3DDataValue(tag.getInt("Dir"));
-        if (tag.hasUUID("Target")) targetId = tag.getUUID("Target");
+    protected void readAdditionalSaveData(@Nonnull ValueInput valueInput) {
+        super.readAdditionalSaveData(valueInput);
+        this.flightSteps = valueInput.getIntOr("Steps", 0);
+        this.targetDeltaX = valueInput.getDoubleOr("TXD", 0);
+        this.targetDeltaY = valueInput.getDoubleOr("TYD", 0);
+        this.targetDeltaZ = valueInput.getDoubleOr("TZD", 0);
+        if (valueInput.child("Dir").isPresent()) currentMoveDirection = Direction.from3DDataValue(valueInput.getIntOr("Dir",0));
+        if (valueInput.child("Target").isPresent()) targetId = valueInput.read("Target",UUIDUtil.CODEC).orElse(null);
     }
 
     // ── Navigation ────────────────────────────────────────────────────────────
@@ -156,7 +158,7 @@ public abstract class BaseBulletEntity extends Projectile {
             targetDeltaY = dy / len * 0.15;
             targetDeltaZ = dz / len * 0.15;
         }
-        hasImpulse = true;
+
         flightSteps = 10 + random.nextInt(5) * 10;
     }
 
@@ -173,7 +175,7 @@ public abstract class BaseBulletEntity extends Projectile {
     public void tick() {
         super.tick();
 
-        if (!level().isClientSide) {
+        if (!level().isClientSide()) {
             // Resolve UUID → entity after load
             if (finalTarget == null && targetId != null) {
                 finalTarget = ((ServerLevel) level()).getEntity(targetId);
@@ -200,12 +202,12 @@ public abstract class BaseBulletEntity extends Projectile {
             }
         }
 
-        checkInsideBlocks();
+        this.applyEffectsFromBlocks();
         Vec3 v = getDeltaMovement();
         setPos(getX() + v.x, getY() + v.y, getZ() + v.z);
         ProjectileUtil.rotateTowardsMovement(this, 0.5f);
 
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             level().addParticle(getParticle(),
                     getX() - v.x, getY() - v.y + 0.15, getZ() - v.z, 0, 0, 0);
         } else if (finalTarget != null && !finalTarget.isRemoved()) {
@@ -271,12 +273,10 @@ public abstract class BaseBulletEntity extends Projectile {
     public boolean isPickable() { return true; }
 
     @Override
-    public boolean hurt(@Nonnull DamageSource source, float amount) {
-        if (level() instanceof ServerLevel srv) {
-            playSound(SoundEvents.SHULKER_BULLET_HURT, 1f, 1f);
-            srv.sendParticles(ParticleTypes.CRIT, getX(), getY(), getZ(), 15, 0.2, 0.2, 0.2, 0.0);
-            discard();
-        }
+    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+        playSound(SoundEvents.SHULKER_BULLET_HURT, 1f, 1f);
+        level.sendParticles(ParticleTypes.CRIT, getX(), getY(), getZ(), 15, 0.2, 0.2, 0.2, 0.0);
+        discard();
         return true;
     }
 

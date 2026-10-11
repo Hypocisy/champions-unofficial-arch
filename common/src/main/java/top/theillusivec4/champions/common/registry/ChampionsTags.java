@@ -1,7 +1,7 @@
 package top.theillusivec4.champions.common.registry;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 
@@ -41,6 +41,6 @@ public final class ChampionsTags {
 
     private static TagKey<EntityType<?>> entityTag(String path) {
         return TagKey.create(Registries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath("champions", path));
+                Identifier.fromNamespaceAndPath("champions", path));
     }
 }

@@ -1,9 +1,10 @@
 package top.theillusivec4.champions.common.champion;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,14 +26,14 @@ import java.util.Optional;
  * </ul>
  */
 public record ChampionData(
-        ResourceLocation tierId,
+        Identifier tierId,
         List<AffixEntry> baseAffixes,
-        List<ResourceLocation> triggeredPhases,
-        Optional<ResourceLocation> archetypeId
+        List<Identifier> triggeredPhases,
+        Optional<Identifier> archetypeId
 ) {
 
     public static final ChampionData EMPTY = new ChampionData(
-            ResourceLocation.withDefaultNamespace("tier_1"),
+            Identifier.withDefaultNamespace("tier_1"),
             List.of(),
             List.of(),
             Optional.empty()
@@ -40,20 +41,21 @@ public record ChampionData(
 
     // ── Codec ─────────────────────────────────────────────────────────────────
 
-    public static final Codec<ChampionData> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            ResourceLocation.CODEC
+    public static final MapCodec<ChampionData> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+            Identifier.CODEC
                     .fieldOf("tier")
                     .forGetter(ChampionData::tierId),
             AffixEntry.CODEC.listOf()
                     .optionalFieldOf("base_affixes", List.of())
                     .forGetter(ChampionData::baseAffixes),
-            ResourceLocation.CODEC.listOf()
+            Identifier.CODEC.listOf()
                     .optionalFieldOf("triggered_phases", List.of())
                     .forGetter(ChampionData::triggeredPhases),
-            ResourceLocation.CODEC
+            Identifier.CODEC
                     .optionalFieldOf("archetype")
                     .forGetter(ChampionData::archetypeId)
     ).apply(inst, ChampionData::new));
+    public static final Codec<ChampionData> CODEC = MAP_CODEC.codec();
 
     // ── Builder ───────────────────────────────────────────────────────────────
 
@@ -61,7 +63,7 @@ public record ChampionData(
         return new ChampionData(tierId, newAffixes, triggeredPhases, archetypeId);
     }
 
-    public ChampionData withTriggeredPhases(List<ResourceLocation> newPhases) {
+    public ChampionData withTriggeredPhases(List<Identifier> newPhases) {
         return new ChampionData(tierId, baseAffixes, newPhases, archetypeId);
     }
 
@@ -72,13 +74,13 @@ public record ChampionData(
      * Holds the type id, strength, and the affix's own per-champion NBT data.
      */
     public record AffixEntry(
-            ResourceLocation typeId,
+            Identifier typeId,
             int strength,
             CompoundTag data
     ) {
 
         public static final Codec<AffixEntry> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-                ResourceLocation.CODEC
+                Identifier.CODEC
                         .fieldOf("type")
                         .forGetter(AffixEntry::typeId),
                 Codec.INT

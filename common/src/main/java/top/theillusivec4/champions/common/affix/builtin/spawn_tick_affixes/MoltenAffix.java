@@ -45,8 +45,8 @@ public final class MoltenAffix extends AffixType<EmptyAffixData> {
             if (entity instanceof Mob mob) {
                 mob.setPathfindingMalus(PathType.WATER, -1f);
                 mob.setPathfindingMalus(PathType.LAVA, 8f);
-                mob.setPathfindingMalus(PathType.DANGER_FIRE, 0f);
-                mob.setPathfindingMalus(PathType.DAMAGE_FIRE, 0f);
+                mob.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0f);
+                mob.setPathfindingMalus(PathType.FIRE, 0f);
                 mob.goalSelector.getAvailableGoals().removeIf(g ->
                         g.getGoal() instanceof RestrictSunGoal || g.getGoal() instanceof FleeSunGoal);
             }

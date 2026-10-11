@@ -103,7 +103,7 @@ public final class AffixInstance {
      * @param tag  the tag produced by {@link #save()}
      */
     public static AffixInstance load(AffixType<?> type, CompoundTag tag) {
-        int strength = tag.getInt("strength");
+        int strength = tag.getIntOr("strength", 0);
         IAffixData data = type.createData();
         data.read(tag);
         return new AffixInstance(type, strength, data);

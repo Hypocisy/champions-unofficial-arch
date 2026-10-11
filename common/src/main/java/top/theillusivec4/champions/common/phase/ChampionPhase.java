@@ -2,7 +2,7 @@ package top.theillusivec4.champions.common.phase;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
@@ -26,14 +26,14 @@ import java.util.List;
  * }</pre>
  */
 public record ChampionPhase(
-        ResourceLocation id,
+        Identifier id,
         PhaseCondition condition,
         List<PhaseEffect> effects,
         boolean repeatable
 ) {
 
     public static final Codec<ChampionPhase> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            ResourceLocation.CODEC
+            Identifier.CODEC
                     .fieldOf("id").forGetter(ChampionPhase::id),
             PhaseCondition.CODEC
                     .fieldOf("condition").forGetter(ChampionPhase::condition),

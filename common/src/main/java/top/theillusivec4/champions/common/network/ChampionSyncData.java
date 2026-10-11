@@ -4,7 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
@@ -25,7 +25,7 @@ import java.util.Optional;
  * so they work identically on NeoForge and Fabric networking APIs.</p>
  */
 public record ChampionSyncData(
-        ResourceLocation tierId,
+        Identifier tierId,
         List<AffixSyncEntry> affixes
 ) {
 
@@ -33,7 +33,7 @@ public record ChampionSyncData(
 
     public static final StreamCodec<FriendlyByteBuf, ChampionSyncData> STREAM_CODEC =
             StreamCodec.composite(
-                    ResourceLocation.STREAM_CODEC, ChampionSyncData::tierId,
+                    Identifier.STREAM_CODEC, ChampionSyncData::tierId,
                     AffixSyncEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), ChampionSyncData::affixes,
                     ChampionSyncData::new
             );
@@ -52,7 +52,7 @@ public record ChampionSyncData(
     }
 
     private static AffixSyncEntry toEntry(AffixInstance instance) {
-        ResourceLocation typeId = ChampionsApi.get()
+        Identifier typeId = ChampionsApi.get()
                 .getAffixTypeId(instance.type())
                 .orElseThrow(() -> new IllegalStateException(
                         "Affix type not in registry: " + instance.type().getClass().getName()
@@ -73,14 +73,14 @@ public record ChampionSyncData(
      * {@code clientData} is null for affixes that do not implement {@link IAffixClientSync}.
      */
     public record AffixSyncEntry(
-            ResourceLocation typeId,
+            Identifier typeId,
             int strength,
             @Nullable CompoundTag clientData
     ) {
 
         public static final StreamCodec<FriendlyByteBuf, AffixSyncEntry> STREAM_CODEC =
                 StreamCodec.composite(
-                        ResourceLocation.STREAM_CODEC, AffixSyncEntry::typeId,
+                        Identifier.STREAM_CODEC, AffixSyncEntry::typeId,
                         ByteBufCodecs.VAR_INT, AffixSyncEntry::strength,
                         ByteBufCodecs.optional(ByteBufCodecs.COMPOUND_TAG)
                                 .map(opt -> opt.orElse(new CompoundTag()), Optional::ofNullable), // Optional<CompoundTag> ↔ @Nullable

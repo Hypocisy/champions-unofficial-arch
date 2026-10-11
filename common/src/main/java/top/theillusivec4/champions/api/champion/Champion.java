@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.api.champion;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.affix.AffixType;
@@ -85,7 +85,7 @@ public interface Champion {
         /**
          * The archetype ID this champion was generated from, if any.
          */
-        Optional<ResourceLocation> archetypeId();
+        Optional<Identifier> archetypeId();
     }
 
     // ── Client ────────────────────────────────────────────────────────────────

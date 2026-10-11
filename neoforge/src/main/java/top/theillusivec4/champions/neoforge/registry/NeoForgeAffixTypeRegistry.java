@@ -2,7 +2,7 @@ package top.theillusivec4.champions.neoforge.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -35,7 +35,7 @@ public final class NeoForgeAffixTypeRegistry implements AffixTypeRegistry {
 
     public static final ResourceKey<Registry<AffixType<?>>> REGISTRY_KEY =
             ResourceKey.createRegistryKey(
-                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "affix_type")
+                    Identifier.fromNamespaceAndPath(MOD_ID, "affix_type")
             );
 
     // The backing NeoForge registry — built lazily when first accessed after mod init
@@ -79,12 +79,12 @@ public final class NeoForgeAffixTypeRegistry implements AffixTypeRegistry {
     // ── AffixTypeRegistry impl ────────────────────────────────────────────────
 
     @Override
-    public Optional<AffixType<?>> get(ResourceLocation id) {
+    public Optional<AffixType<?>> get(Identifier id) {
         return REGISTRY.getOptional(id);
     }
 
     @Override
-    public Optional<ResourceLocation> getId(AffixType<?> type) {
+    public Optional<Identifier> getId(AffixType<?> type) {
         return Optional.ofNullable(REGISTRY.getKey(type));
     }
 

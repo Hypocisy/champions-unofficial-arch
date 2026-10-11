@@ -11,7 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import top.theillusivec4.champions.common.api.ChampionsRegistries;
@@ -60,7 +60,7 @@ public final class EntitySelectorArgumentType implements ArgumentType<EntitySele
         if (input.startsWith("@archetype:")) {
             String idStr = input.substring("@archetype:".length());
             try {
-                ResourceLocation id = ResourceLocation.parse(idStr);
+                Identifier id = Identifier.parse(idStr);
                 return new Selector(SelectorType.ARCHETYPE, id, null);
             } catch (Exception e) {
                 reader.setCursor(start);
@@ -70,7 +70,7 @@ public final class EntitySelectorArgumentType implements ArgumentType<EntitySele
 
         // Direct entity ID
         try {
-            ResourceLocation id = ResourceLocation.parse(input);
+            Identifier id = Identifier.parse(input);
             return new Selector(SelectorType.DIRECT, id, null);
         } catch (Exception e) {
             reader.setCursor(start);
@@ -126,7 +126,7 @@ public final class EntitySelectorArgumentType implements ArgumentType<EntitySele
 
     public record Selector(
             SelectorType type,
-            ResourceLocation id,        // used for DIRECT and ARCHETYPE
+            Identifier id,        // used for DIRECT and ARCHETYPE
             String categoryName         // used for CATEGORY
     ) {
     }

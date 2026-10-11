@@ -1,6 +1,6 @@
 package top.theillusivec4.champions.common.api;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixType;
@@ -54,12 +54,12 @@ public final class ChampionsApiImpl implements ChampionsApi {
     // ── Affix type registry ───────────────────────────────────────────────────
 
     @Override
-    public Optional<AffixType<?>> getAffixType(ResourceLocation id) {
+    public Optional<AffixType<?>> getAffixType(Identifier id) {
         return affixTypeRegistry.get(id);
     }
 
     @Override
-    public Optional<ResourceLocation> getAffixTypeId(AffixType<?> type) {
+    public Optional<Identifier> getAffixTypeId(AffixType<?> type) {
         return affixTypeRegistry.getId(type);
     }
 
@@ -71,7 +71,7 @@ public final class ChampionsApiImpl implements ChampionsApi {
     // ── Tier registry ─────────────────────────────────────────────────────────
 
     @Override
-    public Optional<ChampionTier> getTier(ResourceLocation id) {
+    public Optional<ChampionTier> getTier(Identifier id) {
         return tierRegistry.get(id);
     }
 

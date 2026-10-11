@@ -1,13 +1,12 @@
 {
   "required": true,
   "package": "top.theillusivec4.champions.common.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "minVersion": "0.8",
   "mixins": [
-
+    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
-    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

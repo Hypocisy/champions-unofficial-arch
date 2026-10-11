@@ -39,18 +39,18 @@ public final class FabricPacketHandler implements PacketHandler {
 
   /** Call server-side during mod init. */
   public static void registerServerPayloads() {
-    PayloadTypeRegistry.playS2C().register(
+    PayloadTypeRegistry.clientboundPlay().register(
         FabricChampionSyncPacket.TYPE, FabricChampionSyncPacket.STREAM_CODEC);
-    PayloadTypeRegistry.playS2C().register(
+    PayloadTypeRegistry.clientboundPlay().register(
         FabricTierSyncPacket.TYPE, FabricTierSyncPacket.STREAM_CODEC);
-    PayloadTypeRegistry.playS2C().register(
+    PayloadTypeRegistry.clientboundPlay().register(
         ChampionClearPacket.TYPE, ChampionClearPacket.STREAM_CODEC);
-    PayloadTypeRegistry.playS2C().register(
+    PayloadTypeRegistry.clientboundPlay().register(
         OpenEditorPacket.TYPE, OpenEditorPacket.STREAM_CODEC);
     // C2S editor packets
-    PayloadTypeRegistry.playC2S().register(
+    PayloadTypeRegistry.serverboundPlay().register(
         SaveEditorPacket.TYPE, SaveEditorPacket.STREAM_CODEC);
-    PayloadTypeRegistry.playC2S().register(
+    PayloadTypeRegistry.serverboundPlay().register(
         EditorPackActionPacket.TYPE, EditorPackActionPacket.STREAM_CODEC);
   }
 
@@ -129,7 +129,7 @@ public final class FabricPacketHandler implements PacketHandler {
 
   @Override
   public void syncAllChampionsToPlayer(ServerPlayer player) {
-    player.serverLevel().getAllEntities().forEach(entity -> {
+    player.level().getAllEntities().forEach(entity -> {
       if (!(entity instanceof LivingEntity living)) return;
       ChampionsApi.get().getChampion(living).ifPresent(champion -> {
         ChampionSyncData data = ChampionSyncData.from(champion);
@@ -142,7 +142,7 @@ public final class FabricPacketHandler implements PacketHandler {
   @Override
   public void sendEditorToPlayer(ServerPlayer player) {
     ServerPlayNetworking.send(player,
-        new OpenEditorPacket(EditorPayload.fromServerState(player.getServer())));
+        new OpenEditorPacket(EditorPayload.fromServerState(player.level().getServer())));
   }
 
   // ── Client handlers ───────────────────────────────────────────────────────

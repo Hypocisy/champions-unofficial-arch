@@ -63,7 +63,7 @@ public final class LivelyAffix extends AffixType<LivelyAffix.Data> {
 
         @Override
         public void read(CompoundTag tag) {
-            lastDamageTime = tag.getLong("last_damage");
+            lastDamageTime = tag.getLongOr("last_damage", lastDamageTime);
         }
     }
 }

@@ -1,4 +1,9 @@
 # Changelog
+## [26.1.2.7] - 2026-10-11
+This is a version migration update, upgrading the Architectury version from 1.21.1 to 26.1.2. Updates for 26.2 and 26.3 will follow as soon as possible.
+
+- Fixed a bug where items obtained via `/give champions:egg` failed to display their models correctly and could not summon entities.
+- Fixed a bug where non-archetype mobs with a tier could drop rewards.
 
 ## [21.1.1.7] — 2026-09-05
 > This version is small fix of mixin

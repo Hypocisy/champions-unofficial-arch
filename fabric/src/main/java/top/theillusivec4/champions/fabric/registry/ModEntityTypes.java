@@ -2,7 +2,7 @@ package top.theillusivec4.champions.fabric.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import top.theillusivec4.champions.common.entity.ArcticBulletEntity;
@@ -17,21 +17,21 @@ public final class ModEntityTypes {
                             MobCategory.MISC)
                     .sized(0.3125f, 0.3125f)
                     .clientTrackingRange(8)
-                    .build();
+                    .build(ChampionEntityTypes.Keys.ARCTIC_BULLET);
 
     public static final EntityType<EnkindlingBulletEntity> ENKINDLING_BULLET =
             EntityType.Builder.<EnkindlingBulletEntity>of(
                             EnkindlingBulletEntity::new,MobCategory.MISC)
                     .sized(0.3125f, 0.3125f)
                     .clientTrackingRange(8)
-                    .build();
+                    .build(ChampionEntityTypes.Keys.ENKINDLING_BULLET);
 
     public static void register() {
         Registry.register(BuiltInRegistries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath("champions", "arctic_bullet"),
+                Identifier.fromNamespaceAndPath("champions", "arctic_bullet"),
                 ARCTIC_BULLET);
         Registry.register(BuiltInRegistries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath("champions", "enkindling_bullet"),
+                Identifier.fromNamespaceAndPath("champions", "enkindling_bullet"),
                 ENKINDLING_BULLET);
         ChampionEntityTypes.register(() -> ARCTIC_BULLET, () -> ENKINDLING_BULLET);
     }

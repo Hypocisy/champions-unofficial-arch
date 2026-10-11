@@ -118,7 +118,7 @@ public final class DesecratingAffix extends AffixType<EmptyAffixData> {
             // Shrink the cloud linearly so it disappears exactly when duration expires
             cloud.setRadiusPerTick(-radius / (float) duration);
             // Instant HARM (level 1) — matches original; Wither would be a different affix
-            cloud.addEffect(new MobEffectInstance(MobEffects.HARM, 1, 1));
+            cloud.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE, 1, 1));
 
             mob.level().addFreshEntity(cloud);
         }

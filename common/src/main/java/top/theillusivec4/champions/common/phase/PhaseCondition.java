@@ -3,7 +3,7 @@ package top.theillusivec4.champions.common.phase;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.champion.Champion;
 
@@ -89,10 +89,10 @@ public interface PhaseCondition {
      *
      * <pre>{@code { "type": "affix_triggered", "affix": "champions:adaptable", "count": 3 } }</pre>
      */
-    record AffixTriggered(ResourceLocation affixId, int count) implements PhaseCondition {
+    record AffixTriggered(Identifier affixId, int count) implements PhaseCondition {
 
         public static final MapCodec<AffixTriggered> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                ResourceLocation.CODEC.fieldOf("affix").forGetter(AffixTriggered::affixId),
+                Identifier.CODEC.fieldOf("affix").forGetter(AffixTriggered::affixId),
                 Codec.INT.fieldOf("count").forGetter(AffixTriggered::count)
         ).apply(inst, AffixTriggered::new));
 

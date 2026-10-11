@@ -10,7 +10,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.AffixInstance;
 import top.theillusivec4.champions.api.affix.AffixType;
@@ -88,7 +88,7 @@ public final class AffixArgumentType implements ArgumentType<List<AffixArgumentT
                 token.append(reader.read());
             }
 
-            // Split on last ':' only — ResourceLocation already contains one ':'
+            // Split on last ':' only — Identifier already contains one ':'
             String raw = token.toString();
             int lastColon = raw.lastIndexOf(':');
             String idPart;
@@ -109,9 +109,9 @@ public final class AffixArgumentType implements ArgumentType<List<AffixArgumentT
                 idPart = raw;
             }
 
-            ResourceLocation id;
+            Identifier id;
             try {
-                id = ResourceLocation.parse(idPart);
+                id = Identifier.parse(idPart);
             } catch (Exception e) {
                 reader.setCursor(start);
                 throw UNKNOWN_AFFIX.create(idPart);
