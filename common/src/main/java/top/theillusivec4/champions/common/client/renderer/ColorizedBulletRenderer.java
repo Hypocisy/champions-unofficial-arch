@@ -19,6 +19,8 @@ import org.jspecify.annotations.NonNull;
 import top.theillusivec4.champions.common.client.renderer.entity.state.ColorizedBulletRenderState;
 import top.theillusivec4.champions.common.entity.BaseBulletEntity;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 public class ColorizedBulletRenderer <T extends BaseBulletEntity, S extends ColorizedBulletRenderState> extends EntityRenderer<T, S> {
 
   private static final Identifier GENERIC_SPARK_TEXTURE = Identifier.fromNamespaceAndPath("champions","textures/entity/generic_spark.png");
@@ -46,9 +48,9 @@ public class ColorizedBulletRenderer <T extends BaseBulletEntity, S extends Colo
     float xRot = Mth.lerp(renderState.partialTick, renderState.xRot, renderState.yRot);
     float tickModifier = renderState.ageInTicks + renderState.partialTick;
     matrixStack.translate(0.0D, 0.15000000596046448D, 0.0D);
-    matrixStack.mulPose(Axis.YP.rotationDegrees(Mth.sin(tickModifier * 0.1F) * 180.0F));
-    matrixStack.mulPose(Axis.XP.rotationDegrees(Mth.cos(tickModifier * 0.1F) * 180.0F));
-    matrixStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin(tickModifier * 0.15F) * 360.0F));
+    matrixStack.rotate(Axis.YP.rotationDegrees(Mth.sin(tickModifier * 0.1F) * 180.0F));
+    matrixStack.rotate(Axis.XP.rotationDegrees(Mth.cos(tickModifier * 0.1F) * 180.0F));
+    matrixStack.rotate(Axis.ZP.rotationDegrees(Mth.sin(tickModifier * 0.15F) * 360.0F));
     matrixStack.scale(-0.5F, -0.5F, 0.5F);
     this.model.setupAnim(new ColorizedBulletRenderState(color, xRot, yRot, partialTick));
     // argb range(0, 255)
@@ -63,13 +65,12 @@ public class ColorizedBulletRenderer <T extends BaseBulletEntity, S extends Colo
             OverlayTexture.NO_OVERLAY,
             renderState.outlineColor,
             null,
-            ARGB.opaque(this.color),
-            null
+            ARGB.opaque(this.color)
     );
     matrixStack.scale(1.5F, 1.5F, 1.5F);
     submitNodeCollector.order(1)
             .submitModel(
-                    this.model, renderState, matrixStack, RENDER_TYPE, renderState.lightCoords, OverlayTexture.NO_OVERLAY, ARGB.color(ARGB.alpha(15 * 255), this.color), null, renderState.outlineColor, null
+                    this.model, renderState, matrixStack, RENDER_TYPE, renderState.lightCoords, OverlayTexture.NO_OVERLAY, ARGB.color(ARGB.alpha(15 * 255), this.color), null, renderState.outlineColor
             );
 
     matrixStack.popPose();
@@ -77,6 +78,7 @@ public class ColorizedBulletRenderer <T extends BaseBulletEntity, S extends Colo
   }
 
   @Override
+  @ParametersAreNonnullByDefault
   public void extractRenderState(T entity, S renderState, final float partialTick) {
 
     this.partialTick = partialTick;

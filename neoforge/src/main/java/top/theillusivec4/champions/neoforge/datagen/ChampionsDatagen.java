@@ -4,6 +4,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import top.theillusivec4.champions.common.datagen.*;
 import top.theillusivec4.champions.common.filter.EntityFilter;
@@ -38,10 +39,16 @@ public final class ChampionsDatagen {
 	public static void onGatherData(GatherDataEvent.Server event) {
 		var generator = event.getGenerator();
 		var packOutput = generator.getPackOutput();
-		var provider = event.getLookupProvider();
+		var reloadableLookupProvider = event.getReloadableLookupProvider();
 
 		// data
-		var datapackProvider = generator.addProvider(true, new ModDatapackProvider(packOutput, provider));
+		DatapackBuiltinEntriesProvider worldProvider = generator.addProvider(true,DatapackBuiltinEntriesProvider.forWorldLayer(
+				packOutput,
+				"champions world provider",
+				event.getWorldLookupProvider(),
+				ModDatapackProvider.BUILDER,
+				Set.of(ChampionsNeoForge.MOD_ID)));
+
 		// ── Server data ───────────────────────────────────────────────────────
 
 		generator.addProvider(true,
@@ -49,11 +56,11 @@ public final class ChampionsDatagen {
 		generator.addProvider(true,
 				buildArchetypes(packOutput));
 		generator.addProvider(true,
-				new AttributesModifierDataProvider(packOutput, provider));
+				new AttributesModifierDataProvider(packOutput, reloadableLookupProvider));
 		generator.addProvider(true,
-				new ModDamageTypeTagsProvider(packOutput, datapackProvider.getRegistryProvider()));
+				new ModDamageTypeTagsProvider(packOutput, worldProvider.getRegistryProvider()));
 
-		generator.addProvider(true, new ModEntityTypeTagsProvider(packOutput, provider));
+		generator.addProvider(true, new ModEntityTypeTagsProvider(packOutput, worldProvider.getRegistryProvider()));
 	}
 	@SubscribeEvent
 	public static void onGatherData(GatherDataEvent.Client event) {

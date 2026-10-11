@@ -22,6 +22,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -486,7 +487,7 @@ public final class ChampionCommand {
     /** Give item to player, drop at feet if inventory is full. */
     private static void giveItem(ServerPlayer player, ItemStack stack) {
         if (!player.getInventory().add(stack) && !stack.isEmpty()) {
-            player.drop(stack, false);
+            player.drop(stack, false, Prediction.SERVER_ONLY);
         }
     }
 

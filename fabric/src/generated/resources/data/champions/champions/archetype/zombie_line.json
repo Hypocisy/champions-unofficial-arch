@@ -65,11 +65,11 @@
   "entity_filter": {
     "type": "entity_type",
     "types": [
-      "minecraft:zombie_villager",
       "minecraft:husk",
       "minecraft:zombified_piglin",
       "minecraft:drowned",
-      "minecraft:zombie"
+      "minecraft:zombie",
+      "minecraft:zombie_villager"
     ]
   },
   "id": "champions:zombie_line",

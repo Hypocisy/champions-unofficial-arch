@@ -53,13 +53,14 @@ public record ChampionPropertyCondition(
 	// ── LootItemCondition ──────────────────────────────────────────────────────
 
 	@Override
+	@NotNull
 	public Set<ContextKey<?>> getReferencedContextParams() {
 		return ImmutableSet.of(target.contextParam());
 	}
 
 	@Override
 	public boolean test(LootContext context) {
-		Entity entity = context.getOptionalParameter(target.contextParam());
+		Entity entity = context.getOptional(target.contextParam());
 		if (entity == null) return false;
 		return matches(entity);
 	}

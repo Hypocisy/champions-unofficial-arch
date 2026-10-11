@@ -93,7 +93,7 @@ public final class MagneticAffix extends AffixType<EmptyAffixData> {
             // Force server→client position sync for players so the pull is visible
             // without rubber-banding from client-side prediction.
             if (target instanceof Player player) {
-                player.hurtMarked = true;
+                player.syncVelocity = true;
             }
         }
     }

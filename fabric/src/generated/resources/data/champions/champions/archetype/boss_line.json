@@ -92,9 +92,6 @@
   "entity_filter": {
     "type": "entity_type",
     "types": [
-      "minecraft:slime",
-      "minecraft:guardian",
-      "minecraft:ravager",
       "minecraft:phantom",
       "minecraft:magma_cube",
       "minecraft:elder_guardian",
@@ -103,7 +100,10 @@
       "minecraft:ghast",
       "minecraft:zoglin",
       "minecraft:blaze",
-      "minecraft:warden"
+      "minecraft:warden",
+      "minecraft:slime",
+      "minecraft:guardian",
+      "minecraft:ravager"
     ]
   },
   "id": "champions:boss_line",

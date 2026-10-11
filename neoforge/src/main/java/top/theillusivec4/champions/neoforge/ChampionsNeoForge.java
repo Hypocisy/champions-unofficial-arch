@@ -60,7 +60,7 @@ public final class ChampionsNeoForge {
 
     public ChampionsNeoForge(IEventBus modBus) {
         // 0. Register server config and bake on load/reload
-        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SERVER, ChampionConfigSpec.SPEC);
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SYNCED, ChampionConfigSpec.SPEC);
         modBus.addListener(this::onConfigLoad);
         modBus.addListener(this::onConfigReload);
 
