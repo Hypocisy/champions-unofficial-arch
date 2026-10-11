@@ -2,7 +2,7 @@ package top.theillusivec4.champions.common.data;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.common.filter.EntityFilter;

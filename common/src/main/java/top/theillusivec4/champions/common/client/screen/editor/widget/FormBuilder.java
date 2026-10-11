@@ -3,7 +3,6 @@ package top.theillusivec4.champions.common.client.screen.editor.widget;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -20,6 +19,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import static top.theillusivec4.champions.common.client.screen.ChampionEditorScreen.setScreen;
 
 /**
  * Row-based form DSL used by every editor pane. Rows are declared declaratively;
@@ -248,8 +249,8 @@ public final class FormBuilder {
      */
     public void openPicker(String title, List<PickerEntry> entries, boolean multi,
                            Set<String> preselected, Consumer<Set<String>> onCommit) {
-        Minecraft mc = Minecraft.getInstance();
-        mc.setScreen(RegistryPickerScreen.create(
+
+        setScreen(RegistryPickerScreen.create(
                 title, entries, multi, new LinkedHashSet<>(preselected),
                 onCommit, session::reopen));
     }

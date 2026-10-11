@@ -1,6 +1,5 @@
 package top.theillusivec4.champions.common.client.screen.editor;
 
-import net.minecraft.client.Minecraft;
 import top.theillusivec4.champions.common.client.screen.ChampionEditorScreen;
 import top.theillusivec4.champions.common.network.EditorPayload;
 
@@ -82,7 +81,7 @@ public final class EditorSession {
 
     /** Re-open the editor screen (after a picker or pack-action refresh). */
     public void reopen() {
-        Minecraft.getInstance().setScreen(new ChampionEditorScreen(this));
+        ChampionEditorScreen.setScreen(new ChampionEditorScreen(this));
     }
 
     public EditorPayload toPayload() {

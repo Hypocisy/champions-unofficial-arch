@@ -123,7 +123,7 @@ dependencies {
     // (otherwise, you should configure the dependency on Modrinth/Curseforge)
     include "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
     include "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-    runtimeOnly "curse.maven:modmenu-308702:8397574"
+    runtimeOnly "curse.maven:modmenu-308702:8966634"
     implementation ("curse.maven:forge-config-api-port-547434:${rootProject.forge_config_api_port_fileid}")
 
     // night-config: FCAP bundles these as JiJ which Fabric Loader extracts at production runtime.

@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -180,7 +181,7 @@ public final class ChampionEggItem extends Item {
 
     public static Optional<EntityType<?>> getEntityType(ItemStack stack) {
         Identifier id = stack.get(ChampionItems.entityTypeComponent());
-        return BuiltInRegistries.ENTITY_TYPE.getOptional(id).or(()-> Optional.of(EntityType.ZOMBIE));
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(id).or(()-> Optional.of(EntityTypes.ZOMBIE));
     }
 
     public static Optional<ChampionData> getPreset(ItemStack stack) {
@@ -206,7 +207,7 @@ public final class ChampionEggItem extends Item {
             ItemStack entityEggStack = new ItemStack(entityNormalSpawnEgg.get());
             Identifier itemModelLocation = entityEggStack.get(DataComponents.ITEM_MODEL);
             if (itemModelLocation == null) {
-                itemModelLocation = SpawnEggItem.byId(EntityType.ZOMBIE).get().value().getDefaultInstance().get(DataComponents.ITEM_MODEL);
+                itemModelLocation = SpawnEggItem.byId(EntityTypes.ZOMBIE).orElseThrow().value().getDefaultInstance().get(DataComponents.ITEM_MODEL);
             }
             championEgg.set(DataComponents.ITEM_MODEL, itemModelLocation);
         }

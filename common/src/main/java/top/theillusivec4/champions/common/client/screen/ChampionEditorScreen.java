@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -101,6 +102,7 @@ public final class ChampionEditorScreen extends Screen {
     private Button tabArchetypes, tabTiers, tabModifiers, tabConfig, tabPacks;
     private Button btnNew, btnDelete, btnSave, btnClose;
     private Button btnForm, btnJson;
+    private static final Gui gui = Minecraft.getInstance().gui;
 
     // ── Entry / platform API ───────────────────────────────────────────────────
 
@@ -111,18 +113,17 @@ public final class ChampionEditorScreen extends Screen {
 
     public static void open(EditorPayload payload) {
         EditorSession s = new EditorSession(payload, saveCallback);
-        Minecraft.getInstance().setScreen(new ChampionEditorScreen(s));
+        setScreen(new ChampionEditorScreen(s));
     }
 
     /** S2C entry: refresh packs in place if the editor is already open. */
     public static void receivePayload(EditorPayload payload) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.screen instanceof ChampionEditorScreen open && open.session != null) {
+        if (gui.screen() instanceof ChampionEditorScreen open && open.session != null) {
             open.session.packsSnapshot = payload.packs();
             open.rebuildForm();
         } else {
             EditorSession s = new EditorSession(payload, saveCallback);
-            mc.setScreen(new ChampionEditorScreen(s));
+            setScreen(new ChampionEditorScreen(s));
         }
     }
 
@@ -508,7 +509,7 @@ public final class ChampionEditorScreen extends Screen {
     @Override
     public void onClose() {
         commitRawIfNeeded();
-        if (minecraft != null) minecraft.setScreen(null);
+	    setScreen(null);
     }
 
     // ── Rendering ──────────────────────────────────────────────────────────────
@@ -724,4 +725,9 @@ public final class ChampionEditorScreen extends Screen {
 
     @Override
     public boolean isPauseScreen() { return false; }
+
+
+    public static void setScreen(Screen screen) {
+        gui.setScreen(screen);
+    }
 }

@@ -8,7 +8,8 @@ version = "${mod_version}"
 displayName = "${mod_name}"
 description = "${mod_description}"
 authors = "${mod_authors}"
-
+bannerFile="champions_icon.png"
+iconFile="champions_icon_square.png"
 
 [[mixins]]
 config = "champions-common.mixins.json"

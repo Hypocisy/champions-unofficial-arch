@@ -2,7 +2,6 @@ package top.theillusivec4.champions.common.client.screen.editor.pane;
 
 import com.google.gson.JsonObject;
 import top.theillusivec4.champions.common.client.screen.editor.EditorLang;
-import top.theillusivec4.champions.common.client.screen.editor.json.JsonPathOps;
 import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder;
 
 /** Tier tab — {@code champions/tier} files. */

@@ -1,10 +1,9 @@
 package top.theillusivec4.champions.common.affix.builtin.goal_affixes;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import top.theillusivec4.champions.api.affix.AffixType;
@@ -17,6 +16,7 @@ import top.theillusivec4.champions.common.config.ChampionsConfig;
 import top.theillusivec4.champions.common.entity.ChampionEntityTypes;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Periodically spawns parasite entities while alive; bursts more on death.
@@ -70,8 +70,11 @@ public final class InfestedAffix extends AffixType<EmptyAffixData> {
         if (target == null) return;
         // Resolve configurable parasite entity type; fall back to silverfish on bad id
         boolean isEnder = target.is(ChampionEntityTypes.Tags.IS_ENDER);
-        EntityType<?> parasiteType =
-                EntityType.byString(isEnder ? ChampionsConfig.infestedEnderParasite : ChampionsConfig.infestedParasite).orElse(EntityType.SILVERFISH);
+        String id = isEnder ? ChampionsConfig.infestedEnderParasite : ChampionsConfig.infestedParasite;
+
+        EntityType<?> parasiteType = Optional.ofNullable(Identifier.tryParse(id))
+                .flatMap(BuiltInRegistries.ENTITY_TYPE::getOptional)
+                .orElse(EntityTypes.SILVERFISH);
 
         for (int i = 0; i < count; i++) {
             var entity = parasiteType

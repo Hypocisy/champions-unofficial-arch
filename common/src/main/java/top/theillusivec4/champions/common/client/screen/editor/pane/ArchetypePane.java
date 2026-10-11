@@ -8,7 +8,6 @@ import top.theillusivec4.champions.common.client.screen.editor.picker.PickerSour
 import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder;
 import top.theillusivec4.champions.common.client.screen.editor.widget.FormBuilder.CycleOption;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 

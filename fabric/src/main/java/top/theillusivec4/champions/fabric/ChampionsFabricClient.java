@@ -27,7 +27,7 @@ public final class ChampionsFabricClient implements ClientModInitializer {
 		// emitted in BaseBulletEntity#tick on the client. Without a registered
 		// renderer the EntityRenderDispatcher returns null and crashes at
 		// EntityRenderDispatcher#shouldRender when the entity enters render range.
-		EntityRenderers.register(ModEntityTypes.ARCTIC_BULLET, (renderManager) -> new ColorizedBulletRenderer(renderManager, 0x42F5E3));
-		EntityRenderers.register(ModEntityTypes.ENKINDLING_BULLET, (renderManager) -> new ColorizedBulletRenderer(renderManager, 0xFC5A03));
+		EntityRenderers.register(ModEntityTypes.ARCTIC_BULLET, (renderManager) -> new ColorizedBulletRenderer<>(renderManager, 0x42F5E3));
+		EntityRenderers.register(ModEntityTypes.ENKINDLING_BULLET, (renderManager) -> new ColorizedBulletRenderer<>(renderManager, 0xFC5A03));
 	}
 }

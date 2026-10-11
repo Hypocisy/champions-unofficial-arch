@@ -1,6 +1,7 @@
 package top.theillusivec4.champions.common.affix.builtin.StatelessCombatAffixes;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,22 +31,22 @@ public final class KnockingAffix extends AffixType<EmptyAffixData> {
 
         // Active: champion attacks → knock back target
         registry.on(AttackEvent.class, (champion, data, strength, evt) ->
-                applyKnockback(champion.entity(), evt.target(), strength));
+                applyKnockback(champion.entity(), evt.target(), strength, evt.source()));
 
         // Reactive: champion is hit → knock back attacker
         registry.on(HurtEvent.class, (champion, data, strength, evt) -> {
             if (!(evt.source().getEntity() instanceof LivingEntity attacker)) return;
-            applyKnockback(champion.entity(), attacker, strength);
+            applyKnockback(champion.entity(), attacker, strength, evt.source());
         });
     }
 
-    private static void applyKnockback(LivingEntity source, LivingEntity target, int strength) {
+    private static void applyKnockback(LivingEntity source, LivingEntity target, int strength, DamageSource damageSource) {
         float force = (float) ChampionsConfig.knockingKnockback * strength;
         target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 2));
         target.knockback(
                 force,
                 Mth.sin(source.getYRot() * (float) (Math.PI / 180.0)),
-                -Mth.cos(source.getYRot() * (float) (Math.PI / 180.0))
+                -Mth.cos(source.getYRot() * (float) (Math.PI / 180.0)),damageSource,0,true
         );
     }
 }

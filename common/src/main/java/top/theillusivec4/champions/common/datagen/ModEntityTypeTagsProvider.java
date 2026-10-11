@@ -4,7 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.KeyTagProvider;
+import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
@@ -15,11 +15,11 @@ import top.theillusivec4.champions.common.entity.ChampionEntityTypes;
 import java.util.concurrent.CompletableFuture;
 
 
-public class ModEntityTypeTagsProvider extends KeyTagProvider<EntityType<?>> {
+public class ModEntityTypeTagsProvider extends EntityTypeTagsProvider {
 
 
 	public ModEntityTypeTagsProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> completableFuture) {
-		super(packOutput, Registries.ENTITY_TYPE, completableFuture);
+		super(packOutput, completableFuture);
 	}
 
 	@Override

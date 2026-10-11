@@ -1,8 +1,6 @@
 package top.theillusivec4.champions.fabric.event;
 
-import dev.architectury.event.events.client.ClientTickEvent;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
@@ -12,16 +10,10 @@ import top.theillusivec4.champions.api.ChampionsApi;
 import top.theillusivec4.champions.api.affix.handler.event.AttackEvent;
 import top.theillusivec4.champions.api.affix.handler.event.DeathEvent;
 import top.theillusivec4.champions.api.affix.handler.event.HurtEvent;
-import top.theillusivec4.champions.api.affix.handler.event.TickEvent;
-import top.theillusivec4.champions.api.champion.Champion;
 import top.theillusivec4.champions.common.champion.ChampionLootHandler;
-import top.theillusivec4.champions.common.champion.ChampionView;
 import top.theillusivec4.champions.common.champion.GlobalDispatcher;
 import top.theillusivec4.champions.common.network.ChampionSyncData;
-import top.theillusivec4.champions.common.phase.PhaseProcessor;
 import top.theillusivec4.champions.fabric.network.FabricChampionSyncPacket;
-
-import java.util.HashSet;
 
 /**
  * Fabric event bridge.
