@@ -1,4 +1,8 @@
 # Changelog
+## [26.2.7] - 2026-10-11
+This is a version migration update, upgrading the Architectury version from 26.1.2 to 26.2. Updates for 26.3 will follow as soon as possible.
+- add champions_icon_square.png to neoforge
+
 ## [26.1.2.7] - 2026-10-11
 This is a version migration update, upgrading the Architectury version from 1.21.1 to 26.1.2. Updates for 26.2 and 26.3 will follow as soon as possible.
 
